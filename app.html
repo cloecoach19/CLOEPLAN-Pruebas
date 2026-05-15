@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>CLOE · App</title>
+  <link rel="icon" type="image/png" href="CloeGestion.png">
+  <link rel="apple-touch-icon" href="CloeGestion.png">
   <link rel="stylesheet" href="styles.css">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FF6B6B">
@@ -13,7 +15,7 @@
 <header class="site-header">
   <div class="container site-nav">
     <a href="app.html" class="logo">
-      <span class="logo-mark">cl</span>
+      <img src="CloeGestion.png" alt="CLOE" class="logo-img">
       <span><span class="logo-text">CLOE</span><em class="logo-tag">te organiza</em></span>
     </a>
     <nav class="nav-links">
@@ -47,22 +49,12 @@
     <button class="tab" data-tab="calendario">📅 Calendario</button>
     <button class="tab" data-tab="tareas">✓ Tareas</button>
     <button class="tab" data-tab="compra">🛒 Compra</button>
+    <button class="tab" data-tab="cloe">🐶 Cloe</button>
     <button class="tab" data-tab="stats">📊 Ranking</button>
   </div>
 
   <!-- HOY -->
   <section class="panel active" id="panel-hoy">
-    <div class="card">
-      <div class="section-header">
-        <div>
-          <p class="eyebrow">Hoy en casa</p>
-          <h3>Lo que toca</h3>
-        </div>
-        <span class="muted" id="hoy-summary">…</span>
-      </div>
-      <div class="row-list" id="hoy-tasks-list"></div>
-    </div>
-
     <div class="card">
       <div class="section-header">
         <div>

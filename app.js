@@ -89,7 +89,7 @@ $$('.tabs > .tab[data-tab]').forEach(b => b.addEventListener('click', () => {
   if (location.hash !== '#' + activeTab) history.replaceState(null, '', '#' + activeTab);
 }));
 const initTab = (location.hash || '#hoy').slice(1);
-if (['hoy','tareas','compra','calendario','stats'].includes(initTab)) {
+if (['hoy','tareas','compra','calendario','cloe','stats'].includes(initTab)) {
   document.querySelector(`.tab[data-tab="${initTab}"]`)?.click();
 }
 
@@ -114,7 +114,7 @@ $$('.tab[data-cloe-tab]').forEach(b => b.addEventListener('click', () => {
 // Función para abrir subventana de Cloe desde el modal de tareas
 function openCloeSubwindowFromModal() {
   modal.classList.add('hidden');
-  document.querySelector('.tab[data-tab="tareas"]')?.click();
+  document.querySelector('.tab[data-tab="cloe"]')?.click();
   document.querySelector('.tab[data-cloe-tab="pasear"]')?.click();
 }
 
@@ -350,23 +350,9 @@ function renderStats() {
   $('stat-events').textContent = STATE.events.filter(e => e.date === today).length;
 }
 
-// ── HOY ──────────────────────────────────────────────────
+// ── HOY (solo eventos próximos) ──────────────────────────
 function renderHoy() {
   const today = todayISO();
-  // Mostrar todas las tareas de hoy (pendientes y realizadas)
-  // Incluir tanto scope 'today' como 'week' que tengan fecha hoy
-  const list = STATE.tasks
-    .filter(t => (t.scope === 'today' || t.scope === 'week') && (t.due_date === today || (!t.due_date && !t.done)))
-    .slice(0, 12);
-
-  const done = list.filter(t => t.done).length;
-  $('hoy-summary').textContent = `${done}/${list.length} hechas`;
-  $('hoy-tasks-list').innerHTML = list.length
-    ? list.map(taskRowHTML).join('')
-    : '<p class="empty">Hoy nada. ¿Casualidad o brujería?</p>';
-  wireTaskRows($('hoy-tasks-list'));
-
-  // Eventos próximos (hoy en adelante, máx 5)
   const upcoming = STATE.events.filter(e => e.date >= today).slice(0, 5);
   $('hoy-events-list').innerHTML = upcoming.length
     ? upcoming.map(eventRowHTML).join('')
