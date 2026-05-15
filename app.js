@@ -426,14 +426,27 @@ function renderTasks() {
     const d = new Date(startOfWeek);
     d.setDate(d.getDate() + i);
     const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    const dayTasks = STATE.tasks.filter(t =>
-      t.done && t.done_at && t.done_at.slice(0, 10) === iso
-    );
+    const shortName = WEEKDAYS[i];
+    // Una tarea pertenece a este día si:
+    //  - su due_date coincide con el iso del día, o
+    //  - es semanal sin due_date pero con weekday == shortName, o
+    //  - no tiene due_date pero se marcó hecha ese día
+    const dayTasks = STATE.tasks.filter(t => {
+      if (t.due_date) return t.due_date === iso;
+      if (t.scope === 'week' && t.weekday) return t.weekday === shortName;
+      if (t.done && t.done_at) return t.done_at.slice(0, 10) === iso;
+      return false;
+    });
+    // Ordenar: pendientes arriba, hechas abajo; pendientes por hora
+    dayTasks.sort((a, b) => {
+      if (a.done !== b.done) return a.done ? 1 : -1;
+      return (a.due_time || '').localeCompare(b.due_time || '');
+    });
     weekDays.push({
       iso,
       dayNum: d.getDate(),
       dayName: WEEKDAYS_FULL[i],
-      shortName: WEEKDAYS[i],
+      shortName,
       isToday: iso === today,
       isFuture: iso > today,
       tasks: dayTasks,
@@ -450,7 +463,8 @@ function renderTasks() {
     `;
   } else {
     // Calendario vertical: header de píldoras arriba + lista de días debajo
-    const totalDone = weekDays.reduce((acc, d) => acc + d.tasks.length, 0);
+    const totalDone = weekDays.reduce((a, d) => a + d.tasks.filter(t => t.done).length, 0);
+    const totalAll  = weekDays.reduce((a, d) => a + d.tasks.length, 0);
     $('tasks-list').innerHTML = `
       <div class="wk-cal">
         <div class="wk-cal-strip">
@@ -463,7 +477,7 @@ function renderTasks() {
             </button>
           `).join('')}
         </div>
-        <p class="wk-cal-sub">${totalDone} ${totalDone === 1 ? 'hazaña' : 'hazañas'} esta semana 💪</p>
+        <p class="wk-cal-sub">${totalDone}/${totalAll} hechas esta semana 💪</p>
         <div class="wk-cal-stack">
           ${weekDays.map(d => renderWeekDayCard(d, false)).join('')}
         </div>
@@ -481,24 +495,26 @@ function renderTasks() {
 
 function renderWeekDayCard(d, soloMode) {
   const grad = ['g1','g2','g3','g4','g5','g6','g7'][ (new Date(d.iso + 'T00:00').getDay() + 6) % 7 ];
+  const doneN = d.tasks.filter(t => t.done).length;
+  const total = d.tasks.length;
   return `
-    <article id="wk-day-${d.iso}" class="wk-day ${d.isToday ? 'today' : ''} ${d.isFuture ? 'future' : ''} ${d.tasks.length === 0 ? 'empty' : ''} ${soloMode ? 'solo' : ''}">
+    <article id="wk-day-${d.iso}" class="wk-day ${d.isToday ? 'today' : ''} ${d.isFuture ? 'future' : ''} ${total === 0 ? 'empty' : ''} ${soloMode ? 'solo' : ''}">
       <header class="wk-day-head wk-grad-${grad}">
         <div class="wk-day-head-left">
           <div class="wk-day-name">${d.dayName}</div>
           <div class="wk-day-date">${d.dayNum}</div>
         </div>
         <div class="wk-day-badge">
-          ${d.tasks.length
-            ? `<span class="wk-count">${d.tasks.length}</span><span class="wk-count-lbl">${d.tasks.length === 1 ? 'hecha' : 'hechas'}</span>`
+          ${total
+            ? `<span class="wk-count">${doneN}/${total}</span><span class="wk-count-lbl">hechas</span>`
             : `<span class="wk-count-lbl">${d.isFuture ? '🌤 por venir' : '💤 vacío'}</span>`
           }
         </div>
       </header>
       <div class="wk-day-body">
-        ${d.tasks.length
+        ${total
           ? `<div class="row-list">${d.tasks.map(taskRowHTML).join('')}</div>`
-          : `<div class="wk-day-empty">${d.isToday ? '🚀 Aún sin movimiento hoy' : (d.isFuture ? '🌱 Aquí brotarán nuevas misiones' : '😴 Día sin hazañas')}</div>`
+          : `<div class="wk-day-empty">${d.isToday ? '🚀 Sin misiones aún hoy' : (d.isFuture ? '🌱 Aquí brotarán nuevas misiones' : '😴 Día sin hazañas')}</div>`
         }
       </div>
     </article>
@@ -698,6 +714,8 @@ function openTaskModal() {
     // Crear una tarea por cada subcategoría seleccionada
     const tasksToCreate = taskModalState.subcategories.map(subcatId => {
       const subcat = subcats.find(s => s.id === subcatId);
+      const targetDate = taskModalState.date || today;
+      const targetDow = (new Date(targetDate + 'T00:00').getDay() + 6) % 7;
       return {
         title: `${subcat.label}`,
         category: subcatId,
@@ -706,8 +724,8 @@ function openTaskModal() {
         emoji: subcat.emoji,
         assignee: assignee,
         scope: tasksScope,
-        due_date: isWeekScope ? null : (taskModalState.date || today),
-        weekday: isWeekScope ? WEEKDAYS[new Date(taskModalState.date).getDay() === 0 ? 6 : new Date(taskModalState.date).getDay() - 1] : null
+        due_date: targetDate,
+        weekday: isWeekScope ? WEEKDAYS[targetDow] : null,
       };
     });
     
