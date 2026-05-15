@@ -56,7 +56,7 @@ async function insertTask(payload) {
 
 const STATE = { users: [], tasks: [], shopping: [], events: [], cloeWalks: [], cloeDowns: [] };
 let activeTab = 'hoy';
-let tasksScope = 'today';
+let tasksScope = 'week';
 const calDate = new Date(); calDate.setDate(1);
 
 // ── Refs ─────────────────────────────────────────────────
@@ -100,7 +100,7 @@ $$('.tabs > .tab[data-tab]').forEach(b => b.addEventListener('click', () => {
   if (location.hash !== '#' + activeTab) history.replaceState(null, '', '#' + activeTab);
 }));
 const initTab = (location.hash || '#hoy').slice(1);
-if (['hoy','tareas','cloe','compra','calendario','stats'].includes(initTab)) {
+if (['hoy','tareas','compra','calendario','stats'].includes(initTab)) {
   document.querySelector(`.tab[data-tab="${initTab}"]`)?.click();
 }
 
