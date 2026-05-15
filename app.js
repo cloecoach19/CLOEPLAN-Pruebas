@@ -89,7 +89,7 @@ $$('.tabs > .tab[data-tab]').forEach(b => b.addEventListener('click', () => {
   if (location.hash !== '#' + activeTab) history.replaceState(null, '', '#' + activeTab);
 }));
 const initTab = (location.hash || '#hoy').slice(1);
-if (['hoy','tareas','compra','calendario','cloe','stats'].includes(initTab)) {
+if (['hoy','tareas','compra','calendario','stats'].includes(initTab)) {
   document.querySelector(`.tab[data-tab="${initTab}"]`)?.click();
 }
 
@@ -112,10 +112,14 @@ $$('.tab[data-cloe-tab]').forEach(b => b.addEventListener('click', () => {
 }));
 
 // Función para abrir subventana de Cloe desde el modal de tareas
-function openCloeSubwindowFromModal() {
+function openCloeSubwindowFromModal(sub = 'pasear') {
   modal.classList.add('hidden');
-  document.querySelector('.tab[data-tab="cloe"]')?.click();
-  document.querySelector('.tab[data-cloe-tab="pasear"]')?.click();
+  // El panel Cloe no tiene tab principal; lo activamos directamente
+  $$('.tabs > .tab[data-tab]').forEach(x => x.classList.remove('active'));
+  $$('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-cloe'));
+  activeTab = 'cloe';
+  // Abrir la subventana correspondiente
+  document.querySelector(`.tab[data-cloe-tab="${sub}"]`)?.click();
 }
 
 // ── Modal ────────────────────────────────────────────────
@@ -580,11 +584,6 @@ function openTaskModal() {
       btn.classList.add('selected');
       taskModalState.room = btn.dataset.room;
 
-      if (taskModalState.room === 'cloe') {
-        openCloeSubwindowFromModal();
-        return;
-      }
-
       const subcats = TASK_SUBCATEGORIES[taskModalState.room] || [];
       $('task-subcat-grid').innerHTML = subcats.map(s => `
         <button class="task-subcat-btn card-sm" data-subcat="${esc(s.id)}" data-emoji="${esc(s.emoji)}">
@@ -600,12 +599,19 @@ function openTaskModal() {
     });
   });
 
-  // Event listeners para subcategorías (selección múltiple)
+  // Event listeners para subcategorías
   $('task-subcat-grid').addEventListener('click', (e) => {
     const btn = e.target.closest('.task-subcat-btn');
     if (!btn) return;
-
     const subcatId = btn.dataset.subcat;
+
+    // Caso especial Cloe: al elegir subcategoría se abre la subventana correspondiente
+    if (taskModalState.room === 'cloe') {
+      openCloeSubwindowFromModal(subcatId);
+      return;
+    }
+
+    // Resto de habitaciones: selección múltiple
     if (selectedSubcats.has(subcatId)) {
       selectedSubcats.delete(subcatId);
       btn.classList.remove('selected');
@@ -614,7 +620,6 @@ function openTaskModal() {
       btn.classList.add('selected');
     }
     taskModalState.subcategories = Array.from(selectedSubcats);
-
     $('task-details-section').classList.toggle('hidden', selectedSubcats.size === 0);
   });
   
@@ -1032,25 +1037,14 @@ function renderCloe() {
     ? downs.map(cloeDownRowHTML).join('')
     : '<p class="empty">Sin bajadas registradas todavía.</p>';
   
-  // Renderizar lista de compra de cocina (usando la misma tabla shopping)
-  const kitchenShopItems = STATE.shopping.filter(s => s.category === 'cocina' || s.room === 'cocina');
-  $('kitchen-shop-list').innerHTML = kitchenShopItems.length
-    ? kitchenShopItems.map(shopRowHTML).join('')
-    : '<p class="empty">Sin productos en la lista de cocina.</p>';
-  
   // Wire up delete buttons
   $$('[data-del-walk]', $('cloe-walks-list')).forEach(b => b.addEventListener('click', async () => {
     await db.from('cloe_walks').delete().eq('id', b.dataset.delWalk);
     loadAll();
   }));
-  
+
   $$('[data-del-down]', $('cloe-downs-list')).forEach(b => b.addEventListener('click', async () => {
     await db.from('cloe_downs').delete().eq('id', b.dataset.delDown);
-    loadAll();
-  }));
-  
-  $$('[data-del-shop]', $('kitchen-shop-list')).forEach(b => b.addEventListener('click', async () => {
-    await db.from('shopping').delete().eq('id', b.dataset.delShop);
     loadAll();
   }));
 }
@@ -1217,35 +1211,6 @@ function setCloeDefaultDatetime() {
   if ($('cloe-walk-datetime')) $('cloe-walk-datetime').value = iso;
   if ($('cloe-down-datetime')) $('cloe-down-datetime').value = iso;
 }
-
-// ── CLOE: Compra cocina ───────────────────────────────────
-$('qa-kitchen-shop')?.addEventListener('submit', e => {
-  e.preventDefault();
-  withFormLock(e.target, async () => {
-  const name = $('kitchen-shop-name').value.trim();
-  const qty = $('kitchen-shop-qty').value.trim();
-  const cat = $('kitchen-shop-cat').value || 'varios';
-  
-  if (!name) {
-    showToast('El nombre del producto es obligatorio');
-    return;
-  }
-  
-  // Insertar en tabla shopping con categoría/room de cocina
-  const { error } = await db.from('shopping').insert({
-    name,
-    quantity: qty || null,
-    category: 'cocina',
-    room: 'cocina',
-    added_by: me.id,
-  });
-  if (error) { showToast('Error: ' + error.message); return; }
-  
-  $('kitchen-shop-name').value = '';
-  $('kitchen-shop-qty').value = '';
-  loadAll();
-  });
-});
 
 // ── Realtime ─────────────────────────────────────────────
 const debouncedLoad = debounce(loadAll, 300);

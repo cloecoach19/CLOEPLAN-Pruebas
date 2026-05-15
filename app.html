@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>CLOE · App</title>
-  <link rel="icon" type="image/png" href="CloeGestion.png">
-  <link rel="apple-touch-icon" href="CloeGestion.png">
+  <link rel="icon" type="image/png" href="Cloe.png">
+  <link rel="apple-touch-icon" href="Cloe.png">
   <link rel="stylesheet" href="styles.css">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FF6B6B">
@@ -15,7 +15,7 @@
 <header class="site-header">
   <div class="container site-nav">
     <a href="app.html" class="logo">
-      <img src="CloeGestion.png" alt="CLOE" class="logo-img">
+      <img src="Cloe.png" alt="CLOE" class="logo-img">
       <span><span class="logo-text">CLOE</span><em class="logo-tag">te organiza</em></span>
     </a>
     <nav class="nav-links">
@@ -49,7 +49,6 @@
     <button class="tab" data-tab="calendario">📅 Calendario</button>
     <button class="tab" data-tab="tareas">✓ Tareas</button>
     <button class="tab" data-tab="compra">🛒 Compra</button>
-    <button class="tab" data-tab="cloe">🐶 Cloe</button>
     <button class="tab" data-tab="stats">📊 Ranking</button>
   </div>
 
@@ -133,7 +132,6 @@
       <div class="tabs" style="margin-bottom:16px;">
         <button class="tab active" data-cloe-tab="pasear">🚶 Pasear a Cloe</button>
         <button class="tab" data-cloe-tab="bajar">⬇️ Bajar a Cloe</button>
-        <button class="tab" data-cloe-tab="compra">🛒 Compra cocina</button>
       </div>
       
       <!-- Subventana: Pasear a Cloe -->
@@ -190,35 +188,6 @@
         <div class="row-list" id="cloe-downs-list"></div>
       </div>
       
-      <!-- Subventana: Compra cocina -->
-      <div class="cloe-panel hidden" id="cloe-compra">
-        <form class="quick-add qa-kitchen-shop" id="qa-kitchen-shop">
-          <label>
-            <span>Producto</span>
-            <input type="text" id="kitchen-shop-name" placeholder="Leche, pan, huevos..." required autocomplete="off">
-          </label>
-          <label>
-            <span>Cantidad</span>
-            <input type="text" id="kitchen-shop-qty" placeholder="1L / x6 / 500g">
-          </label>
-          <label>
-            <span>Categoría</span>
-            <select id="kitchen-shop-cat">
-              <option value="lácteos">🥛 Lácteos</option>
-              <option value="panadería">🍞 Panadería</option>
-              <option value="despensa">🥫 Despensa</option>
-              <option value="fruta">🍎 Fruta</option>
-              <option value="verdura">🥦 Verdura</option>
-              <option value="carne">🥩 Carne y pescado</option>
-              <option value="varios">🛒 Varios</option>
-            </select>
-          </label>
-          <button type="submit" class="btn accent">✓ Añadir a la compra</button>
-        </form>
-        
-        <h4 class="eyebrow" style="margin:20px 0 10px;">Lista de compra de cocina</h4>
-        <div class="row-list" id="kitchen-shop-list"></div>
-      </div>
     </div>
   </section>
 

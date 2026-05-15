@@ -795,6 +795,7 @@ const TASK_SUBCATEGORIES = {
     { id: 'desayuno', emoji: '🥐', label: 'Desayuno' },
     { id: 'comida', emoji: '🍝', label: 'Comida' },
     { id: 'cena', emoji: '🌙', label: 'Cena' },
+    { id: 'compra', emoji: '🛒', label: 'Compra' },
     { id: 'ventanas', emoji: '🪟', label: 'Ventanas' },
     { id: 'lavavajillas', emoji: '🍽️', label: 'Lavavajillas' },
     { id: 'lavadora', emoji: '👕', label: 'Poner/Quitar lavadora' },
