@@ -86,6 +86,145 @@ $('theme-toggle')?.addEventListener('click', () => {
   applyTheme(next);
 });
 
+// ── Notificaciones ───────────────────────────────────────
+const NOTIF_KEY = 'cloe-notif-enabled';
+const NOTIF_SENT_KEY = 'cloe-notif-sent';
+const NOTIF_TTL_MS = 6 * 60 * 60 * 1000; // 6h dedup
+
+function notifSupported() { return 'Notification' in window; }
+function notifEnabled() {
+  return notifSupported()
+    && Notification.permission === 'granted'
+    && localStorage.getItem(NOTIF_KEY) === '1';
+}
+
+function paintBell() {
+  const btn = $('notif-toggle');
+  if (!btn) return;
+  if (!notifSupported()) { btn.textContent = '🚫'; btn.title = 'Notificaciones no soportadas'; btn.disabled = true; return; }
+  if (Notification.permission === 'denied') { btn.textContent = '🚫'; btn.title = 'Permiso denegado en el navegador'; return; }
+  btn.textContent = notifEnabled() ? '🔔' : '🔕';
+  btn.title = notifEnabled() ? 'Notificaciones activadas' : 'Activar notificaciones';
+}
+
+async function toggleNotif() {
+  if (!notifSupported()) return;
+  if (Notification.permission === 'denied') {
+    showToast('El navegador ha bloqueado las notificaciones para esta página');
+    return;
+  }
+  if (Notification.permission !== 'granted') {
+    const p = await Notification.requestPermission();
+    if (p !== 'granted') { paintBell(); return; }
+  }
+  const on = localStorage.getItem(NOTIF_KEY) === '1';
+  localStorage.setItem(NOTIF_KEY, on ? '0' : '1');
+  paintBell();
+  if (!on) {
+    new Notification('🥷 CLOE en guardia', { body: 'Te avisaré de eventos, tareas y paseos.', icon: 'Cloe.png' });
+    runNotifChecks();
+  }
+}
+$('notif-toggle')?.addEventListener('click', toggleNotif);
+paintBell();
+
+function loadNotifSent() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(NOTIF_SENT_KEY) || '{}');
+    const now = Date.now();
+    // GC entradas expiradas
+    Object.keys(raw).forEach(k => { if (now - raw[k] > NOTIF_TTL_MS) delete raw[k]; });
+    return raw;
+  } catch { return {}; }
+}
+function markNotifSent(key) {
+  const map = loadNotifSent();
+  map[key] = Date.now();
+  localStorage.setItem(NOTIF_SENT_KEY, JSON.stringify(map));
+}
+function notifyOnce(key, title, body) {
+  if (!notifEnabled()) return;
+  const sent = loadNotifSent();
+  if (sent[key]) return;
+  try { new Notification(title, { body, icon: 'Cloe.png', tag: key }); } catch {}
+  markNotifSent(key);
+}
+
+// Reglas evaluadas cada minuto
+function runNotifChecks() {
+  if (!STATE || !STATE.events) return;
+  const now = new Date();
+  const todayStr = todayISO();
+  const hour = now.getHours();
+
+  // 1. Eventos en los próximos 30 min asignados a mí (o sin asignar)
+  for (const e of STATE.events) {
+    if (e.date !== todayStr || !e.time) continue;
+    if (e.assignee && e.assignee !== me.id) continue;
+    const [h, m] = e.time.split(':').map(Number);
+    const evDate = new Date(now); evDate.setHours(h, m, 0, 0);
+    const diffMin = (evDate - now) / 60000;
+    if (diffMin > 0 && diffMin <= 30) {
+      notifyOnce(`event:${e.id}:${todayStr}`, `📅 En ${Math.round(diffMin)} min: ${e.title}`, `A las ${e.time}`);
+    }
+  }
+
+  // 2. Tareas vencidas asignadas a mí — aviso una vez por día y solo en horario diurno
+  if (hour >= 8 && hour <= 22) {
+    const overdue = STATE.tasks.filter(t =>
+      !t.done && t.assignee === me.id && t.due_date && t.due_date < todayStr
+    );
+    if (overdue.length) {
+      notifyOnce(`overdue:${me.id}:${todayStr}`,
+        `⚔️ ${overdue.length} ${overdue.length === 1 ? 'misión vencida' : 'misiones vencidas'}`,
+        overdue.slice(0, 3).map(t => '• ' + t.title).join('\n'));
+    }
+  }
+
+  // 3. Cloe: sin paseo desde hace > 5h en horario diurno
+  if (hour >= 8 && hour <= 22 && STATE.cloeWalks?.length) {
+    const last = STATE.cloeWalks
+      .map(w => new Date(w.datetime).getTime())
+      .sort((a, b) => b - a)[0];
+    const diffH = (Date.now() - last) / 3600000;
+    if (diffH > 5) {
+      const bucket = Math.floor(diffH); // dedup por hora redondeada para no spamear
+      notifyOnce(`cloe-walk:${todayStr}:${bucket}`, `🐶 Cloe pide paseo`, `Última vuelta hace ${diffH.toFixed(1)}h`);
+    }
+  }
+}
+
+// Tick cada minuto
+setInterval(runNotifChecks, 60_000);
+
+// ── Badges en tabs y título ──────────────────────────────
+function paintBadges() {
+  if (!STATE || !STATE.tasks) return;
+  const todayStr = todayISO();
+  const counts = {
+    hoy: STATE.events.filter(e => e.date === todayStr).length,
+    tareas: STATE.tasks.filter(t => !t.done && t.assignee === me.id && (!t.due_date || t.due_date <= todayStr)).length,
+    compra: STATE.shopping.filter(s => !s.done).length,
+    calendario: STATE.events.filter(e => e.date === todayStr).length,
+  };
+  $$('.tabs > .tab[data-tab]').forEach(tab => {
+    const c = counts[tab.dataset.tab];
+    let badge = tab.querySelector('.tab-badge');
+    if (c && c > 0) {
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'tab-badge';
+        tab.appendChild(badge);
+      }
+      badge.textContent = c > 99 ? '99+' : c;
+    } else if (badge) badge.remove();
+  });
+
+  // Título del documento
+  const total = counts.tareas + counts.hoy;
+  document.title = total > 0 ? `(${total}) CLOE · App` : 'CLOE · App';
+}
+
 // ── Saludo ───────────────────────────────────────────────
 function renderGreeting() {
   const h = new Date().getHours();
@@ -274,6 +413,42 @@ function renderAll() {
   renderUpcomingEvents();
   renderCloe();
   renderStatsPanel();
+  paintBadges();
+  paintCoinBalance();
+  runNotifChecks();
+}
+
+// ── Monedas en el header ─────────────────────────────────
+let _lastCoinBalance = null;
+function paintCoinBalance() {
+  if (!STATE || !STATE.tasks) return;
+  const total = totalCoins(STATE, me.id);
+  const el = $('coin-num');
+  if (!el) return;
+  const prev = _lastCoinBalance;
+  el.textContent = total.toLocaleString('es-ES');
+  if (prev !== null && total > prev) {
+    const delta = total - prev;
+    flyCoin(delta);
+    const chip = $('coin-balance');
+    chip.classList.remove('coin-pop');
+    void chip.offsetWidth;
+    chip.classList.add('coin-pop');
+  }
+  _lastCoinBalance = total;
+}
+
+function flyCoin(delta) {
+  const chip = $('coin-balance');
+  if (!chip) return;
+  const rect = chip.getBoundingClientRect();
+  const float = document.createElement('div');
+  float.className = 'coin-float';
+  float.textContent = `+${delta} 🪙`;
+  float.style.left = (rect.left + rect.width / 2) + 'px';
+  float.style.top = (rect.top + rect.height) + 'px';
+  document.body.appendChild(float);
+  setTimeout(() => float.remove(), 1500);
 }
 
 // ── STATS / RANKING semanal ──────────────────────────────
@@ -314,11 +489,13 @@ function renderStatsPanel() {
     ? ordered.map((x, i) => {
         const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '·';
         const pct = Math.round((x.count / max) * 100);
+        const coins = totalCoins(STATE, x.user.id);
         return `
           <div class="row">
             <span class="row-emoji" style="font-size:20px;">${medal}</span>
             ${avatarHTML(x.user, 'sm')}
             <span class="row-title">${esc(x.user.name)}</span>
+            <span class="coin-chip mini" title="Monedas totales"><span class="coin-icon">🪙</span><span class="coin-num">${coins.toLocaleString('es-ES')}</span></span>
             <div class="stat-bar"><div class="stat-bar-fill" style="width:${pct}%;"></div></div>
             <span class="row-time">${x.count}</span>
           </div>`;
@@ -339,6 +516,87 @@ function renderStatsPanel() {
       <div class="bar-label">${d.label}</div>
     </div>
   `).join('');
+
+  renderTrophies();
+}
+
+// ── Trofeos / premios ────────────────────────────────────
+const TROPHY_KEY = 'cloe-trophies-unlocked';
+function loadUnlockedTrophies() {
+  try { return new Set(JSON.parse(localStorage.getItem(TROPHY_KEY) || '[]')); } catch { return new Set(); }
+}
+function saveUnlockedTrophies(set) {
+  localStorage.setItem(TROPHY_KEY, JSON.stringify([...set]));
+}
+
+function renderTrophies() {
+  const grid = $('trophies-grid');
+  const summary = $('trophies-summary');
+  if (!grid) return;
+
+  const evaluated = TROPHIES.map(tr => {
+    const r = tr.eval(STATE, me.id);
+    const unlocked = r.current >= r.target;
+    return { ...tr, ...r, unlocked, pct: Math.min(100, (r.current / r.target) * 100) };
+  });
+
+  // Detectar nuevos desbloqueos para celebrarlos
+  const previouslyUnlocked = loadUnlockedTrophies();
+  const nowUnlocked = new Set(evaluated.filter(t => t.unlocked).map(t => t.id));
+  const justUnlocked = [...nowUnlocked].filter(id => !previouslyUnlocked.has(id));
+  if (justUnlocked.length) {
+    justUnlocked.forEach(id => {
+      const tr = evaluated.find(t => t.id === id);
+      celebrateTrophy(tr);
+    });
+    saveUnlockedTrophies(nowUnlocked);
+  } else if (nowUnlocked.size !== previouslyUnlocked.size) {
+    saveUnlockedTrophies(nowUnlocked);
+  }
+
+  // Orden: desbloqueados primero, luego por progreso descendente
+  evaluated.sort((a, b) => {
+    if (a.unlocked !== b.unlocked) return a.unlocked ? -1 : 1;
+    return b.pct - a.pct;
+  });
+
+  summary.textContent = `${nowUnlocked.size}/${TROPHIES.length} desbloqueados`;
+  grid.innerHTML = evaluated.map(tr => {
+    const rarity = TROPHY_RARITY[tr.rarity] || TROPHY_RARITY.common;
+    return `
+      <div class="trophy ${tr.unlocked ? 'unlocked' : 'locked'} rarity-${rarity.class}">
+        <div class="trophy-emoji">${tr.emoji}</div>
+        <div class="trophy-name">${esc(tr.name)}</div>
+        <div class="trophy-desc">${esc(tr.desc)}</div>
+        <div class="trophy-bar"><div class="trophy-bar-fill" style="width:${tr.pct}%;"></div></div>
+        <div class="trophy-foot">
+          <span class="trophy-rarity">${rarity.label}</span>
+          <span class="trophy-progress">${Math.min(tr.current, tr.target)}/${tr.target}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function celebrateTrophy(tr) {
+  showToast(`🏆 ¡Trofeo desbloqueado! ${tr.emoji} ${tr.name}`, 4500);
+  if (typeof notifyOnce === 'function') {
+    notifyOnce(`trophy:${tr.id}`, `🏆 ¡Trofeo desbloqueado!`, `${tr.emoji} ${tr.name} — ${tr.desc}`);
+  }
+  // Confetti DOM rápido
+  const burst = document.createElement('div');
+  burst.className = 'trophy-burst';
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('span');
+    p.className = 'confetti';
+    p.style.setProperty('--x', (Math.random() * 360 - 180) + 'px');
+    p.style.setProperty('--y', (Math.random() * -260 - 80) + 'px');
+    p.style.setProperty('--r', (Math.random() * 720 - 360) + 'deg');
+    p.style.background = ['#FF1A4D', '#00F5FF', '#FFD93D', '#B14CFF', '#22F5A5'][i % 5];
+    burst.appendChild(p);
+  }
+  document.body.appendChild(burst);
+  setTimeout(() => burst.remove(), 2200);
 }
 
 // ── Selects de categorías y asignados ────────────────────

@@ -23,7 +23,9 @@
       <a href="admin.html" id="nav-admin" style="display:none;">Admin</a>
     </nav>
     <div class="nav-user">
+      <button class="icon-btn" id="notif-toggle" aria-label="Notificaciones" title="Notificaciones">🔕</button>
       <button class="icon-btn" id="theme-toggle" aria-label="Cambiar tema" title="Modo claro / oscuro">🌙</button>
+      <span class="coin-chip" id="coin-balance" title="Tus monedas"><span class="coin-icon">🪙</span><span class="coin-num" id="coin-num">0</span></span>
       <span id="user-av"></span>
       <span class="nav-name muted" id="user-name">…</span>
       <button class="btn ghost sm" id="logout">Me piro</button>
@@ -232,6 +234,17 @@
 
       <h4 class="eyebrow" style="margin: 24px 0 10px;">Racha de misiones (últimos 7 días)</h4>
       <div id="stats-week-bars" class="stats-bars"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Sala de trofeos 🏆</p>
+          <h3>Premios y logros</h3>
+        </div>
+        <span class="muted" id="trophies-summary">…</span>
+      </div>
+      <div id="trophies-grid" class="trophies-grid"></div>
     </div>
   </section>
 

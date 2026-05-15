@@ -189,6 +189,434 @@ const SUPERMARKET_PRODUCTS = [
   { name: 'Cinta adhesiva', category: 'varios', store: 'mercadona' },
   { name: 'Alambre', category: 'varios', store: 'mercadona' },
   { name: 'Cuerda', category: 'varios', store: 'mercadona' },
+
+  // ── Mercadona ampliado ─────────────────────────────────
+  // Lácteos extra
+  { name: 'Leche desnatada', category: 'lácteos', store: 'mercadona' },
+  { name: 'Leche sin lactosa', category: 'lácteos', store: 'mercadona' },
+  { name: 'Bebida soja', category: 'lácteos', store: 'mercadona' },
+  { name: 'Bebida avena', category: 'lácteos', store: 'mercadona' },
+  { name: 'Bebida almendra', category: 'lácteos', store: 'mercadona' },
+  { name: 'Bebida coco', category: 'lácteos', store: 'mercadona' },
+  { name: 'Yogur desnatado', category: 'lácteos', store: 'mercadona' },
+  { name: 'Yogur proteínas', category: 'lácteos', store: 'mercadona' },
+  { name: 'Skyr', category: 'lácteos', store: 'mercadona' },
+  { name: 'Yogur líquido', category: 'lácteos', store: 'mercadona' },
+  { name: 'Actimel', category: 'lácteos', store: 'mercadona' },
+  { name: 'Petit Suisse', category: 'lácteos', store: 'mercadona' },
+  { name: 'Natillas', category: 'lácteos', store: 'mercadona' },
+  { name: 'Flan', category: 'lácteos', store: 'mercadona' },
+  { name: 'Arroz con leche', category: 'lácteos', store: 'mercadona' },
+  { name: 'Queso rallado', category: 'lácteos', store: 'mercadona' },
+  { name: 'Queso feta', category: 'lácteos', store: 'mercadona' },
+  { name: 'Queso mozzarella', category: 'lácteos', store: 'mercadona' },
+  { name: 'Queso brie', category: 'lácteos', store: 'mercadona' },
+  { name: 'Queso azul', category: 'lácteos', store: 'mercadona' },
+  { name: 'Queso de cabra', category: 'lácteos', store: 'mercadona' },
+  { name: 'Queso burgos', category: 'lácteos', store: 'mercadona' },
+  { name: 'Queso emmental', category: 'lácteos', store: 'mercadona' },
+  { name: 'Queso havarti', category: 'lácteos', store: 'mercadona' },
+  { name: 'Queso parmesano', category: 'lácteos', store: 'mercadona' },
+  { name: 'Quesitos', category: 'lácteos', store: 'mercadona' },
+  { name: 'Crema de queso', category: 'lácteos', store: 'mercadona' },
+  { name: 'Mascarpone', category: 'lácteos', store: 'mercadona' },
+  { name: 'Margarina', category: 'lácteos', store: 'mercadona' },
+  { name: 'Huevos M', category: 'lácteos', store: 'mercadona' },
+  { name: 'Huevos L', category: 'lácteos', store: 'mercadona' },
+  { name: 'Huevos camperos', category: 'lácteos', store: 'mercadona' },
+  { name: 'Huevos ecológicos', category: 'lácteos', store: 'mercadona' },
+
+  // Fruta extra
+  { name: 'Limones', category: 'fruta', store: 'mercadona' },
+  { name: 'Mandarinas', category: 'fruta', store: 'mercadona' },
+  { name: 'Cerezas', category: 'fruta', store: 'mercadona' },
+  { name: 'Albaricoques', category: 'fruta', store: 'mercadona' },
+  { name: 'Ciruelas', category: 'fruta', store: 'mercadona' },
+  { name: 'Higos', category: 'fruta', store: 'mercadona' },
+  { name: 'Granada', category: 'fruta', store: 'mercadona' },
+  { name: 'Mango', category: 'fruta', store: 'mercadona' },
+  { name: 'Papaya', category: 'fruta', store: 'mercadona' },
+  { name: 'Coco', category: 'fruta', store: 'mercadona' },
+  { name: 'Nectarinas', category: 'fruta', store: 'mercadona' },
+  { name: 'Paraguayos', category: 'fruta', store: 'mercadona' },
+  { name: 'Frambuesas', category: 'fruta', store: 'mercadona' },
+  { name: 'Arándanos', category: 'fruta', store: 'mercadona' },
+  { name: 'Moras', category: 'fruta', store: 'mercadona' },
+  { name: 'Pomelo', category: 'fruta', store: 'mercadona' },
+  { name: 'Caqui', category: 'fruta', store: 'mercadona' },
+  { name: 'Chirimoya', category: 'fruta', store: 'mercadona' },
+  { name: 'Frutos rojos congelados', category: 'fruta', store: 'mercadona' },
+
+  // Verdura extra
+  { name: 'Apio', category: 'verdura', store: 'mercadona' },
+  { name: 'Puerro', category: 'verdura', store: 'mercadona' },
+  { name: 'Coliflor', category: 'verdura', store: 'mercadona' },
+  { name: 'Repollo', category: 'verdura', store: 'mercadona' },
+  { name: 'Col lombarda', category: 'verdura', store: 'mercadona' },
+  { name: 'Coles de bruselas', category: 'verdura', store: 'mercadona' },
+  { name: 'Acelgas', category: 'verdura', store: 'mercadona' },
+  { name: 'Rúcula', category: 'verdura', store: 'mercadona' },
+  { name: 'Canónigos', category: 'verdura', store: 'mercadona' },
+  { name: 'Espárragos', category: 'verdura', store: 'mercadona' },
+  { name: 'Maíz', category: 'verdura', store: 'mercadona' },
+  { name: 'Guisantes', category: 'verdura', store: 'mercadona' },
+  { name: 'Habas', category: 'verdura', store: 'mercadona' },
+  { name: 'Judías verdes', category: 'verdura', store: 'mercadona' },
+  { name: 'Alcachofas', category: 'verdura', store: 'mercadona' },
+  { name: 'Setas variadas', category: 'verdura', store: 'mercadona' },
+  { name: 'Boniato', category: 'verdura', store: 'mercadona' },
+  { name: 'Remolacha', category: 'verdura', store: 'mercadona' },
+  { name: 'Rabanitos', category: 'verdura', store: 'mercadona' },
+  { name: 'Calabaza', category: 'verdura', store: 'mercadona' },
+  { name: 'Jengibre', category: 'verdura', store: 'mercadona' },
+  { name: 'Perejil', category: 'verdura', store: 'mercadona' },
+  { name: 'Cilantro', category: 'verdura', store: 'mercadona' },
+  { name: 'Albahaca', category: 'verdura', store: 'mercadona' },
+  { name: 'Menta', category: 'verdura', store: 'mercadona' },
+  { name: 'Aceitunas verdes', category: 'verdura', store: 'mercadona' },
+  { name: 'Aceitunas negras', category: 'verdura', store: 'mercadona' },
+  { name: 'Pepinillos', category: 'verdura', store: 'mercadona' },
+
+  // Carne y pescado extra
+  { name: 'Muslos pollo', category: 'carne', store: 'mercadona' },
+  { name: 'Alitas pollo', category: 'carne', store: 'mercadona' },
+  { name: 'Pollo entero', category: 'carne', store: 'mercadona' },
+  { name: 'Pavo fileteado', category: 'carne', store: 'mercadona' },
+  { name: 'Solomillo cerdo', category: 'carne', store: 'mercadona' },
+  { name: 'Lomo cerdo', category: 'carne', store: 'mercadona' },
+  { name: 'Costillas', category: 'carne', store: 'mercadona' },
+  { name: 'Hamburguesas ternera', category: 'carne', store: 'mercadona' },
+  { name: 'Hamburguesas pollo', category: 'carne', store: 'mercadona' },
+  { name: 'Hamburguesas vegetales', category: 'carne', store: 'mercadona' },
+  { name: 'Albóndigas', category: 'carne', store: 'mercadona' },
+  { name: 'San Jacobos', category: 'carne', store: 'mercadona' },
+  { name: 'Nuggets pollo', category: 'carne', store: 'mercadona' },
+  { name: 'Bacon', category: 'carne', store: 'mercadona' },
+  { name: 'Panceta', category: 'carne', store: 'mercadona' },
+  { name: 'Chistorra', category: 'carne', store: 'mercadona' },
+  { name: 'Morcilla', category: 'carne', store: 'mercadona' },
+  { name: 'Lacón', category: 'carne', store: 'mercadona' },
+  { name: 'Pavo cocido', category: 'carne', store: 'mercadona' },
+  { name: 'Salami', category: 'carne', store: 'mercadona' },
+  { name: 'Mortadela', category: 'carne', store: 'mercadona' },
+  { name: 'Fuet', category: 'carne', store: 'mercadona' },
+  { name: 'Bacalao', category: 'carne', store: 'mercadona' },
+  { name: 'Lubina', category: 'carne', store: 'mercadona' },
+  { name: 'Dorada', category: 'carne', store: 'mercadona' },
+  { name: 'Atún fresco', category: 'carne', store: 'mercadona' },
+  { name: 'Trucha', category: 'carne', store: 'mercadona' },
+  { name: 'Boquerones', category: 'carne', store: 'mercadona' },
+  { name: 'Anchoas', category: 'carne', store: 'mercadona' },
+  { name: 'Pulpo', category: 'carne', store: 'mercadona' },
+  { name: 'Calamares', category: 'carne', store: 'mercadona' },
+  { name: 'Mejillones', category: 'carne', store: 'mercadona' },
+  { name: 'Almejas', category: 'carne', store: 'mercadona' },
+  { name: 'Langostinos', category: 'carne', store: 'mercadona' },
+  { name: 'Surimi', category: 'carne', store: 'mercadona' },
+  { name: 'Palitos de cangrejo', category: 'carne', store: 'mercadona' },
+  { name: 'Caballa en lata', category: 'carne', store: 'mercadona' },
+  { name: 'Bonito en lata', category: 'carne', store: 'mercadona' },
+  { name: 'Ventresca atún', category: 'carne', store: 'mercadona' },
+  { name: 'Berberechos', category: 'carne', store: 'mercadona' },
+  { name: 'Tofu', category: 'carne', store: 'mercadona' },
+  { name: 'Seitan', category: 'carne', store: 'mercadona' },
+  { name: 'Salchichas vegetales', category: 'carne', store: 'mercadona' },
+
+  // Panadería y bollería extra
+  { name: 'Pan rústico', category: 'panadería', store: 'mercadona' },
+  { name: 'Pan brioche', category: 'panadería', store: 'mercadona' },
+  { name: 'Pan hamburguesa', category: 'panadería', store: 'mercadona' },
+  { name: 'Pan hot dog', category: 'panadería', store: 'mercadona' },
+  { name: 'Pan pita', category: 'panadería', store: 'mercadona' },
+  { name: 'Pan bao', category: 'panadería', store: 'mercadona' },
+  { name: 'Wraps', category: 'panadería', store: 'mercadona' },
+  { name: 'Tortillas trigo', category: 'panadería', store: 'mercadona' },
+  { name: 'Tortillas maíz', category: 'panadería', store: 'mercadona' },
+  { name: 'Pan rallado', category: 'panadería', store: 'mercadona' },
+  { name: 'Picos', category: 'panadería', store: 'mercadona' },
+  { name: 'Regañás', category: 'panadería', store: 'mercadona' },
+  { name: 'Bizcocho', category: 'panadería', store: 'mercadona' },
+  { name: 'Sobaos', category: 'panadería', store: 'mercadona' },
+  { name: 'Napolitanas chocolate', category: 'panadería', store: 'mercadona' },
+  { name: 'Ensaimadas', category: 'panadería', store: 'mercadona' },
+  { name: 'Bollos suizos', category: 'panadería', store: 'mercadona' },
+  { name: 'Roscón', category: 'panadería', store: 'mercadona' },
+  { name: 'Tarta santiago', category: 'panadería', store: 'mercadona' },
+  { name: 'Empanada', category: 'panadería', store: 'mercadona' },
+  { name: 'Pizza fresca', category: 'panadería', store: 'mercadona' },
+  { name: 'Masa pizza', category: 'panadería', store: 'mercadona' },
+  { name: 'Masa hojaldre', category: 'panadería', store: 'mercadona' },
+  { name: 'Masa quebrada', category: 'panadería', store: 'mercadona' },
+  { name: 'Masa filo', category: 'panadería', store: 'mercadona' },
+
+  // Despensa extra (incluye bebidas, conservas, snacks, dulces, congelados, salsas, especias)
+  { name: 'Macarrones', category: 'despensa', store: 'mercadona' },
+  { name: 'Espaguetis', category: 'despensa', store: 'mercadona' },
+  { name: 'Tallarines', category: 'despensa', store: 'mercadona' },
+  { name: 'Lasaña placas', category: 'despensa', store: 'mercadona' },
+  { name: 'Canelones placas', category: 'despensa', store: 'mercadona' },
+  { name: 'Tortellini', category: 'despensa', store: 'mercadona' },
+  { name: 'Ravioli', category: 'despensa', store: 'mercadona' },
+  { name: 'Ñoquis', category: 'despensa', store: 'mercadona' },
+  { name: 'Cuscús', category: 'despensa', store: 'mercadona' },
+  { name: 'Quinoa', category: 'despensa', store: 'mercadona' },
+  { name: 'Bulgur', category: 'despensa', store: 'mercadona' },
+  { name: 'Avena copos', category: 'despensa', store: 'mercadona' },
+  { name: 'Arroz integral', category: 'despensa', store: 'mercadona' },
+  { name: 'Arroz basmati', category: 'despensa', store: 'mercadona' },
+  { name: 'Arroz redondo', category: 'despensa', store: 'mercadona' },
+  { name: 'Arroz bomba', category: 'despensa', store: 'mercadona' },
+  { name: 'Aceite girasol', category: 'despensa', store: 'mercadona' },
+  { name: 'Aceite virgen extra', category: 'despensa', store: 'mercadona' },
+  { name: 'Vinagre módena', category: 'despensa', store: 'mercadona' },
+  { name: 'Vinagre manzana', category: 'despensa', store: 'mercadona' },
+  { name: 'Pimienta', category: 'despensa', store: 'mercadona' },
+  { name: 'Pimentón', category: 'despensa', store: 'mercadona' },
+  { name: 'Comino', category: 'despensa', store: 'mercadona' },
+  { name: 'Curry', category: 'despensa', store: 'mercadona' },
+  { name: 'Orégano', category: 'despensa', store: 'mercadona' },
+  { name: 'Romero', category: 'despensa', store: 'mercadona' },
+  { name: 'Tomillo', category: 'despensa', store: 'mercadona' },
+  { name: 'Laurel', category: 'despensa', store: 'mercadona' },
+  { name: 'Canela', category: 'despensa', store: 'mercadona' },
+  { name: 'Azafrán', category: 'despensa', store: 'mercadona' },
+  { name: 'Colorante', category: 'despensa', store: 'mercadona' },
+  { name: 'Levadura', category: 'despensa', store: 'mercadona' },
+  { name: 'Harina', category: 'despensa', store: 'mercadona' },
+  { name: 'Harina integral', category: 'despensa', store: 'mercadona' },
+  { name: 'Harina avena', category: 'despensa', store: 'mercadona' },
+  { name: 'Harina almendra', category: 'despensa', store: 'mercadona' },
+  { name: 'Maicena', category: 'despensa', store: 'mercadona' },
+  { name: 'Bicarbonato', category: 'despensa', store: 'mercadona' },
+  { name: 'Cacao puro', category: 'despensa', store: 'mercadona' },
+  { name: 'Chocolate negro', category: 'despensa', store: 'mercadona' },
+  { name: 'Chocolate con leche', category: 'despensa', store: 'mercadona' },
+  { name: 'Chocolate blanco', category: 'despensa', store: 'mercadona' },
+  { name: 'Crema cacao', category: 'despensa', store: 'mercadona' },
+  { name: 'Mantequilla cacahuete', category: 'despensa', store: 'mercadona' },
+  { name: 'Sirope arce', category: 'despensa', store: 'mercadona' },
+  { name: 'Salsa pesto', category: 'despensa', store: 'mercadona' },
+  { name: 'Salsa carbonara', category: 'despensa', store: 'mercadona' },
+  { name: 'Salsa boloñesa', category: 'despensa', store: 'mercadona' },
+  { name: 'Salsa barbacoa', category: 'despensa', store: 'mercadona' },
+  { name: 'Salsa brava', category: 'despensa', store: 'mercadona' },
+  { name: 'Salsa rosa', category: 'despensa', store: 'mercadona' },
+  { name: 'Salsa césar', category: 'despensa', store: 'mercadona' },
+  { name: 'Salsa soja', category: 'despensa', store: 'mercadona' },
+  { name: 'Salsa teriyaki', category: 'despensa', store: 'mercadona' },
+  { name: 'Salsa picante', category: 'despensa', store: 'mercadona' },
+  { name: 'Wasabi', category: 'despensa', store: 'mercadona' },
+  { name: 'Tabasco', category: 'despensa', store: 'mercadona' },
+  { name: 'Mayonesa', category: 'despensa', store: 'mercadona' },
+  { name: 'Ketchup', category: 'despensa', store: 'mercadona' },
+  { name: 'Mostaza', category: 'despensa', store: 'mercadona' },
+  { name: 'Caldo pollo', category: 'despensa', store: 'mercadona' },
+  { name: 'Caldo verduras', category: 'despensa', store: 'mercadona' },
+  { name: 'Caldo pescado', category: 'despensa', store: 'mercadona' },
+  { name: 'Sopa fideos', category: 'despensa', store: 'mercadona' },
+  { name: 'Crema calabaza', category: 'despensa', store: 'mercadona' },
+  { name: 'Gazpacho', category: 'despensa', store: 'mercadona' },
+  { name: 'Salmorejo', category: 'despensa', store: 'mercadona' },
+  { name: 'Hummus', category: 'despensa', store: 'mercadona' },
+  { name: 'Guacamole', category: 'despensa', store: 'mercadona' },
+  { name: 'Patatas fritas bolsa', category: 'despensa', store: 'mercadona' },
+  { name: 'Doritos', category: 'despensa', store: 'mercadona' },
+  { name: 'Pretzels', category: 'despensa', store: 'mercadona' },
+  { name: 'Palomitas', category: 'despensa', store: 'mercadona' },
+  { name: 'Cacahuetes', category: 'despensa', store: 'mercadona' },
+  { name: 'Almendras', category: 'despensa', store: 'mercadona' },
+  { name: 'Nueces', category: 'despensa', store: 'mercadona' },
+  { name: 'Pistachos', category: 'despensa', store: 'mercadona' },
+  { name: 'Anacardos', category: 'despensa', store: 'mercadona' },
+  { name: 'Pasas', category: 'despensa', store: 'mercadona' },
+  { name: 'Dátiles', category: 'despensa', store: 'mercadona' },
+  { name: 'Orejones', category: 'despensa', store: 'mercadona' },
+  { name: 'Pipas', category: 'despensa', store: 'mercadona' },
+  { name: 'Galletas maría', category: 'despensa', store: 'mercadona' },
+  { name: 'Galletas chocolate', category: 'despensa', store: 'mercadona' },
+  { name: 'Galletas avena', category: 'despensa', store: 'mercadona' },
+  { name: 'Tortitas arroz', category: 'despensa', store: 'mercadona' },
+  { name: 'Barritas energéticas', category: 'despensa', store: 'mercadona' },
+  { name: 'Barritas cereales', category: 'despensa', store: 'mercadona' },
+  { name: 'Helado vainilla', category: 'despensa', store: 'mercadona' },
+  { name: 'Helado chocolate', category: 'despensa', store: 'mercadona' },
+  { name: 'Helado fresa', category: 'despensa', store: 'mercadona' },
+  { name: 'Conos helado', category: 'despensa', store: 'mercadona' },
+  { name: 'Polos', category: 'despensa', store: 'mercadona' },
+  { name: 'Verdura congelada', category: 'despensa', store: 'mercadona' },
+  { name: 'Patatas congeladas', category: 'despensa', store: 'mercadona' },
+  { name: 'Pizza congelada', category: 'despensa', store: 'mercadona' },
+  { name: 'Croquetas', category: 'despensa', store: 'mercadona' },
+  { name: 'Empanadillas congeladas', category: 'despensa', store: 'mercadona' },
+  { name: 'Lentejas en bote', category: 'despensa', store: 'mercadona' },
+  { name: 'Garbanzos en bote', category: 'despensa', store: 'mercadona' },
+  { name: 'Alubias en bote', category: 'despensa', store: 'mercadona' },
+  { name: 'Maíz en lata', category: 'despensa', store: 'mercadona' },
+  { name: 'Champiñones en lata', category: 'despensa', store: 'mercadona' },
+  { name: 'Pimientos del piquillo', category: 'despensa', store: 'mercadona' },
+  { name: 'Espárragos en lata', category: 'despensa', store: 'mercadona' },
+  { name: 'Alcaparras', category: 'despensa', store: 'mercadona' },
+  { name: 'Tomate triturado', category: 'despensa', store: 'mercadona' },
+  { name: 'Tomate concentrado', category: 'despensa', store: 'mercadona' },
+  { name: 'Tomate seco', category: 'despensa', store: 'mercadona' },
+  { name: 'Foie gras', category: 'despensa', store: 'mercadona' },
+  { name: 'Paté ibérico', category: 'despensa', store: 'mercadona' },
+  { name: 'Agua mineral', category: 'despensa', store: 'mercadona' },
+  { name: 'Agua con gas', category: 'despensa', store: 'mercadona' },
+  { name: 'Coca-Cola', category: 'despensa', store: 'mercadona' },
+  { name: 'Coca-Cola Zero', category: 'despensa', store: 'mercadona' },
+  { name: 'Fanta naranja', category: 'despensa', store: 'mercadona' },
+  { name: 'Aquarius', category: 'despensa', store: 'mercadona' },
+  { name: 'Tónica', category: 'despensa', store: 'mercadona' },
+  { name: 'Cerveza', category: 'despensa', store: 'mercadona' },
+  { name: 'Cerveza sin alcohol', category: 'despensa', store: 'mercadona' },
+  { name: 'Vino tinto', category: 'despensa', store: 'mercadona' },
+  { name: 'Vino blanco', category: 'despensa', store: 'mercadona' },
+  { name: 'Vino rosado', category: 'despensa', store: 'mercadona' },
+  { name: 'Cava', category: 'despensa', store: 'mercadona' },
+  { name: 'Sidra', category: 'despensa', store: 'mercadona' },
+  { name: 'Vermut', category: 'despensa', store: 'mercadona' },
+  { name: 'Ron', category: 'despensa', store: 'mercadona' },
+  { name: 'Ginebra', category: 'despensa', store: 'mercadona' },
+  { name: 'Vodka', category: 'despensa', store: 'mercadona' },
+  { name: 'Whisky', category: 'despensa', store: 'mercadona' },
+  { name: 'Zumo naranja', category: 'despensa', store: 'mercadona' },
+  { name: 'Zumo manzana', category: 'despensa', store: 'mercadona' },
+  { name: 'Zumo piña', category: 'despensa', store: 'mercadona' },
+  { name: 'Zumo melocotón', category: 'despensa', store: 'mercadona' },
+  { name: 'Néctar multifrutas', category: 'despensa', store: 'mercadona' },
+  { name: 'Bebida isotónica', category: 'despensa', store: 'mercadona' },
+  { name: 'Café cápsulas', category: 'despensa', store: 'mercadona' },
+  { name: 'Café molido', category: 'despensa', store: 'mercadona' },
+  { name: 'Café soluble', category: 'despensa', store: 'mercadona' },
+  { name: 'Té verde', category: 'despensa', store: 'mercadona' },
+  { name: 'Té negro', category: 'despensa', store: 'mercadona' },
+  { name: 'Manzanilla', category: 'despensa', store: 'mercadona' },
+  { name: 'Tila', category: 'despensa', store: 'mercadona' },
+  { name: 'Poleo menta', category: 'despensa', store: 'mercadona' },
+  { name: 'Caramelos', category: 'despensa', store: 'mercadona' },
+  { name: 'Chicles', category: 'despensa', store: 'mercadona' },
+  { name: 'Gominolas', category: 'despensa', store: 'mercadona' },
+  { name: 'Regaliz', category: 'despensa', store: 'mercadona' },
+  { name: 'Bombones', category: 'despensa', store: 'mercadona' },
+  { name: 'Turrón', category: 'despensa', store: 'mercadona' },
+  { name: 'Polvorones', category: 'despensa', store: 'mercadona' },
+  { name: 'Kinder', category: 'despensa', store: 'mercadona' },
+  { name: 'Snickers', category: 'despensa', store: 'mercadona' },
+  { name: 'KitKat', category: 'despensa', store: 'mercadona' },
+  { name: 'Oreo', category: 'despensa', store: 'mercadona' },
+  { name: 'Filipinos', category: 'despensa', store: 'mercadona' },
+  { name: 'Nocilla', category: 'despensa', store: 'mercadona' },
+  { name: 'Nutella', category: 'despensa', store: 'mercadona' },
+  { name: 'Sushi', category: 'despensa', store: 'mercadona' },
+  { name: 'Salsa de tomate frito', category: 'despensa', store: 'mercadona' },
+
+  // Hogar extra
+  { name: 'Detergente cápsulas', category: 'hogar', store: 'mercadona' },
+  { name: 'Detergente líquido', category: 'hogar', store: 'mercadona' },
+  { name: 'Quitamanchas', category: 'hogar', store: 'mercadona' },
+  { name: 'Estropajos', category: 'hogar', store: 'mercadona' },
+  { name: 'Bayetas', category: 'hogar', store: 'mercadona' },
+  { name: 'Mopa', category: 'hogar', store: 'mercadona' },
+  { name: 'Recambio mopa', category: 'hogar', store: 'mercadona' },
+  { name: 'Fregona', category: 'hogar', store: 'mercadona' },
+  { name: 'Cubo fregona', category: 'hogar', store: 'mercadona' },
+  { name: 'Escoba', category: 'hogar', store: 'mercadona' },
+  { name: 'Recogedor', category: 'hogar', store: 'mercadona' },
+  { name: 'Guantes limpieza', category: 'hogar', store: 'mercadona' },
+  { name: 'Limpiador suelos', category: 'hogar', store: 'mercadona' },
+  { name: 'Limpiador baño', category: 'hogar', store: 'mercadona' },
+  { name: 'Antical', category: 'hogar', store: 'mercadona' },
+  { name: 'Limpia hornos', category: 'hogar', store: 'mercadona' },
+  { name: 'Insecticida', category: 'hogar', store: 'mercadona' },
+  { name: 'Polvo lavavajillas', category: 'hogar', store: 'mercadona' },
+  { name: 'Abrillantador', category: 'hogar', store: 'mercadona' },
+  { name: 'Papel film', category: 'hogar', store: 'mercadona' },
+  { name: 'Papel aluminio', category: 'hogar', store: 'mercadona' },
+  { name: 'Bolsas congelar', category: 'hogar', store: 'mercadona' },
+  { name: 'Bolsas zip', category: 'hogar', store: 'mercadona' },
+  { name: 'Papel horno', category: 'hogar', store: 'mercadona' },
+  { name: 'Cápsulas café vacías', category: 'hogar', store: 'mercadona' },
+  { name: 'Velas perfumadas', category: 'hogar', store: 'mercadona' },
+  { name: 'Friegasuelos', category: 'hogar', store: 'mercadona' },
+  { name: 'Friegamuebles', category: 'hogar', store: 'mercadona' },
+  { name: 'Spray multiusos', category: 'hogar', store: 'mercadona' },
+  { name: 'Pastillas WC', category: 'hogar', store: 'mercadona' },
+  { name: 'Cerillas', category: 'hogar', store: 'mercadona' },
+
+  // Mascota extra
+  { name: 'Pienso cachorro', category: 'mascota', store: 'mercadona' },
+  { name: 'Pienso senior', category: 'mascota', store: 'mercadona' },
+  { name: 'Bolsas caca perro', category: 'mascota', store: 'mercadona' },
+  { name: 'Champú perro', category: 'mascota', store: 'mercadona' },
+  { name: 'Antipulgas', category: 'mascota', store: 'mercadona' },
+  { name: 'Juguete perro', category: 'mascota', store: 'mercadona' },
+  { name: 'Hueso roer', category: 'mascota', store: 'mercadona' },
+  { name: 'Galletas perro', category: 'mascota', store: 'mercadona' },
+  { name: 'Empapadores perro', category: 'mascota', store: 'mercadona' },
+
+  // Higiene / cuidado personal (varios)
+  { name: 'Champú', category: 'varios', store: 'mercadona' },
+  { name: 'Acondicionador', category: 'varios', store: 'mercadona' },
+  { name: 'Mascarilla pelo', category: 'varios', store: 'mercadona' },
+  { name: 'Espuma afeitar', category: 'varios', store: 'mercadona' },
+  { name: 'Cuchillas afeitar', category: 'varios', store: 'mercadona' },
+  { name: 'After shave', category: 'varios', store: 'mercadona' },
+  { name: 'Gel manos', category: 'varios', store: 'mercadona' },
+  { name: 'Crema manos', category: 'varios', store: 'mercadona' },
+  { name: 'Crema corporal', category: 'varios', store: 'mercadona' },
+  { name: 'Crema cara', category: 'varios', store: 'mercadona' },
+  { name: 'Sérum', category: 'varios', store: 'mercadona' },
+  { name: 'Limpiador facial', category: 'varios', store: 'mercadona' },
+  { name: 'Tónico facial', category: 'varios', store: 'mercadona' },
+  { name: 'Mascarilla facial', category: 'varios', store: 'mercadona' },
+  { name: 'Discos desmaquillantes', category: 'varios', store: 'mercadona' },
+  { name: 'Quitaesmalte', category: 'varios', store: 'mercadona' },
+  { name: 'Esmalte uñas', category: 'varios', store: 'mercadona' },
+  { name: 'Cortauñas', category: 'varios', store: 'mercadona' },
+  { name: 'Maquinilla pelo', category: 'varios', store: 'mercadona' },
+  { name: 'Tinte pelo', category: 'varios', store: 'mercadona' },
+  { name: 'Laca', category: 'varios', store: 'mercadona' },
+  { name: 'Espuma peinar', category: 'varios', store: 'mercadona' },
+  { name: 'Cera peinar', category: 'varios', store: 'mercadona' },
+  { name: 'Enjuague bucal', category: 'varios', store: 'mercadona' },
+  { name: 'Hilo dental', category: 'varios', store: 'mercadona' },
+  { name: 'Protector solar SPF50', category: 'varios', store: 'mercadona' },
+  { name: 'After sun', category: 'varios', store: 'mercadona' },
+  { name: 'Repelente mosquitos', category: 'varios', store: 'mercadona' },
+  { name: 'Tiritas', category: 'varios', store: 'mercadona' },
+  { name: 'Termómetro', category: 'varios', store: 'mercadona' },
+  { name: 'Paracetamol', category: 'varios', store: 'mercadona' },
+  { name: 'Ibuprofeno', category: 'varios', store: 'mercadona' },
+  { name: 'Suero fisiológico', category: 'varios', store: 'mercadona' },
+  { name: 'Alcohol', category: 'varios', store: 'mercadona' },
+  { name: 'Agua oxigenada', category: 'varios', store: 'mercadona' },
+  { name: 'Vitamina C', category: 'varios', store: 'mercadona' },
+  { name: 'Multivitamínico', category: 'varios', store: 'mercadona' },
+  { name: 'Pañales talla 1', category: 'varios', store: 'mercadona' },
+  { name: 'Pañales talla 2', category: 'varios', store: 'mercadona' },
+  { name: 'Pañales talla 3', category: 'varios', store: 'mercadona' },
+  { name: 'Pañales talla 4', category: 'varios', store: 'mercadona' },
+  { name: 'Toallitas bebé', category: 'varios', store: 'mercadona' },
+  { name: 'Crema pañal', category: 'varios', store: 'mercadona' },
+  { name: 'Leche fórmula', category: 'varios', store: 'mercadona' },
+  { name: 'Potitos', category: 'varios', store: 'mercadona' },
+  { name: 'Cereales bebé', category: 'varios', store: 'mercadona' },
+  { name: 'Chupete', category: 'varios', store: 'mercadona' },
+  { name: 'Biberón', category: 'varios', store: 'mercadona' },
+  { name: 'Pilas AA', category: 'varios', store: 'mercadona' },
+  { name: 'Pilas AAA', category: 'varios', store: 'mercadona' },
+  { name: 'Pila botón', category: 'varios', store: 'mercadona' },
+  { name: 'Cargador móvil', category: 'varios', store: 'mercadona' },
+  { name: 'Auriculares', category: 'varios', store: 'mercadona' },
+
+  // Plantas
+  { name: 'Tierra plantas', category: 'plantas', store: 'mercadona' },
+  { name: 'Maceta', category: 'plantas', store: 'mercadona' },
+  { name: 'Plato maceta', category: 'plantas', store: 'mercadona' },
+  { name: 'Abono plantas', category: 'plantas', store: 'mercadona' },
+  { name: 'Semillas', category: 'plantas', store: 'mercadona' },
+
   // Dia
   { name: 'Leche', category: 'lácteos', store: 'dia' },
   { name: 'Yogures', category: 'lácteos', store: 'dia' },
@@ -776,16 +1204,38 @@ const TASK_SUBCATEGORIES = {
     { id: 'mesa', emoji: '🍽️', label: 'Poner/Quitar mesa' },
   ],
   'habitat-sandra': [
+    { id: 'cama', emoji: '🛏️', label: 'Hacer la cama' },
+    { id: 'juguetes', emoji: '🧸', label: 'Recoger juguetes' },
+    { id: 'mochila', emoji: '🎒', label: 'Preparar mochila' },
+    { id: 'dientes', emoji: '🦷', label: 'Lavarse los dientes' },
+    { id: 'ducha', emoji: '🚿', label: 'Ducharse' },
+    { id: 'lectura', emoji: '📚', label: 'Leer un rato' },
+    { id: 'deberes', emoji: '✏️', label: 'Hacer deberes' },
+    { id: 'ropa', emoji: '👕', label: 'Recoger ropa' },
     { id: 'limpieza', emoji: '🧽', label: 'Limpieza' },
     { id: 'polvo', emoji: '✨', label: 'Polvo' },
     { id: 'ventanas', emoji: '🪟', label: 'Ventanas' },
   ],
   'habitat-jorge': [
+    { id: 'cama', emoji: '🛏️', label: 'Hacer la cama' },
+    { id: 'juguetes', emoji: '🧸', label: 'Recoger juguetes' },
+    { id: 'mochila', emoji: '🎒', label: 'Preparar mochila' },
+    { id: 'dientes', emoji: '🦷', label: 'Lavarse los dientes' },
+    { id: 'ducha', emoji: '🚿', label: 'Ducharse' },
+    { id: 'lectura', emoji: '📚', label: 'Leer un rato' },
+    { id: 'deberes', emoji: '✏️', label: 'Hacer deberes' },
+    { id: 'ropa', emoji: '👕', label: 'Recoger ropa' },
     { id: 'limpieza', emoji: '🧽', label: 'Limpieza' },
     { id: 'polvo', emoji: '✨', label: 'Polvo' },
     { id: 'ventanas', emoji: '🪟', label: 'Ventanas' },
   ],
   'habitat-lucas': [
+    { id: 'cama', emoji: '🛏️', label: 'Hacer la cama' },
+    { id: 'juguetes', emoji: '🧸', label: 'Recoger juguetes' },
+    { id: 'biberón', emoji: '🍼', label: 'Biberón' },
+    { id: 'pañal', emoji: '👶', label: 'Cambiar pañal' },
+    { id: 'baño', emoji: '🛁', label: 'Bañito' },
+    { id: 'cuento', emoji: '📖', label: 'Cuento antes de dormir' },
     { id: 'limpieza', emoji: '🧽', label: 'Limpieza' },
     { id: 'polvo', emoji: '✨', label: 'Polvo' },
     { id: 'ventanas', emoji: '🪟', label: 'Ventanas' },
@@ -913,3 +1363,239 @@ function showToast(msg, ms = 2200) {
   clearTimeout(el._t);
   el._t = setTimeout(() => el.classList.add('hidden'), ms);
 }
+
+// ═══════════════ TROFEOS / LOGROS ═══════════════
+// Cada trofeo recibe (state, userId) y devuelve { current, target }
+// 'unlocked' se calcula como current >= target
+const TROPHIES = [
+  // ── Tareas (común → mítico) ───────────────────────────
+  { id: 'first-task', emoji: '🎯', name: 'Primer paso', desc: 'Completa tu primera misión.', rarity: 'common',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid).length, target: 1 }) },
+  { id: 'tasks-10', emoji: '✅', name: 'Calentando motores', desc: '10 misiones completadas.', rarity: 'common',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid).length, target: 10 }) },
+  { id: 'tasks-50', emoji: '⚡', name: 'Máquina', desc: '50 misiones completadas.', rarity: 'rare',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid).length, target: 50 }) },
+  { id: 'tasks-100', emoji: '💯', name: 'Centena gloriosa', desc: '100 misiones a tus espaldas.', rarity: 'epic',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid).length, target: 100 }) },
+  { id: 'tasks-500', emoji: '🏆', name: 'Quinientos finos', desc: '500 misiones. Leyenda en pijama.', rarity: 'legendary',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid).length, target: 500 }) },
+  { id: 'tasks-1000', emoji: '👑', name: 'Mil veces héroe', desc: '1000 misiones. Estatua merecida.', rarity: 'mythic',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid).length, target: 1000 }) },
+
+  // ── Rachas ────────────────────────────────────────────
+  { id: 'streak-3', emoji: '🔥', name: 'Racha encendida', desc: '3 días seguidos haciendo al menos una tarea.', rarity: 'common',
+    eval: (s, uid) => ({ current: computeStreak(s, uid), target: 3 }) },
+  { id: 'streak-7', emoji: '🔥', name: 'Semana imparable', desc: '7 días seguidos.', rarity: 'rare',
+    eval: (s, uid) => ({ current: computeStreak(s, uid), target: 7 }) },
+  { id: 'streak-30', emoji: '🌋', name: 'Volcán doméstico', desc: '30 días seguidos. Locura sana.', rarity: 'epic',
+    eval: (s, uid) => ({ current: computeStreak(s, uid), target: 30 }) },
+
+  // ── Horarios extremos ─────────────────────────────────
+  { id: 'early-bird', emoji: '🌅', name: 'Madrugador', desc: 'Una tarea hecha antes de las 7 AM.', rarity: 'rare',
+    eval: (s, uid) => ({
+      current: s.tasks.some(t => t.done && t.assignee === uid && t.done_at && new Date(t.done_at).getHours() < 7) ? 1 : 0,
+      target: 1
+    }) },
+  { id: 'night-owl', emoji: '🦉', name: 'Búho nocturno', desc: 'Una tarea hecha después de las 23 h.', rarity: 'rare',
+    eval: (s, uid) => ({
+      current: s.tasks.some(t => t.done && t.assignee === uid && t.done_at && new Date(t.done_at).getHours() >= 23) ? 1 : 0,
+      target: 1
+    }) },
+  { id: 'sprint-5', emoji: '💨', name: 'Sprint relámpago', desc: '5 misiones en un mismo día.', rarity: 'rare',
+    eval: (s, uid) => ({ current: maxTasksOneDay(s, uid), target: 5 }) },
+  { id: 'sprint-10', emoji: '🚀', name: 'Combo decuple', desc: '10 misiones en un mismo día.', rarity: 'epic',
+    eval: (s, uid) => ({ current: maxTasksOneDay(s, uid), target: 10 }) },
+
+  // ── Especialistas por sala ────────────────────────────
+  { id: 'kitchen-25', emoji: '🍳', name: 'Chef de la casa', desc: '25 misiones de cocina.', rarity: 'rare',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.room === 'cocina').length, target: 25 }) },
+  { id: 'clean-25', emoji: '🧽', name: 'Maestro brillo', desc: '25 misiones de limpieza.', rarity: 'rare',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.subcategory === 'limpieza').length, target: 25 }) },
+  { id: 'bath-15', emoji: '🚿', name: 'Spa manager', desc: '15 misiones del baño.', rarity: 'rare',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.room === 'bano').length, target: 15 }) },
+  { id: 'window-cleaner', emoji: '🪟', name: 'Cazador de huellas', desc: '10 ventanas relucientes.', rarity: 'rare',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.subcategory === 'ventanas').length, target: 10 }) },
+
+  // ── Cloe ──────────────────────────────────────────────
+  { id: 'cloe-first', emoji: '🐶', name: 'Bienvenida al club', desc: 'Tu primer paseo con Cloe.', rarity: 'common',
+    eval: (s, uid) => ({ current: (s.cloeWalks || []).filter(w => w.assignee === uid).length, target: 1 }) },
+  { id: 'cloe-20', emoji: '🐕', name: 'Paseante VIP', desc: '20 paseos con Cloe.', rarity: 'rare',
+    eval: (s, uid) => ({ current: (s.cloeWalks || []).filter(w => w.assignee === uid).length, target: 20 }) },
+  { id: 'cloe-100', emoji: '🐕‍🦺', name: 'Cloe te adora', desc: '100 paseos con Cloe.', rarity: 'epic',
+    eval: (s, uid) => ({ current: (s.cloeWalks || []).filter(w => w.assignee === uid).length, target: 100 }) },
+  { id: 'cloe-walk-10k', emoji: '⏱️', name: 'Tobillo de hierro', desc: '500 minutos paseando.', rarity: 'epic',
+    eval: (s, uid) => ({
+      current: (s.cloeWalks || []).filter(w => w.assignee === uid).reduce((acc, w) => acc + (w.duration || 30), 0),
+      target: 500
+    }) },
+  { id: 'poop-scout', emoji: '💩', name: 'Recoge-cacas pro', desc: '50 caquitas registradas.', rarity: 'rare',
+    eval: (s, uid) => ({
+      current: (s.cloeDowns || []).filter(d => d.assignee === uid && d.reason === 'caca').length,
+      target: 50
+    }) },
+
+  // ── Compra ────────────────────────────────────────────
+  { id: 'shop-first', emoji: '🛒', name: 'A tu carro', desc: 'Añade tu primer producto.', rarity: 'common',
+    eval: (s, uid) => ({ current: s.shopping.filter(x => x.added_by === uid).length, target: 1 }) },
+  { id: 'shop-50', emoji: '🛍️', name: 'Carrito serial', desc: '50 productos comprados.', rarity: 'rare',
+    eval: (s, uid) => ({ current: s.shopping.filter(x => x.added_by === uid && x.done).length, target: 50 }) },
+  { id: 'shop-healthy', emoji: '🥗', name: 'Modo saludable', desc: '20 frutas o verduras compradas.', rarity: 'rare',
+    eval: (s, uid) => ({
+      current: s.shopping.filter(x => x.added_by === uid && x.done && (x.category === 'fruta' || x.category === 'verdura')).length,
+      target: 20
+    }) },
+
+  // ── Eventos / planificación ───────────────────────────
+  { id: 'event-first', emoji: '📅', name: 'Plan en marcha', desc: 'Crea tu primer evento.', rarity: 'common',
+    eval: (s, uid) => ({ current: s.events.filter(e => e.assignee === uid).length, target: 1 }) },
+  { id: 'event-organizer', emoji: '🎉', name: 'Cerebro de eventos', desc: '20 eventos en tu nombre.', rarity: 'rare',
+    eval: (s, uid) => ({ current: s.events.filter(e => e.assignee === uid).length, target: 20 }) },
+
+  // ── Diversidad ────────────────────────────────────────
+  { id: 'multitasker', emoji: '🌈', name: 'Manitas total', desc: 'Tareas en 5 habitaciones distintas.', rarity: 'epic',
+    eval: (s, uid) => ({
+      current: new Set(s.tasks.filter(t => t.done && t.assignee === uid && t.room).map(t => t.room)).size,
+      target: 5
+    }) },
+];
+
+function computeStreak(state, uid) {
+  // Cuenta días consecutivos hasta hoy con al menos una tarea hecha por el usuario
+  const days = new Set(
+    state.tasks
+      .filter(t => t.done && t.done_at && t.assignee === uid)
+      .map(t => t.done_at.slice(0, 10))
+  );
+  let streak = 0;
+  const d = new Date();
+  for (;;) {
+    const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if (!days.has(iso)) break;
+    streak++;
+    d.setDate(d.getDate() - 1);
+    if (streak > 365) break;
+  }
+  return streak;
+}
+
+function maxTasksOneDay(state, uid) {
+  const counts = {};
+  state.tasks
+    .filter(t => t.done && t.done_at && t.assignee === uid)
+    .forEach(t => {
+      const k = t.done_at.slice(0, 10);
+      counts[k] = (counts[k] || 0) + 1;
+    });
+  return Math.max(0, ...Object.values(counts));
+}
+
+// ═══════════════ MONEDAS 🪙 ═══════════════
+// Cuántas monedas vale cada acción.
+const COINS = {
+  TASK_BASE:    10,   // por tarea hecha
+  TASK_KIDROOM: 15,   // bonus si es en habitación de niño
+  TASK_KITCHEN:  8,
+  TASK_CLEAN:   12,   // limpiezas valen un poco más
+  CLOE_WALK:    20,
+  CLOE_DOWN:     5,
+  SHOP_DONE:     2,   // por producto comprado
+};
+
+function coinsForTask(t) {
+  if (!t || !t.done) return 0;
+  let c = COINS.TASK_BASE;
+  if (t.room && t.room.startsWith('habitat-')) c = COINS.TASK_KIDROOM;
+  else if (t.room === 'cocina') c = COINS.TASK_KITCHEN;
+  if (t.subcategory === 'limpieza') c = Math.max(c, COINS.TASK_CLEAN);
+  return c;
+}
+
+function totalCoins(state, uid) {
+  let sum = 0;
+  for (const t of state.tasks) {
+    if (t.done && t.assignee === uid) sum += coinsForTask(t);
+  }
+  for (const w of (state.cloeWalks || [])) {
+    if (w.assignee === uid) sum += COINS.CLOE_WALK;
+  }
+  for (const d of (state.cloeDowns || [])) {
+    if (d.assignee === uid) sum += COINS.CLOE_DOWN;
+  }
+  for (const s of state.shopping) {
+    if (s.done && s.added_by === uid) sum += COINS.SHOP_DONE;
+  }
+  return sum;
+}
+
+// ═══════════════ TROFEOS INFANTILES 🧒 ═══════════════
+// Se añaden al catálogo TROPHIES principal
+TROPHIES.push(
+  // Hábitos diarios
+  { id: 'tooth-10', emoji: '🦷', name: 'Dientes brillantes', desc: '10 cepillados registrados.', rarity: 'common',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.subcategory === 'dientes').length, target: 10 }) },
+  { id: 'tooth-50', emoji: '😁', name: 'Sonrisa de anuncio', desc: '50 cepillados. ¡Dentista feliz!', rarity: 'rare',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.subcategory === 'dientes').length, target: 50 }) },
+  { id: 'bed-10', emoji: '🛏️', name: 'Maestro de la cama', desc: 'Hacer la cama 10 veces.', rarity: 'common',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.subcategory === 'cama').length, target: 10 }) },
+  { id: 'bed-30', emoji: '👑', name: 'Rey de la almohada', desc: '30 camas hechas perfectas.', rarity: 'rare',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.subcategory === 'cama').length, target: 30 }) },
+  { id: 'toys-10', emoji: '🧸', name: 'Recogedor pro', desc: 'Recoger juguetes 10 veces.', rarity: 'common',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.subcategory === 'juguetes').length, target: 10 }) },
+  { id: 'backpack-10', emoji: '🎒', name: 'Mochila ninja', desc: 'Preparar mochila 10 veces sin que te lo recuerden.', rarity: 'rare',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.subcategory === 'mochila').length, target: 10 }) },
+  { id: 'reading-10', emoji: '📚', name: 'Lector intrépido', desc: '10 ratos de lectura.', rarity: 'rare',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && (t.subcategory === 'lectura' || t.subcategory === 'cuento')).length, target: 10 }) },
+  { id: 'reading-50', emoji: '🧙', name: 'Mago de las palabras', desc: '50 sesiones de lectura.', rarity: 'epic',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && (t.subcategory === 'lectura' || t.subcategory === 'cuento')).length, target: 50 }) },
+  { id: 'homework-15', emoji: '✏️', name: 'Cerebro en marcha', desc: '15 deberes terminados.', rarity: 'rare',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.subcategory === 'deberes').length, target: 15 }) },
+  { id: 'shower-15', emoji: '🚿', name: 'Limpio como un samurái', desc: '15 duchas registradas.', rarity: 'common',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && (t.subcategory === 'ducha' || t.subcategory === 'baño')).length, target: 15 }) },
+  // Combo de hábitos diarios completos
+  { id: 'kid-day-combo', emoji: '🌟', name: 'Día redondo', desc: 'En un mismo día: cama, dientes y mochila.', rarity: 'rare',
+    eval: (s, uid) => ({ current: comboKidDays(s, uid), target: 1 }) },
+  { id: 'kid-day-combo-7', emoji: '✨', name: 'Semana de oro', desc: '7 "días redondos" acumulados.', rarity: 'epic',
+    eval: (s, uid) => ({ current: comboKidDays(s, uid), target: 7 }) },
+
+  // Monedas
+  { id: 'coin-1', emoji: '🪙', name: 'Primera moneda', desc: 'Gana tu primera moneda.', rarity: 'common',
+    eval: (s, uid) => ({ current: Math.min(totalCoins(s, uid), 1), target: 1 }) },
+  { id: 'coin-100', emoji: '💰', name: 'Hucha que suena', desc: 'Acumula 100 monedas.', rarity: 'common',
+    eval: (s, uid) => ({ current: totalCoins(s, uid), target: 100 }) },
+  { id: 'coin-500', emoji: '💵', name: 'Hucha pesada', desc: 'Acumula 500 monedas.', rarity: 'rare',
+    eval: (s, uid) => ({ current: totalCoins(s, uid), target: 500 }) },
+  { id: 'coin-2000', emoji: '🤑', name: 'Tesoro pirata', desc: 'Acumula 2.000 monedas.', rarity: 'epic',
+    eval: (s, uid) => ({ current: totalCoins(s, uid), target: 2000 }) },
+  { id: 'coin-10000', emoji: '🏦', name: 'Banco familiar', desc: 'Acumula 10.000 monedas. Reservados para la jubilación.', rarity: 'legendary',
+    eval: (s, uid) => ({ current: totalCoins(s, uid), target: 10000 }) },
+
+  // Estrella diaria
+  { id: 'kid-star-day', emoji: '⭐', name: 'Estrella del día', desc: '5 misiones en un mismo día.', rarity: 'rare',
+    eval: (s, uid) => ({ current: maxTasksOneDay(s, uid), target: 5 }) },
+  { id: 'kid-helper', emoji: '🤝', name: 'Ayudante oficial', desc: '20 misiones en cocina.', rarity: 'rare',
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.room === 'cocina').length, target: 20 }) },
+);
+
+function comboKidDays(state, uid) {
+  // Cuenta días en los que el usuario hizo cama + dientes + mochila el mismo día
+  const want = ['cama', 'dientes', 'mochila'];
+  const byDay = {};
+  for (const t of state.tasks) {
+    if (!t.done || t.assignee !== uid || !t.done_at) continue;
+    const day = t.done_at.slice(0, 10);
+    (byDay[day] = byDay[day] || new Set()).add(t.subcategory);
+  }
+  let n = 0;
+  for (const day in byDay) {
+    if (want.every(w => byDay[day].has(w))) n++;
+  }
+  return n;
+}
+
+const TROPHY_RARITY = {
+  common:    { label: 'Común',     class: 'common',    color: '#9A9AB0' },
+  rare:      { label: 'Raro',      class: 'rare',      color: '#00B4D8' },
+  epic:      { label: 'Épico',     class: 'epic',      color: '#B14CFF' },
+  legendary: { label: 'Legendario',class: 'legendary', color: '#FFB347' },
+  mythic:    { label: 'Mítico',    class: 'mythic',    color: '#FF1A4D' },
+};
