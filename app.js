@@ -414,58 +414,95 @@ function taskRowHTML(t) {
 
 function renderTasks() {
   const today = todayISO();
-  
-  if (tasksScope === 'today') {
-    // Hoy: solo tareas realizadas hoy (para historial)
-    const list = STATE.tasks.filter(t => 
-      t.scope === 'today' && 
-      t.done && 
-      t.done_at && 
-      t.done_at.startsWith(today)
+
+  // Lunes como inicio de semana (ISO)
+  const startOfWeek = new Date();
+  const dow = (startOfWeek.getDay() + 6) % 7; // 0 = lun
+  startOfWeek.setDate(startOfWeek.getDate() - dow);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const weekDays = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(startOfWeek);
+    d.setDate(d.getDate() + i);
+    const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const dayTasks = STATE.tasks.filter(t =>
+      t.done && t.done_at && t.done_at.slice(0, 10) === iso
     );
-    $('tasks-list').innerHTML = list.length
-      ? list.map(taskRowHTML).join('')
-      : '<p class="empty">Hoy nadie ha desbloqueado logros todavía.</p>';
-  } else {
-    // Semana: calendario semanal de tareas realizadas
-    // Agrupar tareas por día de la semana
-    const weekDays = [];
-    const startOfWeek = new Date();
-    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
-    
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(startOfWeek);
-      d.setDate(d.getDate() + i);
-      const dateStr = d.toISOString().split('T')[0];
-      const dayName = WEEKDAYS_FULL[d.getDay() === 0 ? 6 : d.getDay() - 1];
-      
-      // Tareas realizadas en este día
-      const dayTasks = STATE.tasks.filter(t => 
-        t.scope === 'today' && 
-        t.done && 
-        t.done_at && 
-        t.done_at.startsWith(dateStr)
-      );
-      
-      weekDays.push({
-        date: dateStr,
-        dayName: dayName,
-        tasks: dayTasks
-      });
-    }
-    
-    // Renderizar calendario semanal
-    $('tasks-list').innerHTML = weekDays.map(day => `
-      <div style="margin-bottom:20px;">
-        <h4 style="margin-bottom:10px;font-size:14px;color:var(--muted);">${day.dayName} ${day.date.slice(5)}</h4>
-        ${day.tasks.length
-          ? day.tasks.map(taskRowHTML).join('')
-          : '<p class="empty mini-empty">Sin hazañas por aquí</p>'
-        }
+    weekDays.push({
+      iso,
+      dayNum: d.getDate(),
+      dayName: WEEKDAYS_FULL[i],
+      shortName: WEEKDAYS[i],
+      isToday: iso === today,
+      isFuture: iso > today,
+      tasks: dayTasks,
+    });
+  }
+
+  if (tasksScope === 'today') {
+    // Solo el día de hoy (mismo cálculo)
+    const t = weekDays.find(d => d.isToday) || weekDays[0];
+    $('tasks-list').innerHTML = `
+      <div class="wk-cal">
+        ${renderWeekDayCard(t, true)}
       </div>
-    `).join('');
+    `;
+  } else {
+    // Calendario vertical: header de píldoras arriba + lista de días debajo
+    const totalDone = weekDays.reduce((acc, d) => acc + d.tasks.length, 0);
+    $('tasks-list').innerHTML = `
+      <div class="wk-cal">
+        <div class="wk-cal-strip">
+          ${weekDays.map(d => `
+            <button class="wk-pill ${d.isToday ? 'today' : ''} ${d.isFuture ? 'future' : ''} ${d.tasks.length ? 'has' : ''}"
+                    data-scroll-day="${d.iso}">
+              <span class="wk-pill-dow">${d.shortName}</span>
+              <span class="wk-pill-num">${d.dayNum}</span>
+              ${d.tasks.length ? `<span class="wk-pill-dot">${d.tasks.length}</span>` : ''}
+            </button>
+          `).join('')}
+        </div>
+        <p class="wk-cal-sub">${totalDone} ${totalDone === 1 ? 'hazaña' : 'hazañas'} esta semana 💪</p>
+        <div class="wk-cal-stack">
+          ${weekDays.map(d => renderWeekDayCard(d, false)).join('')}
+        </div>
+      </div>
+    `;
+
+    // Scroll suave al pulsar la píldora
+    $$('.wk-pill').forEach(btn => btn.addEventListener('click', () => {
+      const el = document.getElementById('wk-day-' + btn.dataset.scrollDay);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }));
   }
   wireTaskRows($('tasks-list'));
+}
+
+function renderWeekDayCard(d, soloMode) {
+  const grad = ['g1','g2','g3','g4','g5','g6','g7'][ (new Date(d.iso + 'T00:00').getDay() + 6) % 7 ];
+  return `
+    <article id="wk-day-${d.iso}" class="wk-day ${d.isToday ? 'today' : ''} ${d.isFuture ? 'future' : ''} ${d.tasks.length === 0 ? 'empty' : ''} ${soloMode ? 'solo' : ''}">
+      <header class="wk-day-head wk-grad-${grad}">
+        <div class="wk-day-head-left">
+          <div class="wk-day-name">${d.dayName}</div>
+          <div class="wk-day-date">${d.dayNum}</div>
+        </div>
+        <div class="wk-day-badge">
+          ${d.tasks.length
+            ? `<span class="wk-count">${d.tasks.length}</span><span class="wk-count-lbl">${d.tasks.length === 1 ? 'hecha' : 'hechas'}</span>`
+            : `<span class="wk-count-lbl">${d.isFuture ? '🌤 por venir' : '💤 vacío'}</span>`
+          }
+        </div>
+      </header>
+      <div class="wk-day-body">
+        ${d.tasks.length
+          ? `<div class="row-list">${d.tasks.map(taskRowHTML).join('')}</div>`
+          : `<div class="wk-day-empty">${d.isToday ? '🚀 Aún sin movimiento hoy' : (d.isFuture ? '🌱 Aquí brotarán nuevas misiones' : '😴 Día sin hazañas')}</div>`
+        }
+      </div>
+    </article>
+  `;
 }
 
 function wireTaskRows(root) {
