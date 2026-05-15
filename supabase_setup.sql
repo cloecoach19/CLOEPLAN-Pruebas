@@ -24,6 +24,8 @@ create table if not exists tasks (
   id         uuid primary key default gen_random_uuid(),
   title      text not null,
   category   text not null default 'general',   -- limpieza | compra | cocina | niños | plantas | recados | salud | social | cole | general
+  room       text,                              -- salón | cocina | baño | cloe | ...
+  subcategory text,                             -- tarea concreta dentro de la estancia
   emoji      text default '',
   scope      text not null default 'today',     -- today | week
   assignee   uuid references users(id) on delete set null,
@@ -34,6 +36,9 @@ create table if not exists tasks (
   done_at    timestamptz,
   created_at timestamptz default now()
 );
+
+alter table tasks add column if not exists room text;
+alter table tasks add column if not exists subcategory text;
 
 -- ── Lista de la compra ────────────────────────────────────
 create table if not exists shopping (

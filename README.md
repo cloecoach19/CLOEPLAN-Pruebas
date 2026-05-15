@@ -1,6 +1,6 @@
 # CLOE te organiza
 
-Gestor familiar de **tareas domésticas**, **lista de la compra** y **calendario** compartido, con panel admin de miembros. Diseño cálido inspirado en el prototipo CLOE (paleta terracota + Bricolage Grotesque).
+Gestor familiar de **tareas domésticas**, **lista de la compra**, **calendario** y cuidados de **Cloe** compartidos, con panel admin de miembros. Diseño cálido inspirado en el prototipo CLOE (paleta terracota + Bricolage Grotesque).
 
 - Móvil + ordenador (responsive + instalable como PWA).
 - Sincronización en tiempo real entre dispositivos (Supabase Realtime).
@@ -32,7 +32,7 @@ prototype/      Maquetas originales (referencia visual, no se despliega)
 1. Usa tu proyecto Supabase (ya configurado en `config.js`).
 2. **⚠️ Si el proyecto tenía tablas viejas** (de POLLITO u otro): **SQL Editor** → pega [`supabase_reset.sql`](supabase_reset.sql) → **Run**. Esto borra todo. Salta este paso si el proyecto está limpio.
 3. **SQL Editor** → New query → pega el contenido de [`supabase_setup.sql`](supabase_setup.sql) → **Run**.
-4. **Database → Replication** → activa las 4 tablas: `users`, `tasks`, `shopping`, `events`.
+4. **Database → Replication** → activa las 6 tablas: `users`, `tasks`, `shopping`, `events`, `cloe_walks`, `cloe_downs`.
 5. **Settings → API** → copia:
    - **Project URL**
    - **anon public** key
@@ -66,6 +66,7 @@ El SQL crea un usuario inicial:
 - **Tareas**: dos modos, "Hoy" (con fecha límite) o "Semana" (rotación libre por día). Marca, asigna, edita doble click.
 - **Compra**: agrupada por categorías, marca al comprar, se reordena automáticamente.
 - **Calendario**: vista de mes; click en un día rellena la fecha del formulario.
+- **Cloe**: registra paseos y bajadas, y los refleja en el ranking como tareas realizadas.
 - **Tiempo real**: cualquier cambio aparece en los demás dispositivos en <2 s sin recargar.
 
 ## Seguridad
@@ -93,8 +94,7 @@ Abre `http://localhost:8080`.
 
 ## Roadmap (opcional, no incluido en el MVP)
 
-- Mascota (paseos / comidas / vet) — está diseñado en `prototype/` pero no implementado.
-- Ranking semanal por miembro (ya tenemos los datos, falta UI).
+- Comidas / veterinario de Cloe.
 - Recordatorios con notificaciones push.
 - Exportar calendario a iCal / Google.
 - Sugerencias de menú semanal con IA.

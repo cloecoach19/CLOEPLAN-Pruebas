@@ -43,6 +43,17 @@ function removeFromState(table, id) {
 }
 
 // ── Estado ───────────────────────────────────────────────
+async function insertTask(payload) {
+  const result = await db.from('tasks').insert(payload);
+  if (!result.error) return result;
+
+  const msg = result.error.message || '';
+  if (!/(room|subcategory|schema cache|column)/i.test(msg)) return result;
+
+  const { room, subcategory, ...fallback } = payload;
+  return db.from('tasks').insert(fallback);
+}
+
 const STATE = { users: [], tasks: [], shopping: [], events: [], cloeWalks: [], cloeDowns: [] };
 let activeTab = 'hoy';
 let tasksScope = 'today';
@@ -89,7 +100,7 @@ $$('.tabs > .tab[data-tab]').forEach(b => b.addEventListener('click', () => {
   if (location.hash !== '#' + activeTab) history.replaceState(null, '', '#' + activeTab);
 }));
 const initTab = (location.hash || '#hoy').slice(1);
-if (['hoy','tareas','compra','calendario','stats'].includes(initTab)) {
+if (['hoy','tareas','cloe','compra','calendario','stats'].includes(initTab)) {
   document.querySelector(`.tab[data-tab="${initTab}"]`)?.click();
 }
 
@@ -114,11 +125,7 @@ $$('.tab[data-cloe-tab]').forEach(b => b.addEventListener('click', () => {
 // Función para abrir subventana de Cloe desde el modal de tareas
 function openCloeSubwindowFromModal(sub = 'pasear') {
   modal.classList.add('hidden');
-  // El panel Cloe no tiene tab principal; lo activamos directamente
-  $$('.tabs > .tab[data-tab]').forEach(x => x.classList.remove('active'));
-  $$('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-cloe'));
-  activeTab = 'cloe';
-  // Abrir la subventana correspondiente
+  document.querySelector('.tab[data-tab="cloe"]')?.click();
   document.querySelector(`.tab[data-cloe-tab="${sub}"]`)?.click();
 }
 
@@ -669,7 +676,7 @@ function openTaskModal() {
     
     // Insertar todas las tareas
     for (const payload of tasksToCreate) {
-      const { error } = await db.from('tasks').insert(payload);
+      const { error } = await insertTask(payload);
       if (error) {
         showToast('Error: ' + error.message);
         return;
@@ -734,14 +741,6 @@ function renderShop() {
     : '<p class="empty muted" style="font-size:13px;">Aquí aparecerá lo comprado.</p>';
 
   wireShopRows(document);
-  
-  // Wire up toggle y delete para la lista de compra de cocina
-  $$('[data-toggle-shop]', $('kitchen-shop-list')).forEach(b => b.addEventListener('click', async () => {
-    const id = b.dataset.toggleShop;
-    const s = STATE.shopping.find(x => x.id === id);
-    await db.from('shopping').update({ done: !s.done, done_at: !s.done ? new Date().toISOString() : null }).eq('id', id);
-    loadAll();
-  }));
 }
 
 function wireShopRows(root) {
@@ -1140,7 +1139,7 @@ $('qa-cloe-walk').addEventListener('submit', e => {
   // También insertar como tarea realizada hoy (scope='today', done=true)
   const dateOnly = datetime.split('T')[0];
   const timeOnly = datetime.split('T')[1]?.slice(0, 5) || null;
-  const { error: taskError } = await db.from('tasks').insert({
+  const { error: taskError } = await insertTask({
     title: 'Pasear a Cloe',
     category: 'pasear',
     room: 'cloe',
@@ -1184,7 +1183,7 @@ $('qa-cloe-down').addEventListener('submit', e => {
   const dateOnly = datetime.split('T')[0];
   const timeOnly = datetime.split('T')[1]?.slice(0, 5) || null;
   const reasonEmoji = { pipi: '🚽', caca: '💩', jugar: '🎾', comer: '🍖', otro: '📝' }[reason] || '📝';
-  const { error: taskError } = await db.from('tasks').insert({
+  const { error: taskError } = await insertTask({
     title: `Bajar a Cloe (${reason})`,
     category: 'bajar',
     room: 'cloe',

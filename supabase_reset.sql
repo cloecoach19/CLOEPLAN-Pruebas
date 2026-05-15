@@ -13,10 +13,12 @@
 --   1) Ejecuta ESTE script en SQL Editor → Run.
 --   2) Luego ejecuta supabase_setup.sql (crea tablas CLOE).
 --   3) Activa Realtime en Database → Replication para las
---      4 tablas (users, tasks, shopping, events).
+--      6 tablas (users, tasks, shopping, events, cloe_walks, cloe_downs).
 -- ════════════════════════════════════════════════════
 
 -- Soltar políticas existentes (si las hay)
+drop policy if exists "public" on public.cloe_downs;
+drop policy if exists "public" on public.cloe_walks;
 drop policy if exists "public" on public.events;
 drop policy if exists "public" on public.shopping;
 drop policy if exists "public" on public.menus;
@@ -24,6 +26,8 @@ drop policy if exists "public" on public.users;
 drop policy if exists "public" on public.tasks;
 
 -- Soltar tablas (CASCADE elimina también las referencias)
+drop table if exists public.cloe_downs cascade;
+drop table if exists public.cloe_walks cascade;
 drop table if exists public.events   cascade;
 drop table if exists public.shopping cascade;
 drop table if exists public.menus    cascade;
