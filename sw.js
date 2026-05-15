@@ -2,7 +2,7 @@
 // Estrategia: network-first para HTML/JS/CSS (siempre intenta lo último,
 // usa cache solo si estás offline). Así no quedas atrapado en versiones viejas.
 
-const CACHE = 'cloe-v2';
+const CACHE = 'cloe-v3';
 const SHELL = [
   '/', '/index.html', '/app.html', '/admin.html',
   '/styles.css', '/shared.js', '/app.js', '/admin.js', '/config.js',

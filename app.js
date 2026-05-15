@@ -86,7 +86,7 @@ $('theme-toggle')?.addEventListener('click', () => {
 // ── Saludo ───────────────────────────────────────────────
 function renderGreeting() {
   const h = new Date().getHours();
-  const hi = h < 6 ? 'Buenas noches' : h < 13 ? 'Buenos días' : h < 21 ? 'Buenas tardes' : 'Buenas noches';
+  const hi = h < 6 ? 'Modo ninja nocturno' : h < 13 ? 'Buenos días, máquina' : h < 21 ? 'Buenas tardes, crack' : 'Buenas noches, leyenda';
   $('greeting').textContent = `${hi}, ${me.name.split(' ')[0]}`;
   const fecha = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
   $('today-eyebrow').textContent = fecha.toUpperCase();
@@ -110,8 +110,8 @@ $$('.tab[data-scope]').forEach(b => b.addEventListener('click', () => {
   $$('.tab[data-scope]').forEach(x => x.classList.toggle('active', x.dataset.scope === tasksScope));
   // Actualizar título de la sección
   $('tasks-section-title').textContent = tasksScope === 'today' 
-    ? 'Tareas realizadas hoy' 
-    : 'Calendario semanal de tareas';
+    ? 'Misiones completadas hoy' 
+    : 'Mapa semanal de misiones';
   renderTasks();
 }));
 
@@ -263,8 +263,8 @@ function renderAll() {
   renderHoy();
   // Inicializar título de la sección de tareas
   $('tasks-section-title').textContent = tasksScope === 'today' 
-    ? 'Tareas realizadas hoy' 
-    : 'Calendario semanal de tareas';
+    ? 'Misiones completadas hoy' 
+    : 'Mapa semanal de misiones';
   renderTasks();
   renderShop();
   renderCalendar();
@@ -299,7 +299,7 @@ function renderStatsPanel() {
   });
 
   const total = [...byUser.values()].reduce((a, b) => a + b, 0);
-  summary.textContent = `${total} tareas hechas`;
+  summary.textContent = total ? `${total} misiones tachadas` : 'Marcador a cero, empieza la remontada';
 
   const ordered = [...byUser.entries()]
     .map(([id, count]) => ({ user: STATE.users.find(u => u.id === id), count }))
@@ -320,7 +320,7 @@ function renderStatsPanel() {
             <span class="row-time">${x.count}</span>
           </div>`;
       }).join('')
-    : '<p class="empty">Sin tareas hechas esta semana todavía.</p>';
+    : '<p class="empty">El ranking está virgen. Una misión y ya hay pique sano.</p>';
 
   // Barras por día
   const byDay = days.map(iso => ({
@@ -367,7 +367,7 @@ function renderHoy() {
   const upcoming = STATE.events.filter(e => e.date >= today).slice(0, 5);
   $('hoy-events-list').innerHTML = upcoming.length
     ? upcoming.map(eventRowHTML).join('')
-    : '<p class="empty">No hay eventos esta semana.</p>';
+    : '<p class="empty">Semana tranquilita. Sospechosamente tranquilita.</p>';
   wireEventRows($('hoy-events-list'));
 }
 
@@ -425,7 +425,7 @@ function renderTasks() {
     );
     $('tasks-list').innerHTML = list.length
       ? list.map(taskRowHTML).join('')
-      : '<p class="empty">No hay tareas realizadas hoy todavía.</p>';
+      : '<p class="empty">Hoy nadie ha desbloqueado logros todavía.</p>';
   } else {
     // Semana: calendario semanal de tareas realizadas
     // Agrupar tareas por día de la semana
@@ -460,7 +460,7 @@ function renderTasks() {
         <h4 style="margin-bottom:10px;font-size:14px;color:var(--muted);">${day.dayName} ${day.date.slice(5)}</h4>
         ${day.tasks.length
           ? day.tasks.map(taskRowHTML).join('')
-          : '<p class="empty" style="font-size:12px;padding-left:10px;">Sin tareas realizadas</p>'
+          : '<p class="empty mini-empty">Sin hazañas por aquí</p>'
         }
       </div>
     `).join('');
@@ -528,8 +528,8 @@ function openTaskModal() {
   }
 
   modalBody.innerHTML = `
-    <h3>📋 Nueva Tarea</h3>
-    <p class="muted" style="margin-bottom:20px;">Selecciona habitación y tarea con pegatinas</p>
+    <h3>📋 Nueva misión doméstica</h3>
+    <p class="muted" style="margin-bottom:20px;">Elige zona, marca objetivos y suma puntos de gloria familiar.</p>
     
     <!-- Paso 1: Habitaciones -->
     <div id="task-room-grid" class="task-room-grid">
@@ -543,13 +543,13 @@ function openTaskModal() {
 
     <!-- Paso 2: Subcategorías -->
     <div id="task-subcat-section" class="hidden task-subcat-section">
-      <p class="eyebrow" style="margin-bottom:12px;">Selecciona la tarea:</p>
+      <p class="eyebrow" style="margin-bottom:12px;">Elige el reto:</p>
       <div id="task-subcat-grid" class="task-subcat-grid"></div>
     </div>
     
     <!-- Paso 3: Fecha y asignación -->
     <div id="task-details-section" class="hidden" style="border-top:1px solid var(--line);padding-top:20px;">
-      <p class="eyebrow" style="margin-bottom:12px;">Detalles:</p>
+      <p class="eyebrow" style="margin-bottom:12px;">Plan de ataque:</p>
       
       ${isWeekScope ? `
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;" id="task-week-days">
@@ -567,15 +567,15 @@ function openTaskModal() {
       `}
       
       <label style="margin-bottom:16px;">
-        <span>Asignado a</span>
+        <span>Héroe asignado</span>
         <select id="task-assignee-select" style="width:100%;">
           ${STATE.users.map(u => `<option value="${u.id}" ${u.id === me.id ? 'selected' : ''}>${esc(u.name)}</option>`).join('')}
         </select>
       </label>
       
       <div class="form-actions">
-        <button type="button" class="btn ghost" id="cancel-task-modal">Cancelar</button>
-        <button type="button" class="btn accent" id="save-task-btn">✓ Guardar Tarea</button>
+        <button type="button" class="btn ghost" id="cancel-task-modal">Me lo pienso</button>
+        <button type="button" class="btn accent" id="save-task-btn">✓ Lanzar misión</button>
       </div>
     </div>
   `;
@@ -651,7 +651,7 @@ function openTaskModal() {
   // Guardar tarea(s)
   $('save-task-btn').addEventListener('click', async () => {
     if (!taskModalState.room || !taskModalState.subcategories?.length) {
-      showToast('Selecciona habitación y al menos una tarea');
+      showToast('Elige zona y reto, que la gloria no se autogenera');
       return;
     }
     
@@ -714,7 +714,9 @@ function renderShop() {
   const match = (s) => !q || (s.name || '').toLowerCase().includes(q);
   const pending = STATE.shopping.filter(s => !s.done && match(s));
   const done    = STATE.shopping.filter(s =>  s.done && match(s));
-  $('shop-summary').textContent = `${pending.length} por comprar · ${done.length} hechos`;
+  $('shop-summary').textContent = pending.length
+    ? `${pending.length} tesoros pendientes · ${done.length} cazados`
+    : `${done.length} cazados · carrito en modo zen`;
 
   // Agrupar pendientes por categoría siguiendo el orden de CATEGORIES_SHOP
   const groups = {};
@@ -735,10 +737,10 @@ function renderShop() {
         <div class="row-list">${groups[c.id].map(shopRowHTML).join('')}</div>
       </div>`).join('');
 
-  $('shop-pending').innerHTML = aisles || '<p class="empty">Nevera llena. Filosóficamente, también.</p>';
+  $('shop-pending').innerHTML = aisles || '<p class="empty">La nevera respira tranquila. Por ahora.</p>';
   $('shop-done').innerHTML = done.length
     ? done.map(shopRowHTML).join('')
-    : '<p class="empty muted" style="font-size:13px;">Aquí aparecerá lo comprado.</p>';
+    : '<p class="empty muted" style="font-size:13px;">Aquí caerán los trofeos del súper.</p>';
 
   wireShopRows(document);
 }
@@ -972,7 +974,7 @@ function renderUpcomingEvents() {
   const upcoming = STATE.events.filter(e => e.date >= today).slice(0, 20);
   $('cal-list').innerHTML = upcoming.length
     ? upcoming.map(eventRowHTML).join('')
-    : '<p class="empty">No hay eventos próximos.</p>';
+    : '<p class="empty">Agenda despejada. Raro, pero se celebra.</p>';
   wireEventRows($('cal-list'));
 }
 
@@ -1028,13 +1030,13 @@ function renderCloe() {
   const walks = (STATE.cloeWalks || []).sort((a, b) => new Date(b.datetime) - new Date(a.datetime)).slice(0, 20);
   $('cloe-walks-list').innerHTML = walks.length
     ? walks.map(cloeWalkRowHTML).join('')
-    : '<p class="empty">Sin paseos registrados todavía.</p>';
+    : '<p class="empty">Cloe aún no ha estrenado la pasarela de paseos.</p>';
   
   // Obtener bajadas (últimos 20)
   const downs = (STATE.cloeDowns || []).sort((a, b) => new Date(b.datetime) - new Date(a.datetime)).slice(0, 20);
   $('cloe-downs-list').innerHTML = downs.length
     ? downs.map(cloeDownRowHTML).join('')
-    : '<p class="empty">Sin bajadas registradas todavía.</p>';
+    : '<p class="empty">Sin mini aventuras registradas. El contador espera drama.</p>';
   
   // Wire up delete buttons
   $$('[data-del-walk]', $('cloe-walks-list')).forEach(b => b.addEventListener('click', async () => {
@@ -1124,7 +1126,7 @@ $('qa-cloe-walk').addEventListener('submit', e => {
   const assignee = $('cloe-walk-walker').value || null;
   
   if (!datetime) {
-    showToast('Fecha y hora son obligatorias');
+    showToast('Pon fecha y hora, que Cloe no viaja en el tiempo');
     return;
   }
   
@@ -1140,7 +1142,7 @@ $('qa-cloe-walk').addEventListener('submit', e => {
   const dateOnly = datetime.split('T')[0];
   const timeOnly = datetime.split('T')[1]?.slice(0, 5) || null;
   const { error: taskError } = await insertTask({
-    title: 'Pasear a Cloe',
+    title: 'Pasear a Cloe como leyenda',
     category: 'pasear',
     room: 'cloe',
     subcategory: 'pasear',
@@ -1167,7 +1169,7 @@ $('qa-cloe-down').addEventListener('submit', e => {
   const assignee = $('cloe-down-person').value || null;
   
   if (!datetime) {
-    showToast('Fecha y hora son obligatorias');
+    showToast('Pon fecha y hora, que esta expedición necesita coordenadas');
     return;
   }
   
@@ -1184,7 +1186,7 @@ $('qa-cloe-down').addEventListener('submit', e => {
   const timeOnly = datetime.split('T')[1]?.slice(0, 5) || null;
   const reasonEmoji = { pipi: '🚽', caca: '💩', jugar: '🎾', comer: '🍖', otro: '📝' }[reason] || '📝';
   const { error: taskError } = await insertTask({
-    title: `Bajar a Cloe (${reason})`,
+    title: `Bajar a Cloe en modo ${reason}`,
     category: 'bajar',
     room: 'cloe',
     subcategory: 'bajar',

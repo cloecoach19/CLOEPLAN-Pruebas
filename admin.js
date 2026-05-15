@@ -71,7 +71,7 @@ function fmtLastSeen(iso) {
 }
 
 function openCreate() {
-  $('user-modal-title').textContent = 'Nuevo miembro';
+  $('user-modal-title').textContent = 'Nuevo fichaje';
   userForm.reset();
   userForm.id.value = '';
   userModal.classList.remove('hidden');
@@ -81,7 +81,7 @@ function openCreate() {
 function openEdit(id) {
   const u = users.find(x => x.id === id);
   if (!u) return;
-  $('user-modal-title').textContent = 'Editar · ' + u.name;
+  $('user-modal-title').textContent = 'Tunear ficha · ' + u.name;
   userForm.reset();
   userForm.id.value = u.id;
   userForm.name.value = u.name;
@@ -110,7 +110,7 @@ userForm.addEventListener('submit', async e => {
   else if (d.password) payload.password = d.password;
 
   const submit = userForm.querySelector('button[type="submit"]');
-  submit.disabled = true; submit.textContent = 'Guardando…';
+  submit.disabled = true; submit.textContent = 'Guardando magia…';
 
   const { error } = d.id
     ? await db.from('users').update(payload).eq('id', d.id)

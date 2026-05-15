@@ -16,7 +16,7 @@
   <div class="container site-nav">
     <a href="app.html" class="logo">
       <img src="Cloe.png" alt="CLOE" class="logo-img">
-      <span><span class="logo-text">CLOE</span><em class="logo-tag">te organiza</em></span>
+      <span><span class="logo-text">CLOE</span><em class="logo-tag">modo casa pro</em></span>
     </a>
     <nav class="nav-links">
       <a href="app.html" class="active">App</a>
@@ -26,7 +26,7 @@
       <button class="icon-btn" id="theme-toggle" aria-label="Cambiar tema" title="Modo claro / oscuro">🌙</button>
       <span id="user-av"></span>
       <span class="nav-name muted" id="user-name">…</span>
-      <button class="btn ghost sm" id="logout">Salir</button>
+      <button class="btn ghost sm" id="logout">Me piro</button>
     </div>
   </div>
 </header>
@@ -37,10 +37,10 @@
     <p class="eyebrow" id="today-eyebrow">…</p>
     <h1 id="greeting">Hola</h1>
     <div class="hero-stats">
-      <div class="stat-tile"><div class="v" id="stat-tasks-today">0</div><div class="l">Tareas hoy</div></div>
-      <div class="stat-tile"><div class="v" id="stat-tasks-pending">0</div><div class="l">Pendientes</div></div>
-      <div class="stat-tile"><div class="v" id="stat-shop">0</div><div class="l">Compra</div></div>
-      <div class="stat-tile"><div class="v" id="stat-events">0</div><div class="l">Eventos hoy</div></div>
+      <div class="stat-tile"><div class="v" id="stat-tasks-today">0</div><div class="l">Misiones hoy</div></div>
+      <div class="stat-tile"><div class="v" id="stat-tasks-pending">0</div><div class="l">En la cola</div></div>
+      <div class="stat-tile"><div class="v" id="stat-shop">0</div><div class="l">Botín súper</div></div>
+      <div class="stat-tile"><div class="v" id="stat-events">0</div><div class="l">Planes hoy</div></div>
     </div>
   </section>
 
@@ -58,8 +58,8 @@
     <div class="card">
       <div class="section-header">
         <div>
-          <p class="eyebrow">Próximos eventos</p>
-          <h3>Esta semana</h3>
+          <p class="eyebrow">Agenda caliente</p>
+          <h3>Lo que viene sin pedir permiso</h3>
         </div>
       </div>
       <div class="row-list" id="hoy-events-list"></div>
@@ -71,7 +71,7 @@
     <div class="card">
       <div class="cal-head">
         <div>
-          <p class="eyebrow">Calendario</p>
+          <p class="eyebrow">Agenda nivel jefa</p>
           <h3 id="cal-title">Mes</h3>
         </div>
         <div class="cal-nav">
@@ -82,17 +82,17 @@
       </div>
 
       <form class="quick-add qa-event" id="qa-event">
-        <input type="text" id="qa-ev-title" placeholder="Título del evento" required>
+        <input type="text" id="qa-ev-title" placeholder="Cumple, dentista, drama escolar..." required>
         <input type="date" id="qa-ev-date" required>
         <input type="time" id="qa-ev-time">
         <select id="qa-ev-cat"></select>
         <select id="qa-ev-assignee"><option value="">Sin asignar</option></select>
-        <button type="submit" class="btn accent">+ Añadir</button>
+        <button type="submit" class="btn accent">+ Meter plan</button>
       </form>
 
       <div class="month-grid" id="month-grid"></div>
 
-      <h4 class="eyebrow" style="margin: 24px 0 10px;">Próximos eventos</h4>
+      <h4 class="eyebrow" style="margin: 24px 0 10px;">Próximos saraos</h4>
       <div class="row-list" id="cal-list"></div>
     </div>
   </section>
@@ -102,7 +102,7 @@
     <div class="card">
       <div class="section-header">
         <div>
-          <p class="eyebrow">Tareas</p>
+          <p class="eyebrow">Misiones domésticas</p>
           <h3 id="tasks-section-title">Calendario de tareas por día</h3>
         </div>
         <div class="tabs" style="margin:0; padding:4px;">
@@ -113,7 +113,7 @@
 
       <!-- Botón para añadir tarea - abre modal de categorías -->
       <button class="btn accent lg" id="open-task-modal" style="width:100%;justify-content:center;margin-bottom:18px;">
-        📋 + Añadir Tarea
+        📋 + Nueva misión
       </button>
 
       <div class="row-list" id="tasks-list"></div>
@@ -125,8 +125,8 @@
     <div class="card">
       <div class="section-header">
         <div>
-          <p class="eyebrow">Cloe</p>
-          <h3>Gestión de Cloe</h3>
+          <p class="eyebrow">Cloe VIP</p>
+          <h3>Operaciones paseo y bajada</h3>
         </div>
       </div>
       
@@ -139,23 +139,23 @@
       <div class="cloe-panel active" id="cloe-pasear">
         <form class="quick-add qa-cloe-walk" id="qa-cloe-walk">
           <label>
-            <span>Fecha y hora del paseo</span>
+            <span>Hora de la vuelta triunfal</span>
             <input type="datetime-local" id="cloe-walk-datetime" required>
           </label>
           <label>
-            <span>Duración (minutos)</span>
+            <span>Duración épica (minutos)</span>
             <input type="number" id="cloe-walk-duration" value="30" min="5" max="120">
           </label>
           <label>
-            <span>¿Quién pasea?</span>
+            <span>¿Quién se apunta la medalla?</span>
             <select id="cloe-walk-walker">
               <option value="">Sin asignar</option>
             </select>
           </label>
-          <button type="submit" class="btn accent">✓ Registrar paseo</button>
+          <button type="submit" class="btn accent">✓ Paseo fichado</button>
         </form>
         
-        <h4 class="eyebrow" style="margin:20px 0 10px;">Últimos paseos</h4>
+        <h4 class="eyebrow" style="margin:20px 0 10px;">Paseos con glamour</h4>
         <div class="row-list" id="cloe-walks-list"></div>
       </div>
       
@@ -167,7 +167,7 @@
             <input type="datetime-local" id="cloe-down-datetime" required>
           </label>
           <label>
-            <span>Motivo</span>
+            <span>Motivo de la expedición</span>
             <select id="cloe-down-reason">
               <option value="pipi">🚽 Pipí</option>
               <option value="caca">💩 Caca</option>
@@ -177,15 +177,15 @@
             </select>
           </label>
           <label>
-            <span>¿Quién baja?</span>
+            <span>¿Quién baja con estilo?</span>
             <select id="cloe-down-person">
               <option value="">Sin asignar</option>
             </select>
           </label>
-          <button type="submit" class="btn accent">✓ Registrar bajada</button>
+          <button type="submit" class="btn accent">✓ Bajada fichada</button>
         </form>
         
-        <h4 class="eyebrow" style="margin:20px 0 10px;">Últimas bajadas</h4>
+        <h4 class="eyebrow" style="margin:20px 0 10px;">Últimas mini aventuras</h4>
         <div class="row-list" id="cloe-downs-list"></div>
       </div>
       
@@ -197,24 +197,24 @@
     <div class="card">
       <div class="section-header">
         <div>
-          <p class="eyebrow">Lista de la compra</p>
-          <h3>Por categorías</h3>
+          <p class="eyebrow">Botín del súper</p>
+          <h3>La lista anti "se nos olvidó"</h3>
         </div>
         <span class="muted" id="shop-summary">…</span>
       </div>
 
       <form class="quick-add qa-shopping" id="qa-shop">
-        <input type="text" id="qa-shop-name" placeholder="Manzanas, pan…" required autocomplete="off">
+        <input type="text" id="qa-shop-name" placeholder="Pizza, leche, chocolate de emergencia..." required autocomplete="off">
         <div id="shop-suggestions" class="suggestions-dropdown hidden"></div>
         <input type="text" id="qa-shop-qty" placeholder="1 kg / x2">
-        <button type="submit" class="btn accent">+ Añadir</button>
+        <button type="submit" class="btn accent">+ Al carrito</button>
       </form>
 
-      <input type="search" id="shop-filter" placeholder="🔍 Buscar producto…" style="margin-bottom:16px;" autocomplete="off">
+      <input type="search" id="shop-filter" placeholder="🔍 Localiza el tesoro..." style="margin-bottom:16px;" autocomplete="off">
 
       <div id="shop-pending"></div>
 
-      <h4 class="eyebrow" style="margin: 20px 0 10px;">Ya comprado</h4>
+      <h4 class="eyebrow" style="margin: 20px 0 10px;">Botín conseguido</h4>
       <div class="row-list" id="shop-done"></div>
     </div>
   </section>
@@ -224,14 +224,14 @@
     <div class="card">
       <div class="section-header">
         <div>
-          <p class="eyebrow">Esta semana</p>
-          <h3>Ranking de la casa</h3>
+          <p class="eyebrow">Liga doméstica</p>
+          <h3>Ranking de cracks de la casa</h3>
         </div>
         <span class="muted" id="stats-summary">…</span>
       </div>
       <div id="stats-ranking" class="row-list"></div>
 
-      <h4 class="eyebrow" style="margin: 24px 0 10px;">Tareas por día (últimos 7 días)</h4>
+      <h4 class="eyebrow" style="margin: 24px 0 10px;">Racha de misiones (últimos 7 días)</h4>
       <div id="stats-week-bars" class="stats-bars"></div>
     </div>
   </section>
