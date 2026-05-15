@@ -64,6 +64,7 @@
 }
 
 * { box-sizing: border-box; }
+img { max-width: 100%; height: auto; }
 
 html, body {
   margin: 0; padding: 0;
@@ -123,17 +124,26 @@ h3 { font-size: 1.25rem; font-weight: 800; }
   letter-spacing: -0.04em;
   box-shadow: var(--shadow-sm);
 }
-.logo-img {
-  width: 48px; height: 48px;
+.logo img.logo-img {
+  width: 48px !important;
+  height: 48px !important;
+  max-width: 48px;
+  max-height: 48px;
   border-radius: 14px;
-  object-fit: cover;
+  object-fit: contain;
+  background: var(--surface);
   box-shadow: var(--shadow-sm);
   flex-shrink: 0;
+  display: block;
 }
-.auth-logo {
-  width: 96px; height: 96px;
+.auth-card img.auth-logo {
+  width: 96px !important;
+  height: 96px !important;
+  max-width: 96px;
+  max-height: 96px;
   border-radius: 24px;
-  object-fit: cover;
+  object-fit: contain;
+  background: var(--surface);
   margin: 0 auto 8px;
   display: block;
   box-shadow: var(--shadow-md);
