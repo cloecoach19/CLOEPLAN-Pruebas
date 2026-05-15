@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>CLOE · Admin</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container site-nav">
+    <a href="app.html" class="logo">
+      <span class="logo-mark">cl</span>
+      <span><span class="logo-text">CLOE</span><em class="logo-tag">admin</em></span>
+    </a>
+    <nav class="nav-links">
+      <a href="app.html">App</a>
+      <a href="admin.html" class="active">Admin</a>
+    </nav>
+    <div class="nav-user">
+      <span id="user-av"></span>
+      <span class="nav-name muted" id="user-name">…</span>
+      <button class="btn ghost sm" id="logout">Salir</button>
+    </div>
+  </div>
+</header>
+
+<main class="container" style="padding-top:18px; padding-bottom:60px;">
+  <section class="card">
+    <div class="section-header">
+      <div>
+        <p class="eyebrow">Panel admin</p>
+        <h1 class="display">Miembros de la casa</h1>
+      </div>
+      <button class="btn accent" id="new-user-btn">+ Nuevo miembro</button>
+    </div>
+
+    <div style="overflow-x:auto;">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Miembro</th>
+            <th>Email</th>
+            <th class="col-hide-mobile">Rol</th>
+            <th class="col-hide-mobile">Estado</th>
+            <th class="col-hide-mobile">Última conexión</th>
+            <th style="text-align:right;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody"></tbody>
+      </table>
+    </div>
+    <p class="empty hidden" id="empty">Aún no hay miembros.</p>
+  </section>
+</main>
+
+<!-- Modal usuario -->
+<div class="modal hidden" id="user-modal">
+  <div class="modal-panel">
+    <button class="modal-close" id="close-user-modal">×</button>
+    <h3 id="user-modal-title">Nuevo miembro</h3>
+    <form id="user-form" style="margin-top:18px;">
+      <input type="hidden" name="id">
+      <div class="form-row">
+        <label><span>Nombre</span><input type="text" name="name" required></label>
+        <label><span>Inicial (avatar)</span><input type="text" name="member_id" maxlength="2" placeholder="M" required></label>
+      </div>
+      <label><span>Email</span><input type="email" name="email" required></label>
+      <label><span>Contraseña <small class="muted">(al editar, vacío = sin cambios)</small></span><input type="password" name="password" autocomplete="new-password"></label>
+      <div class="form-row">
+        <label><span>Rol</span>
+          <select name="role">
+            <option value="Miembro">Miembro</option>
+            <option value="Admin">Admin</option>
+          </select>
+        </label>
+        <label><span>Estado</span>
+          <select name="status">
+            <option value="active">Activo</option>
+            <option value="inactive">Inactivo</option>
+          </select>
+        </label>
+      </div>
+      <label><span>Color del avatar</span>
+        <select name="color">
+          <option value="marina">Terracota (Marina)</option>
+          <option value="carlos">Oliva (Carlos)</option>
+          <option value="lucia">Baya (Lucía)</option>
+          <option value="pablo">Azul (Pablo)</option>
+          <option value="verde">Verde menta</option>
+          <option value="rosa">Rosa suave</option>
+          <option value="lavanda">Lavanda</option>
+          <option value="melocoton">Melocotón</option>
+          <option value="cielo">Azul cielo</option>
+          <option value="lima">Lima suave</option>
+          <option value="coral">Coral</option>
+          <option value="turquesa">Turquesa</option>
+          <option value="violeta">Violeta</option>
+          <option value="naranja">Naranja suave</option>
+          <option value="aguamarina">Aguamarina</option>
+          <option value="fresa">Fresa</option>
+          <option value="menta">Menta</option>
+          <option value="ciruela">Ciruela</option>
+          <option value="albaricoque">Albaricoque</option>
+        </select>
+      </label>
+      <div class="form-actions">
+        <button type="button" class="btn ghost" id="cancel-user">Cancelar</button>
+        <button type="submit" class="btn accent">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal confirmación -->
+<div class="modal hidden" id="confirm-modal">
+  <div class="modal-panel" style="max-width:380px;">
+    <h3>¿Eliminar miembro?</h3>
+    <p class="muted" id="confirm-text" style="margin:10px 0 18px;"></p>
+    <div class="form-actions">
+      <button class="btn ghost" id="cancel-del">Cancelar</button>
+      <button class="btn danger" id="confirm-del">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="shared.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

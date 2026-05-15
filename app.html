@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>CLOE · App</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FF6B6B">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container site-nav">
+    <a href="app.html" class="logo">
+      <span class="logo-mark">cl</span>
+      <span><span class="logo-text">CLOE</span><em class="logo-tag">te organiza</em></span>
+    </a>
+    <nav class="nav-links">
+      <a href="app.html" class="active">App</a>
+      <a href="admin.html" id="nav-admin" style="display:none;">Admin</a>
+    </nav>
+    <div class="nav-user">
+      <button class="icon-btn" id="theme-toggle" aria-label="Cambiar tema" title="Modo claro / oscuro">🌙</button>
+      <span id="user-av"></span>
+      <span class="nav-name muted" id="user-name">…</span>
+      <button class="btn ghost sm" id="logout">Salir</button>
+    </div>
+  </div>
+</header>
+
+<main class="container" style="padding-top:18px; padding-bottom:60px;">
+
+  <section class="hero">
+    <p class="eyebrow" id="today-eyebrow">…</p>
+    <h1 id="greeting">Hola</h1>
+    <div class="hero-stats">
+      <div class="stat-tile"><div class="v" id="stat-tasks-today">0</div><div class="l">Tareas hoy</div></div>
+      <div class="stat-tile"><div class="v" id="stat-tasks-pending">0</div><div class="l">Pendientes</div></div>
+      <div class="stat-tile"><div class="v" id="stat-shop">0</div><div class="l">Compra</div></div>
+      <div class="stat-tile"><div class="v" id="stat-events">0</div><div class="l">Eventos hoy</div></div>
+    </div>
+  </section>
+
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-tab="hoy">☀️ Hoy</button>
+    <button class="tab" data-tab="calendario">📅 Calendario</button>
+    <button class="tab" data-tab="tareas">✓ Tareas</button>
+    <button class="tab" data-tab="compra">🛒 Compra</button>
+    <button class="tab" data-tab="stats">📊 Ranking</button>
+  </div>
+
+  <!-- HOY -->
+  <section class="panel active" id="panel-hoy">
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Hoy en casa</p>
+          <h3>Lo que toca</h3>
+        </div>
+        <span class="muted" id="hoy-summary">…</span>
+      </div>
+      <div class="row-list" id="hoy-tasks-list"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Próximos eventos</p>
+          <h3>Esta semana</h3>
+        </div>
+      </div>
+      <div class="row-list" id="hoy-events-list"></div>
+    </div>
+  </section>
+
+  <!-- CALENDARIO -->
+  <section class="panel" id="panel-calendario">
+    <div class="card">
+      <div class="cal-head">
+        <div>
+          <p class="eyebrow">Calendario</p>
+          <h3 id="cal-title">Mes</h3>
+        </div>
+        <div class="cal-nav">
+          <button class="btn ghost sm" id="cal-prev">‹</button>
+          <button class="btn ghost sm" id="cal-today">Hoy</button>
+          <button class="btn ghost sm" id="cal-next">›</button>
+        </div>
+      </div>
+
+      <form class="quick-add qa-event" id="qa-event">
+        <input type="text" id="qa-ev-title" placeholder="Título del evento" required>
+        <input type="date" id="qa-ev-date" required>
+        <input type="time" id="qa-ev-time">
+        <select id="qa-ev-cat"></select>
+        <select id="qa-ev-assignee"><option value="">Sin asignar</option></select>
+        <button type="submit" class="btn accent">+ Añadir</button>
+      </form>
+
+      <div class="month-grid" id="month-grid"></div>
+
+      <h4 class="eyebrow" style="margin: 24px 0 10px;">Próximos eventos</h4>
+      <div class="row-list" id="cal-list"></div>
+    </div>
+  </section>
+
+  <!-- TAREAS -->
+  <section class="panel" id="panel-tareas">
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Tareas</p>
+          <h3 id="tasks-section-title">Calendario de tareas por día</h3>
+        </div>
+        <div class="tabs" style="margin:0; padding:4px;">
+          <button class="tab active" data-scope="today" style="font-size:12px; padding:6px 12px;">Hoy</button>
+          <button class="tab" data-scope="week" style="font-size:12px; padding:6px 12px;">Semana</button>
+        </div>
+      </div>
+
+      <!-- Botón para añadir tarea - abre modal de categorías -->
+      <button class="btn accent lg" id="open-task-modal" style="width:100%;justify-content:center;margin-bottom:18px;">
+        📋 + Añadir Tarea
+      </button>
+
+      <div class="row-list" id="tasks-list"></div>
+    </div>
+  </section>
+
+  <!-- CLOE -->
+  <section class="panel" id="panel-cloe">
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Cloe</p>
+          <h3>Gestión de Cloe</h3>
+        </div>
+      </div>
+      
+      <div class="tabs" style="margin-bottom:16px;">
+        <button class="tab active" data-cloe-tab="pasear">🚶 Pasear a Cloe</button>
+        <button class="tab" data-cloe-tab="bajar">⬇️ Bajar a Cloe</button>
+        <button class="tab" data-cloe-tab="compra">🛒 Compra cocina</button>
+      </div>
+      
+      <!-- Subventana: Pasear a Cloe -->
+      <div class="cloe-panel active" id="cloe-pasear">
+        <form class="quick-add qa-cloe-walk" id="qa-cloe-walk">
+          <label>
+            <span>Fecha y hora del paseo</span>
+            <input type="datetime-local" id="cloe-walk-datetime" required>
+          </label>
+          <label>
+            <span>Duración (minutos)</span>
+            <input type="number" id="cloe-walk-duration" value="30" min="5" max="120">
+          </label>
+          <label>
+            <span>¿Quién pasea?</span>
+            <select id="cloe-walk-walker">
+              <option value="">Sin asignar</option>
+            </select>
+          </label>
+          <button type="submit" class="btn accent">✓ Registrar paseo</button>
+        </form>
+        
+        <h4 class="eyebrow" style="margin:20px 0 10px;">Últimos paseos</h4>
+        <div class="row-list" id="cloe-walks-list"></div>
+      </div>
+      
+      <!-- Subventana: Bajar a Cloe -->
+      <div class="cloe-panel hidden" id="cloe-bajar">
+        <form class="quick-add qa-cloe-down" id="qa-cloe-down">
+          <label>
+            <span>Fecha y hora</span>
+            <input type="datetime-local" id="cloe-down-datetime" required>
+          </label>
+          <label>
+            <span>Motivo</span>
+            <select id="cloe-down-reason">
+              <option value="pipi">🚽 Pipí</option>
+              <option value="caca">💩 Caca</option>
+              <option value="jugar">🎾 Jugar</option>
+              <option value="comer">🍖 Comer</option>
+              <option value="otro">📝 Otro</option>
+            </select>
+          </label>
+          <label>
+            <span>¿Quién baja?</span>
+            <select id="cloe-down-person">
+              <option value="">Sin asignar</option>
+            </select>
+          </label>
+          <button type="submit" class="btn accent">✓ Registrar bajada</button>
+        </form>
+        
+        <h4 class="eyebrow" style="margin:20px 0 10px;">Últimas bajadas</h4>
+        <div class="row-list" id="cloe-downs-list"></div>
+      </div>
+      
+      <!-- Subventana: Compra cocina -->
+      <div class="cloe-panel hidden" id="cloe-compra">
+        <form class="quick-add qa-kitchen-shop" id="qa-kitchen-shop">
+          <label>
+            <span>Producto</span>
+            <input type="text" id="kitchen-shop-name" placeholder="Leche, pan, huevos..." required autocomplete="off">
+          </label>
+          <label>
+            <span>Cantidad</span>
+            <input type="text" id="kitchen-shop-qty" placeholder="1L / x6 / 500g">
+          </label>
+          <label>
+            <span>Categoría</span>
+            <select id="kitchen-shop-cat">
+              <option value="lácteos">🥛 Lácteos</option>
+              <option value="panadería">🍞 Panadería</option>
+              <option value="despensa">🥫 Despensa</option>
+              <option value="fruta">🍎 Fruta</option>
+              <option value="verdura">🥦 Verdura</option>
+              <option value="carne">🥩 Carne y pescado</option>
+              <option value="varios">🛒 Varios</option>
+            </select>
+          </label>
+          <button type="submit" class="btn accent">✓ Añadir a la compra</button>
+        </form>
+        
+        <h4 class="eyebrow" style="margin:20px 0 10px;">Lista de compra de cocina</h4>
+        <div class="row-list" id="kitchen-shop-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPRA -->
+  <section class="panel" id="panel-compra">
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Lista de la compra</p>
+          <h3>Por categorías</h3>
+        </div>
+        <span class="muted" id="shop-summary">…</span>
+      </div>
+
+      <form class="quick-add qa-shopping" id="qa-shop">
+        <input type="text" id="qa-shop-name" placeholder="Manzanas, pan…" required autocomplete="off">
+        <div id="shop-suggestions" class="suggestions-dropdown hidden"></div>
+        <input type="text" id="qa-shop-qty" placeholder="1 kg / x2">
+        <button type="submit" class="btn accent">+ Añadir</button>
+      </form>
+
+      <input type="search" id="shop-filter" placeholder="🔍 Buscar producto…" style="margin-bottom:16px;" autocomplete="off">
+
+      <div id="shop-pending"></div>
+
+      <h4 class="eyebrow" style="margin: 20px 0 10px;">Ya comprado</h4>
+      <div class="row-list" id="shop-done"></div>
+    </div>
+  </section>
+
+</main>
+
+  <!-- STATS / RANKING -->
+  <section class="panel" id="panel-stats">
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Esta semana</p>
+          <h3>Ranking de la casa</h3>
+        </div>
+        <span class="muted" id="stats-summary">…</span>
+      </div>
+      <div id="stats-ranking" class="row-list"></div>
+
+      <h4 class="eyebrow" style="margin: 24px 0 10px;">Tareas por día (últimos 7 días)</h4>
+      <div id="stats-week-bars" class="stats-bars"></div>
+    </div>
+  </section>
+
+<!-- Modal genérico -->
+<div class="modal hidden" id="modal">
+  <div class="modal-panel">
+    <button class="modal-close" id="modal-close">×</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="shared.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

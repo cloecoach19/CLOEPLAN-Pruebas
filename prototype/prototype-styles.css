@@ -1,0 +1,326 @@
+/* ─── CLOE te organiza — design tokens ─── */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Funnel+Sans:wght@300..800&family=Funnel+Display:wght@300..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400..700&display=swap');
+
+:root {
+  /* ─ Palette: Cálida (default) ─ */
+  --bg:        #F2EBDD;
+  --surface:   #FAF5EB;
+  --surface-2: #EDE3D0;
+  --ink:       #261C16;
+  --ink-2:     #6B5C50;
+  --ink-3:     #9A8B7E;
+  --line:      #DCCFB8;
+  --accent:    #C24A22;
+  --accent-2:  #E08054;
+  --accent-soft:#F1C9B2;
+  --ok:        #4F7A3D;
+  --warn:      #C68A1C;
+  --danger:    #B23B3B;
+
+  /* Member colors */
+  --m-marina:  #C24A22; /* terracotta */
+  --m-carlos:  #6E8A4A; /* olive */
+  --m-lucia:   #A04F6D; /* berry */
+  --m-pablo:   #4F6A8C; /* dusty blue */
+
+  /* Type */
+  --font-ui: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --tracking-tight: -0.02em;
+  --tracking-display: -0.035em;
+
+  /* Density */
+  --pad-s: 10px;
+  --pad-m: 14px;
+  --pad-l: 18px;
+  --gap-s: 8px;
+  --gap-m: 12px;
+  --gap-l: 18px;
+  --row-h: 56px;
+
+  --r-s: 10px;
+  --r-m: 14px;
+  --r-l: 20px;
+  --r-xl: 28px;
+}
+
+/* ─ Palette variants ─ */
+[data-palette="verde"] {
+  --bg:        #ECEEDF;
+  --surface:   #F7F8EE;
+  --surface-2: #DDE1CB;
+  --ink:       #1E2818;
+  --ink-2:     #54614A;
+  --ink-3:     #93A085;
+  --line:      #CCD3B6;
+  --accent:    #3D7240;
+  --accent-2:  #6CA56A;
+  --accent-soft:#C7DDB9;
+}
+[data-palette="lavanda"] {
+  --bg:        #ECE6EE;
+  --surface:   #F7F1F8;
+  --surface-2: #DDD3E1;
+  --ink:       #221C2A;
+  --ink-2:     #5A4F66;
+  --ink-3:     #968AA1;
+  --line:      #CFC2D6;
+  --accent:    #6C4AB3;
+  --accent-2:  #9F82D6;
+  --accent-soft:#D6C8EE;
+}
+[data-palette="carbon"] {
+  --bg:        #1B1A18;
+  --surface:   #25231F;
+  --surface-2: #2F2C27;
+  --ink:       #F2EAD9;
+  --ink-2:     #B6A992;
+  --ink-3:     #7C6E5C;
+  --line:      #3C382F;
+  --accent:    #E89E4C;
+  --accent-2:  #F0B978;
+  --accent-soft:#5C4525;
+}
+
+/* ─ Dark mode override (auto via Tweak) ─ */
+[data-theme="dark"] {
+  --bg:        #1A1612;
+  --surface:   #24201B;
+  --surface-2: #2E2922;
+  --ink:       #F2EAD9;
+  --ink-2:     #B6A992;
+  --ink-3:     #7C6E5C;
+  --line:      #3A332B;
+  --accent:    #E08054;
+  --accent-2:  #F0A87E;
+  --accent-soft:#4D2E1F;
+}
+
+/* ─ Density variants ─ */
+[data-density="compacta"] {
+  --pad-s: 8px;  --pad-m: 11px; --pad-l: 14px;
+  --gap-s: 6px;  --gap-m: 9px;  --gap-l: 13px;
+  --row-h: 48px;
+}
+
+/* ─ Typography variants ─ */
+[data-type="geometrica"] {
+  --font-ui: 'Space Grotesk', system-ui, sans-serif;
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --tracking-display: -0.025em;
+}
+[data-type="funnel"] {
+  --font-ui: 'Funnel Sans', system-ui, sans-serif;
+  --font-display: 'Funnel Display', system-ui, sans-serif;
+  --tracking-display: -0.02em;
+}
+
+/* ─ Base ─ */
+.cloe {
+  font-family: var(--font-ui);
+  color: var(--ink);
+  background: var(--bg);
+  font-feature-settings: 'ss01', 'ss02';
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: var(--tracking-tight);
+}
+.cloe * { box-sizing: border-box; }
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: var(--tracking-display);
+  line-height: 0.95;
+}
+.mono { font-family: var(--font-mono); font-feature-settings: 'tnum'; }
+.num  { font-variant-numeric: tabular-nums; }
+
+/* ─ Pixel hairlines ─ */
+.hair-t { box-shadow: inset 0 1px 0 var(--line); }
+.hair-b { box-shadow: inset 0 -1px 0 var(--line); }
+
+/* ─ Buttons / chips ─ */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 36px; padding: 0 14px; border-radius: 999px;
+  background: var(--ink); color: var(--bg);
+  font-family: var(--font-ui); font-weight: 600; font-size: 14px;
+  border: none; cursor: pointer; letter-spacing: -0.01em;
+  transition: transform 120ms ease, opacity 120ms ease;
+}
+.btn:active { transform: scale(0.97); }
+.btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+.btn.accent { background: var(--accent); color: #fff; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 26px; padding: 0 10px; border-radius: 999px;
+  background: var(--surface-2); color: var(--ink-2);
+  font-size: 12px; font-weight: 500; letter-spacing: -0.005em;
+}
+
+/* ─ Card ─ */
+.card {
+  background: var(--surface);
+  border-radius: var(--r-l);
+  border: 1px solid var(--line);
+}
+
+/* ─ Avatar ─ */
+.av {
+  width: 28px; height: 28px; border-radius: 999px;
+  background: var(--accent); color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 600; font-size: 13px;
+  letter-spacing: -0.02em;
+  box-shadow: 0 0 0 2px var(--surface);
+  flex-shrink: 0;
+}
+.av.lg { width: 40px; height: 40px; font-size: 16px; }
+.av.xs { width: 22px; height: 22px; font-size: 11px; }
+.av-stack { display: inline-flex; }
+.av-stack .av + .av { margin-left: -10px; }
+
+/* ─ Custom checkbox ─ */
+.check {
+  width: 24px; height: 24px; border-radius: 8px;
+  border: 1.5px solid var(--ink-3);
+  background: transparent;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+  transition: all 160ms ease;
+}
+.check.on {
+  background: var(--accent); border-color: var(--accent);
+  color: #fff;
+}
+.check.on svg { animation: pop 200ms cubic-bezier(.5,1.6,.4,1); }
+@keyframes pop {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+/* ─ List row ─ */
+.row {
+  display: flex; align-items: center; gap: var(--gap-m);
+  padding: var(--pad-m) var(--pad-l);
+  min-height: var(--row-h);
+}
+.row.done .title { text-decoration: line-through; color: var(--ink-3); }
+.row.done .meta  { opacity: 0.6; }
+
+.title { font-weight: 500; letter-spacing: -0.01em; }
+.meta  { color: var(--ink-2); font-size: 13px; }
+
+/* ─ Tabs nav (mobile bottom) ─ */
+.tabs {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  padding: 6px 8px 8px;
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 8px 0 6px; border-radius: 12px;
+  font-size: 10.5px; font-weight: 500; letter-spacing: 0.01em;
+  color: var(--ink-3); cursor: pointer; user-select: none;
+  background: none; border: none; font-family: inherit;
+}
+.tab.on { color: var(--accent); }
+.tab .tab-i { font-size: 20px; line-height: 1; }
+
+/* ─ FAB ─ */
+.fab {
+  position: absolute; right: 18px; bottom: 110px;
+  width: 56px; height: 56px; border-radius: 18px;
+  background: var(--accent); color: #fff;
+  border: none; cursor: pointer; font-size: 26px;
+  box-shadow: 0 8px 24px rgba(194,74,34,0.35);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 160ms ease;
+}
+.fab:active { transform: scale(0.93); }
+
+/* ─ Confetti container ─ */
+.confetti {
+  position: absolute; pointer-events: none;
+  width: 8px; height: 12px; opacity: 0;
+  animation: confetti 900ms ease-out forwards;
+}
+@keyframes confetti {
+  0%   { opacity: 1; transform: translate(0,0) rotate(0deg); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); }
+}
+
+/* ─ Tab swipe transition ─ */
+.screen-fade {
+  animation: fade 220ms ease;
+}
+@keyframes fade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─ Progress bar ─ */
+.bar {
+  height: 8px; border-radius: 999px;
+  background: var(--surface-2); overflow: hidden;
+}
+.bar > i {
+  display: block; height: 100%; background: var(--accent);
+  border-radius: inherit;
+  transition: width 400ms cubic-bezier(.4,1.4,.5,1);
+}
+
+/* ─ Big editorial number ─ */
+.huge {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 84px;
+  letter-spacing: -0.05em;
+  line-height: 0.85;
+}
+
+/* ─ Marquee accent under title ─ */
+.eyebrow {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+
+/* ─ Section header ─ */
+.section-h {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: 22px var(--pad-l) 10px;
+}
+.section-h .h { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: -0.025em; }
+
+/* ─ Desktop ─ */
+.desk-grid {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  height: 900px;
+  background: var(--bg);
+}
+.desk-side {
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  padding: 22px 18px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.desk-side .nav-i {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 12px;
+  color: var(--ink-2); font-weight: 500; font-size: 14px;
+  cursor: pointer;
+}
+.desk-side .nav-i.on { background: var(--surface-2); color: var(--ink); }
+.desk-side .nav-i .e { font-size: 16px; }
+
+.desk-main {
+  padding: 28px 36px; overflow: auto;
+}

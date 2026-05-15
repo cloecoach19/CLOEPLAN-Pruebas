@@ -1,0 +1,20 @@
+{
+  "name": "CLOE te organiza",
+  "short_name": "CLOE",
+  "description": "Gestor familiar de tareas, compra y calendario",
+  "start_url": "/app.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F2EBDD",
+  "theme_color": "#C24A22",
+  "lang": "es",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
