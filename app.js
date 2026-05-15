@@ -74,7 +74,10 @@ const THEME_KEY = 'cloe-theme';
 function applyTheme(t) {
   document.documentElement.setAttribute('data-theme', t);
   const btn = $('theme-toggle');
-  if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
+  if (btn) {
+    btn.textContent = t === 'dark' ? '☀️' : '🥷';
+    btn.title = t === 'dark' ? 'Modo día' : 'Modo ninja';
+  }
 }
 applyTheme(localStorage.getItem(THEME_KEY) || 'light');
 $('theme-toggle')?.addEventListener('click', () => {
@@ -566,17 +569,20 @@ function openTaskModal() {
   const today = todayISO();
   const isWeekScope = tasksScope === 'week';
   
-  // Generar días de la semana para vista semanal
+  // Generar días de la semana (lunes ISO, en hora local — sin toISOString)
   const weekDays = [];
   const startOfWeek = new Date();
-  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
+  const dowStart = (startOfWeek.getDay() + 6) % 7;
+  startOfWeek.setDate(startOfWeek.getDate() - dowStart);
+  startOfWeek.setHours(0, 0, 0, 0);
   for (let i = 0; i < 7; i++) {
     const d = new Date(startOfWeek);
     d.setDate(d.getDate() + i);
+    const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     weekDays.push({
-      date: d.toISOString().split('T')[0],
-      dayName: WEEKDAYS_FULL[d.getDay() === 0 ? 6 : d.getDay() - 1],
-      shortDay: WEEKDAYS[d.getDay() === 0 ? 6 : d.getDay() - 1]
+      date: iso,
+      dayName: WEEKDAYS_FULL[i],
+      shortDay: WEEKDAYS[i],
     });
   }
 
@@ -692,8 +698,14 @@ function openTaskModal() {
         taskModalState.date = chip.dataset.date;
       });
     });
-    // Seleccionar primer día por defecto
-    $$('.day-chip')[0]?.classList.add('active');
+    // Marcar el día actual por defecto si está en la semana, si no el primero
+    const todayChip = document.querySelector(`.day-chip[data-date="${today}"]`);
+    (todayChip || $$('.day-chip')[0])?.classList.add('active');
+    if (todayChip) taskModalState.date = today;
+  } else {
+    $('task-date-input')?.addEventListener('change', e => {
+      taskModalState.date = e.target.value || today;
+    });
   }
   
   // Cancelar

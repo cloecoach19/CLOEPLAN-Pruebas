@@ -56,13 +56,225 @@
   --shadow-lg: 0 22px 60px rgba(255, 95, 126, 0.18);
 }
 
+/* ═════════════ NINJA MODE 🥷 ═════════════ */
 [data-theme="dark"] {
-  --bg: #1A1A2E; --surface: #2D2D44; --surface-2: #3D3D5C;
-  --ink: #FAFAFA; --ink-2: #B0B0C0; --ink-3: #7A7A90;
-  --line: #4A4A6A; --accent: #FF8E8E; --accent-2: #FFB38E;
-  --accent-soft: #3D2A2A;
-  --gradient-primary: linear-gradient(135deg, #FF8E8E 0%, #FFB38E 50%, #FFE08E 100%);
-  --gradient-secondary: linear-gradient(135deg, #7EE8E0 0%, #7ED1E8 100%);
+  --bg:         #07070C;
+  --surface:    #11111A;
+  --surface-2:  #1A1A28;
+  --ink:        #F5F5FA;
+  --ink-2:      #9A9AB0;
+  --ink-3:      #5C5C70;
+  --line:       #25253A;
+
+  --accent:     #FF1A4D;   /* rojo katana */
+  --accent-2:   #00F5FF;   /* cian shuriken */
+  --accent-soft:#1A0A14;
+  --ok:         #22F5A5;
+  --warn:       #FFCC33;
+  --danger:     #FF1A4D;
+  --pop:        #B14CFF;
+  --mint:       #22F5A5;
+
+  --gradient-primary:   linear-gradient(135deg, #FF1A4D 0%, #B14CFF 60%, #00F5FF 100%);
+  --gradient-secondary: linear-gradient(135deg, #00F5FF 0%, #B14CFF 100%);
+  --gradient-accent:    linear-gradient(135deg, #22F5A5 0%, #00F5FF 100%);
+
+  --shadow-sm: 0 2px 10px rgba(255, 26, 77, 0.18), 0 0 0 1px rgba(0, 245, 255, 0.06);
+  --shadow-md: 0 12px 36px rgba(255, 26, 77, 0.22), 0 0 0 1px rgba(0, 245, 255, 0.10);
+  --shadow-lg: 0 24px 70px rgba(177, 76, 255, 0.32), 0 0 0 1px rgba(255, 26, 77, 0.14);
+}
+
+/* Fondo del cuerpo en modo ninja: trama puntos + halo */
+[data-theme="dark"] body {
+  background:
+    radial-gradient(circle at 14% 8%, rgba(255, 26, 77, 0.12), transparent 42%),
+    radial-gradient(circle at 90% 100%, rgba(0, 245, 255, 0.10), transparent 42%),
+    radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px) 0 0 / 22px 22px,
+    #07070C !important;
+}
+
+[data-theme="dark"] .site-header {
+  background: rgba(7, 7, 12, 0.78) !important;
+  backdrop-filter: blur(20px) saturate(140%);
+  border-bottom: 1px solid rgba(255, 26, 77, 0.12);
+}
+[data-theme="dark"] .nav-user { border-left-color: rgba(0, 245, 255, 0.18); }
+
+/* Cards con borde fino neón */
+[data-theme="dark"] .card,
+[data-theme="dark"] .wk-day,
+[data-theme="dark"] .modal-panel {
+  border: 1px solid rgba(0, 245, 255, 0.10);
+  background: linear-gradient(180deg, rgba(26, 26, 40, 0.95), rgba(17, 17, 26, 0.95));
+}
+
+/* Botones accent ninja: glow rojo */
+[data-theme="dark"] .btn.accent {
+  background: var(--gradient-primary);
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.4);
+  box-shadow:
+    0 0 0 1px rgba(255, 26, 77, 0.4),
+    0 8px 24px rgba(255, 26, 77, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+[data-theme="dark"] .btn.accent:hover:not(:disabled) {
+  box-shadow:
+    0 0 0 1px var(--accent),
+    0 12px 34px rgba(255, 26, 77, 0.55),
+    0 0 28px rgba(0, 245, 255, 0.18);
+}
+[data-theme="dark"] .btn.ghost {
+  border-color: rgba(0, 245, 255, 0.30);
+  color: var(--ink);
+}
+[data-theme="dark"] .btn.ghost:hover:not(:disabled) {
+  background: rgba(0, 245, 255, 0.08);
+  color: var(--accent-2);
+  border-color: var(--accent-2);
+  box-shadow: 0 0 22px rgba(0, 245, 255, 0.20);
+}
+
+/* Inputs ninja */
+[data-theme="dark"] input, [data-theme="dark"] select, [data-theme="dark"] textarea {
+  background: rgba(7, 7, 12, 0.6);
+  border-color: rgba(0, 245, 255, 0.15);
+  color: var(--ink);
+}
+[data-theme="dark"] input:focus, [data-theme="dark"] select:focus, [data-theme="dark"] textarea:focus {
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.15), 0 0 22px rgba(0, 245, 255, 0.12);
+}
+
+/* Logo en ninja: bordillo cian */
+[data-theme="dark"] .logo img.logo-img {
+  background: #11111A;
+  box-shadow: 0 0 0 1.5px rgba(0, 245, 255, 0.5), 0 0 22px rgba(0, 245, 255, 0.25);
+}
+
+/* Tabs ninja */
+[data-theme="dark"] .tabs {
+  background: rgba(17, 17, 26, 0.7);
+  border: 1px solid rgba(0, 245, 255, 0.10);
+}
+[data-theme="dark"] .tab.active {
+  background: var(--gradient-primary);
+  color: #fff;
+  box-shadow: 0 0 22px rgba(255, 26, 77, 0.35);
+}
+[data-theme="dark"] .tab:hover:not(.active) {
+  background: rgba(0, 245, 255, 0.08);
+  color: var(--accent-2);
+}
+
+/* Hero ninja */
+[data-theme="dark"] .hero {
+  background: linear-gradient(135deg, #1A0A14 0%, #07070C 50%, #0A1A22 100%);
+  border: 1px solid rgba(255, 26, 77, 0.20);
+  box-shadow: 0 30px 80px rgba(255, 26, 77, 0.18);
+}
+[data-theme="dark"] .hero h1 {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+[data-theme="dark"] .stat-tile {
+  background: rgba(7, 7, 12, 0.55);
+  border: 1px solid rgba(0, 245, 255, 0.12);
+}
+[data-theme="dark"] .stat-tile .v {
+  color: var(--accent-2);
+  text-shadow: 0 0 18px rgba(0, 245, 255, 0.45);
+}
+
+/* Filas (tareas) ninja */
+[data-theme="dark"] .row {
+  background: linear-gradient(180deg, rgba(26, 26, 40, 0.85), rgba(17, 17, 26, 0.85));
+  border: 1px solid rgba(0, 245, 255, 0.06);
+}
+[data-theme="dark"] .row:hover {
+  border-color: rgba(255, 26, 77, 0.30);
+  box-shadow: 0 8px 28px rgba(255, 26, 77, 0.18);
+  transform: translateX(4px) skewX(-0.5deg);
+}
+[data-theme="dark"] .check.on {
+  background: var(--gradient-primary);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(255, 26, 77, 0.45);
+}
+
+/* Calendario semanal ninja */
+[data-theme="dark"] .wk-cal-strip {
+  background: rgba(17, 17, 26, 0.78) !important;
+  border: 1px solid rgba(0, 245, 255, 0.10);
+}
+[data-theme="dark"] .wk-pill {
+  background: #11111A;
+  border: 1px solid rgba(0, 245, 255, 0.10);
+  color: var(--ink);
+}
+[data-theme="dark"] .wk-pill:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(255, 26, 77, 0.30);
+}
+[data-theme="dark"] .wk-pill.today {
+  background: var(--gradient-primary);
+  color: #fff;
+  box-shadow: 0 0 30px rgba(255, 26, 77, 0.55);
+}
+[data-theme="dark"] .wk-pill.has::after { background: var(--accent-2); box-shadow: 0 0 8px var(--accent-2); }
+[data-theme="dark"] .wk-pill-dot {
+  background: var(--accent);
+  border-color: #07070C;
+  box-shadow: 0 0 12px rgba(255, 26, 77, 0.55);
+}
+[data-theme="dark"] .wk-day {
+  background: linear-gradient(180deg, #11111A 0%, #07070C 100%);
+  border: 1px solid rgba(0, 245, 255, 0.08);
+}
+[data-theme="dark"] .wk-day.today {
+  outline-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 18px 60px rgba(255, 26, 77, 0.30);
+}
+/* Cabeceras de día con overlay oscuro tipo dojo */
+[data-theme="dark"] .wk-day-head { color: #F5F5FA; }
+[data-theme="dark"] .wk-day-head::after {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.45)),
+    repeating-linear-gradient(45deg, rgba(0,0,0,0.10) 0 2px, transparent 2px 8px);
+  pointer-events: none;
+}
+[data-theme="dark"] .wk-day-badge {
+  background: rgba(7, 7, 12, 0.55);
+  color: var(--accent-2);
+  border: 1px solid rgba(0, 245, 255, 0.30);
+  backdrop-filter: blur(8px);
+}
+
+/* Toast ninja */
+[data-theme="dark"] .toast {
+  background: rgba(17, 17, 26, 0.95);
+  color: var(--accent-2);
+  border: 1px solid rgba(0, 245, 255, 0.30);
+  box-shadow: 0 0 30px rgba(0, 245, 255, 0.20);
+}
+
+/* Avatares ninja: bordillo neón */
+[data-theme="dark"] .av {
+  box-shadow: 0 0 0 1.5px rgba(0, 245, 255, 0.25);
+}
+
+/* Sombra del modal */
+[data-theme="dark"] .modal { background: rgba(0, 0, 0, 0.78); }
+
+/* Eyebrow ninja en mono */
+[data-theme="dark"] .eyebrow {
+  font-family: var(--font-mono);
+  color: var(--accent-2);
+  text-shadow: 0 0 12px rgba(0, 245, 255, 0.30);
 }
 
 * { box-sizing: border-box; }
