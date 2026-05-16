@@ -776,6 +776,165 @@ function renderStatsPanel() {
   `).join('');
 
   renderTrophies();
+
+  // Render type chart
+  renderTypeChart();
+}
+
+// ── Type Chart: Tareas por tipo y usuario ────────────────
+let chartDateFrom, chartDateTo;
+
+function initChartFilters() {
+  const now = new Date();
+  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  
+  chartDateFrom = firstDayOfMonth;
+  chartDateTo = now;
+  
+  const fromInput = $('chart-date-from');
+  const toInput = $('chart-date-to');
+  if (!fromInput || !toInput) return;
+  
+  fromInput.value = formatDateForInput(chartDateFrom);
+  toInput.value = formatDateForInput(chartDateTo);
+  
+  fromInput.addEventListener('change', (e) => {
+    chartDateFrom = new Date(e.target.value + 'T00:00:00');
+    renderTypeChart();
+  });
+  
+  toInput.addEventListener('change', (e) => {
+    chartDateTo = new Date(e.target.value + 'T23:59:59');
+    renderTypeChart();
+  });
+  
+  $('chart-reset')?.addEventListener('click', () => {
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    chartDateFrom = firstDayOfMonth;
+    chartDateTo = now;
+    fromInput.value = formatDateForInput(chartDateFrom);
+    toInput.value = formatDateForInput(chartDateTo);
+    renderTypeChart();
+  });
+}
+
+function formatDateForInput(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function renderTypeChart() {
+  const container = $('stats-type-chart');
+  if (!container) return;
+  
+  const fromStr = chartDateFrom.toISOString().slice(0, 10);
+  const toStr = chartDateTo.toISOString().slice(0, 10);
+  
+  // Get all task types from TASK_SUBCATEGORIES
+  const taskTypes = {};
+  
+  Object.keys(TASK_SUBCATEGORIES).forEach(room => {
+    taskTypes[room] = { 
+      label: TASK_SUBCATEGORIES[room][0]?.label || room,
+      emoji: TASK_SUBCATEGORIES[room][0]?.emoji || '📋',
+      color: getRoomColor(room)
+    };
+  });
+  
+  // Count tasks by user and type
+  const dataByUser = new Map();
+  STATE.users.forEach(u => dataByUser.set(u.id, { user: u, byType: {} }));
+  
+  STATE.tasks.forEach(t => {
+    if (!t.done || !t.done_at) return;
+    const doneDate = t.done_at.slice(0, 10);
+    if (doneDate < fromStr || doneDate > toStr) return;
+    if (!t.assignee || !dataByUser.has(t.assignee)) return;
+    
+    const userData = dataByUser.get(t.assignee);
+    const typeKey = t.room || 'otros';
+    
+    if (!taskTypes[typeKey]) {
+      taskTypes[typeKey] = { label: typeKey, emoji: '📋', color: '#9CA3AF' };
+    }
+    
+    if (!userData.byType[typeKey]) userData.byType[typeKey] = 0;
+    userData.byType[typeKey]++;
+  });
+  
+  // Calculate max total for scaling
+  let maxTotal = 1;
+  dataByUser.forEach(userData => {
+    const total = Object.values(userData.byType).reduce((a, b) => a + b, 0);
+    if (total > maxTotal) maxTotal = total;
+  });
+  
+  // Build HTML
+  let html = '';
+  dataByUser.forEach(({ user, byType }) => {
+    const total = Object.values(byType).reduce((a, b) => a + b, 0);
+    if (total === 0) return;
+    
+    const segments = Object.entries(byType)
+      .map(([typeKey, count]) => {
+        const typeInfo = taskTypes[typeKey];
+        const pct = (count / maxTotal) * 100;
+        return `<div class="type-chart-bar-segment" style="width:${pct}%;background:${typeInfo.color};" title="${typeInfo.emoji} ${typeInfo.label}: ${count}"></div>`;
+      })
+      .join('');
+    
+    html += `
+      <div class="type-chart-row">
+        <div class="type-chart-user">
+          ${avatarHTML(user, 'xs')}
+          <span class="type-chart-user-name">${esc(user.name)}</span>
+        </div>
+        <div class="type-chart-bars">${segments}</div>
+        <div class="type-chart-total">${total}</div>
+      </div>
+    `;
+  });
+  
+  if (!html) {
+    html = '<p class="empty">No hay tareas completadas en este periodo.</p>';
+  }
+  
+  // Build legend
+  const legendHtml = Object.entries(taskTypes)
+    .filter(([key]) => {
+      let hasData = false;
+      dataByUser.forEach(ud => { if (ud.byType[key]) hasData = true; });
+      return hasData;
+    })
+    .map(([key, info]) => `
+      <div class="type-chart-legend-item">
+        <div class="type-chart-legend-color" style="background:${info.color};"></div>
+        <span>${info.emoji} ${info.label}</span>
+      </div>
+    `)
+    .join('');
+  
+  container.innerHTML = `
+    ${html}
+    ${legendHtml ? `<div class="type-chart-legend">${legendHtml}</div>` : ''}
+  `;
+}
+
+function getRoomColor(room) {
+  const colors = {
+    'salon': '#FF6B6B',
+    'habitat-sandra': '#FFD98A',
+    'habitat-jorge': '#4ECDC4',
+    'habitat-lucas': '#A8D5BA',
+    'cocina': '#FFB84D',
+    'bano': '#7C5CFF',
+    'cloe': '#2EE6A6',
+    'otros': '#9CA3AF'
+  };
+  return colors[room] || colors['otros'];
 }
 
 // ── Trofeos / premios ────────────────────────────────────
