@@ -1481,6 +1481,123 @@ textarea { resize: vertical; min-height: 60px; }
 }
 .row.from-gcal { border-left-width: 3px; border-left-style: dashed !important; }
 
+/* ── 🎨 Emoji picker (admin > nuevo premio) ─────────────── */
+.emoji-input-wrap {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.emoji-input-wrap input {
+  flex: 1;
+  min-width: 0;
+}
+.emoji-picker-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.emoji-picker {
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  border-radius: 22px;
+  padding: 16px;
+  margin: 12px 0 6px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  animation: pickerIn 0.18s ease-out;
+}
+@keyframes pickerIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.emoji-picker-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.emoji-picker-head input[type="search"] {
+  flex: 1;
+  padding: 10px 16px;
+  font-size: 14px;
+  border-radius: 50px;
+  border: 1.5px solid var(--line);
+}
+.emoji-picker-head .modal-close {
+  position: static;
+  flex-shrink: 0;
+}
+.emoji-picker-body {
+  max-height: 360px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-right: 4px;
+}
+.emoji-picker-body::-webkit-scrollbar { width: 8px; }
+.emoji-picker-body::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 50px;
+}
+
+.emoji-cat-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ink-2);
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  margin: 0 0 6px;
+  padding-left: 4px;
+}
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  gap: 4px;
+}
+.emoji-cell {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--surface-2);
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+}
+.emoji-cell:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  transform: scale(1.18) rotate(-3deg);
+}
+.emoji-cell:active {
+  transform: scale(0.92);
+}
+
+[data-theme="dark"] .emoji-picker {
+  background: linear-gradient(180deg, #11111A, #07070C);
+  border-color: var(--accent);
+  box-shadow: 0 0 30px rgba(255, 26, 77, 0.25);
+}
+[data-theme="dark"] .emoji-cell {
+  background: rgba(7, 7, 12, 0.45);
+}
+[data-theme="dark"] .emoji-cell:hover {
+  background: rgba(0, 245, 255, 0.10);
+  border-color: var(--accent-2);
+}
+
+@media (max-width: 760px) {
+  .emoji-picker-body { max-height: 50vh; }
+  .emoji-grid { grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)); gap: 3px; }
+  .emoji-cell { font-size: 20px; border-radius: 8px; }
+}
+
 /* ── 🪙 Reglas de monedas (admin) ──────────────────────── */
 .coin-rules-list {
   display: flex;

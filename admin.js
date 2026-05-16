@@ -472,6 +472,61 @@ async function saveCoinRules() {
 
 $('save-coin-rules')?.addEventListener('click', saveCoinRules);
 
+// ═══════════════════════════════════════════════════════
+// 🎨 Picker de emojis para el formulario de premios
+// ═══════════════════════════════════════════════════════
+function renderEmojiPicker(filterText = '') {
+  const body = $('emoji-picker-body');
+  if (!body || typeof EMOJI_CATALOG !== 'object') return;
+  const q = filterText.trim().toLowerCase();
+
+  const sections = Object.entries(EMOJI_CATALOG).map(([cat, emojis]) => {
+    const catMatch = cat.toLowerCase().includes(q);
+    const filteredEmojis = q && !catMatch
+      ? []   // si la categoría no coincide y hay query, omitimos (los emojis no tienen texto)
+      : emojis;
+    if (!filteredEmojis.length) return '';
+    return `
+      <div class="emoji-cat">
+        <h5 class="emoji-cat-title">${esc(cat)}</h5>
+        <div class="emoji-grid">
+          ${filteredEmojis.map(e => `<button type="button" class="emoji-cell" data-emoji="${esc(e)}" title="${esc(e)}">${e}</button>`).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  body.innerHTML = sections || '<p class="empty">Sin coincidencias. Prueba "comida", "ocio", "tech"…</p>';
+
+  // Click → mete emoji en el input y cierra
+  $$('.emoji-cell', body).forEach(b => b.addEventListener('click', () => {
+    const emoji = b.dataset.emoji;
+    if (!emoji || !rewardForm) return;
+    rewardForm.elements.emoji.value = emoji;
+    closeEmojiPicker();
+  }));
+}
+
+function openEmojiPicker() {
+  $('emoji-picker')?.classList.remove('hidden');
+  renderEmojiPicker($('emoji-search')?.value || '');
+  setTimeout(() => $('emoji-search')?.focus(), 60);
+}
+function closeEmojiPicker() {
+  $('emoji-picker')?.classList.add('hidden');
+}
+
+$('open-emoji-picker')?.addEventListener('click', openEmojiPicker);
+$('close-emoji-picker')?.addEventListener('click', closeEmojiPicker);
+$('emoji-search')?.addEventListener('input', e => renderEmojiPicker(e.target.value));
+
+// Esc dentro del picker
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$('emoji-picker')?.classList.contains('hidden')) {
+    closeEmojiPicker();
+  }
+});
+
 // Realtime: usuarios + tienda + reglas de monedas
 db.channel('cloe-admin')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'users'       }, () => { loadUsers(); loadShop(); })

@@ -109,8 +109,23 @@
     <form id="reward-form" style="margin-top:18px;">
       <input type="hidden" name="id">
       <div class="form-row">
-        <label><span>Emoji</span><input type="text" name="emoji" maxlength="2" value="🎁" style="text-align:center;font-size:28px;" required></label>
+        <label class="emoji-field">
+          <span>Emoji</span>
+          <div class="emoji-input-wrap">
+            <input type="text" name="emoji" maxlength="2" value="🎁" style="text-align:center;font-size:28px;" required>
+            <button type="button" class="btn ghost sm emoji-picker-btn" id="open-emoji-picker">🎨 Elegir</button>
+          </div>
+        </label>
         <label><span>Coste 🪙</span><input type="number" name="cost" min="1" value="50" required></label>
+      </div>
+
+      <!-- Panel del picker (oculto por defecto) -->
+      <div class="emoji-picker hidden" id="emoji-picker">
+        <div class="emoji-picker-head">
+          <input type="search" id="emoji-search" placeholder="🔍 Busca por categoría (ej. comida, tech, deporte)" autocomplete="off">
+          <button type="button" class="modal-close" id="close-emoji-picker">×</button>
+        </div>
+        <div class="emoji-picker-body" id="emoji-picker-body"></div>
       </div>
       <label><span>Nombre</span><input type="text" name="name" required placeholder="Película de los viernes…"></label>
       <label><span>Descripción <small class="muted">(opcional)</small></span><textarea name="description" rows="2" placeholder="Detalles del premio"></textarea></label>
