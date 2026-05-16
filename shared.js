@@ -1622,9 +1622,29 @@ function totalCoins(state, uid) {
   for (const s of ((state && state.shopping) || [])) {
     if (s.done && s.added_by === uid) sum += COINS.SHOP_DONE;
   }
-  // Sumar las monedas otorgadas por trofeos desbloqueados (snapshot en BD).
-  for (const tu of ((state && state.trophiesUnlocked) || [])) {
-    if (tu.user_id === uid) sum += Math.max(0, tu.coins || 0);
+  // Sumar las monedas otorgadas por trofeos actualmente desbloqueados.
+  // Evaluamos el catálogo en memoria (mismo resultado en todos los dispositivos)
+  // para no depender de que la tabla `trophies_unlocked` exista o esté sincronizada.
+  if (typeof TROPHIES !== 'undefined' && Array.isArray(TROPHIES)) {
+    for (const tr of TROPHIES) {
+      if (!tr || typeof tr.eval !== 'function') continue;
+      try {
+        const r = tr.eval(state, uid);
+        if (r && r.current >= r.target) {
+          sum += Math.max(0, tr.coins || 0);
+        }
+      } catch { /* trofeo con eval defectuoso → lo ignoramos */ }
+    }
+  }
+  // Suma extra: trofeos persistidos en BD cuyo id ya no existe en el catálogo
+  // (compatibilidad si se retira un trofeo: no se le quita lo ya ganado).
+  if (state && Array.isArray(state.trophiesUnlocked) && typeof TROPHIES !== 'undefined') {
+    const known = new Set(TROPHIES.map(t => t.id));
+    for (const tu of state.trophiesUnlocked) {
+      if (tu.user_id === uid && !known.has(tu.trophy_id)) {
+        sum += Math.max(0, tu.coins || 0);
+      }
+    }
   }
   // Descontar canjes aprobados o entregados (los rechazados no cuentan; los pending no se han confirmado aún)
   for (const r of ((state && state.redemptions) || [])) {

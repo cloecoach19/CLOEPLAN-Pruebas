@@ -441,9 +441,16 @@ async function loadAll() {
     db.from('task_coin_rules').select('*'),
   ]);
   const [u, t, s, e, cw, cd, rw, rd, cr, tu, tcr] = results;
-  const firstError = results.find(r => r && r.error);
-  if (firstError) {
-    console.error('loadAll error', firstError.error);
+  const tableNames = ['users','tasks','shopping','events','cloe_walks','cloe_downs','rewards','redemptions','coin_rules','trophies_unlocked','task_coin_rules'];
+  const missingTables = results
+    .map((r, i) => (r && r.error && /relation|does not exist|table|42P01/i.test(r.error.message || r.error.code || '')) ? tableNames[i] : null)
+    .filter(Boolean);
+  const otherError = results.find((r, i) => r && r.error && !missingTables.includes(tableNames[i]));
+  if (missingTables.length) {
+    console.warn('Tablas Supabase no encontradas:', missingTables);
+    showToast(`⚠️ Falta ejecutar supabase_setup.sql (tablas: ${missingTables.join(', ')})`, 6000);
+  } else if (otherError) {
+    console.error('loadAll error', otherError.error);
     showToast('Error al cargar datos. Revisa tu conexión.');
   }
   STATE.users = (u.data || []).filter(x => x.status === 'active');
@@ -480,6 +487,7 @@ function renderAll() {
   renderStatsPanel();
   renderRewardsShop();
   paintBadges();
+  checkTrophyUnlocks();
   paintCoinBalance();
   runNotifChecks();
 }
@@ -1104,6 +1112,33 @@ async function persistTrophyUnlock(tr) {
   }
 }
 
+// Detecta nuevos trofeos desbloqueados y dispara persistencia + celebración.
+// Se invoca SIEMPRE desde renderAll, independientemente de la pestaña abierta.
+let _trophiesInitialized = false;
+function checkTrophyUnlocks() {
+  if (!me || !me.id || typeof TROPHIES === 'undefined') return;
+  const alreadyPersisted = trophiesUnlockedForMe();
+  const alreadyCelebrated = loadCelebrated();
+  const celebratedNext = new Set(alreadyCelebrated);
+  let changed = false;
+  for (const tr of TROPHIES) {
+    if (!tr || typeof tr.eval !== 'function') continue;
+    let r;
+    try { r = tr.eval(STATE, me.id); } catch { continue; }
+    if (!r || r.current < r.target) continue;
+    // Persistencia en BD (silenciosa, idempotente).
+    if (!alreadyPersisted.has(tr.id)) persistTrophyUnlock(tr);
+    // Celebración solo si es nuevo en este dispositivo y no es la primera carga.
+    if (!celebratedNext.has(tr.id)) {
+      if (_trophiesInitialized) celebrateTrophy(tr);
+      celebratedNext.add(tr.id);
+      changed = true;
+    }
+  }
+  if (changed) saveCelebrated(celebratedNext);
+  _trophiesInitialized = true;
+}
+
 function renderTrophies() {
   const grid = $('trophies-grid');
   const summary = $('trophies-summary');
@@ -1115,23 +1150,7 @@ function renderTrophies() {
     return { ...tr, ...r, unlocked, pct: Math.min(100, (r.current / r.target) * 100) };
   });
 
-  // Detectar nuevos desbloqueos para celebrarlos y persistirlos en BD.
-  const alreadyPersisted = trophiesUnlockedForMe();
-  const alreadyCelebrated = loadCelebrated();
   const nowUnlocked = new Set(evaluated.filter(t => t.unlocked).map(t => t.id));
-  const justUnlocked = [...nowUnlocked].filter(id => !alreadyPersisted.has(id));
-  if (justUnlocked.length) {
-    const celebratedNext = new Set(alreadyCelebrated);
-    justUnlocked.forEach(id => {
-      const tr = evaluated.find(t => t.id === id);
-      persistTrophyUnlock(tr);
-      if (!celebratedNext.has(id)) {
-        celebrateTrophy(tr);
-        celebratedNext.add(id);
-      }
-    });
-    saveCelebrated(celebratedNext);
-  }
 
   // Orden: desbloqueados primero, luego por progreso descendente
   evaluated.sort((a, b) => {

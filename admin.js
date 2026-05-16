@@ -492,8 +492,17 @@ let taskCoinDirty = false;
 
 async function loadTaskCoinRules() {
   const { data, error } = await db.from('task_coin_rules').select('*');
-  if (error) { showToast('Error al cargar reglas finas'); taskCoinRules = []; }
-  else taskCoinRules = data || [];
+  if (error) {
+    const msg = (error.message || '') + ' ' + (error.code || '');
+    if (/relation|does not exist|42P01/i.test(msg)) {
+      showToast('⚠️ Falta ejecutar supabase_setup.sql (tabla task_coin_rules)', 6000);
+    } else {
+      showToast('Error al cargar reglas finas');
+    }
+    taskCoinRules = [];
+  } else {
+    taskCoinRules = data || [];
+  }
   renderTaskCoinRules();
 }
 
