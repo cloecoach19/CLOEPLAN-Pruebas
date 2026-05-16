@@ -282,6 +282,20 @@
 
       <h4 class="eyebrow" style="margin: 24px 0 10px;">// racha · últimos 7 días</h4>
       <div id="stats-week-bars" class="stats-bars"></div>
+
+      <h4 class="eyebrow" style="margin: 24px 0 10px;">// tareas por tipo · mes en curso</h4>
+      <div class="chart-filters" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+        <label style="font-size:12px;color:var(--ink-2);">
+          Desde:
+          <input type="date" id="chart-date-from" style="padding:6px 10px;border-radius:8px;border:1px solid var(--line);font-size:12px;">
+        </label>
+        <label style="font-size:12px;color:var(--ink-2);">
+          Hasta:
+          <input type="date" id="chart-date-to" style="padding:6px 10px;border-radius:8px;border:1px solid var(--line);font-size:12px;">
+        </label>
+        <button class="btn ghost sm" id="chart-reset">Este mes</button>
+      </div>
+      <div id="stats-type-chart" class="type-chart"></div>
     </div>
 
     <div class="card">
