@@ -1232,6 +1232,7 @@ const TASK_SUBCATEGORIES = {
     { id: 'comida', emoji: '🍝', label: 'Comida' },
     { id: 'cena', emoji: '🌙', label: 'Cena' },
     { id: 'limpieza', emoji: '🧽', label: 'Limpieza' },
+    { id: 'limpieza-profunda', emoji: '✨', label: 'Limpieza profunda' },
     { id: 'ventanas', emoji: '🪟', label: 'Ventanas' },
     { id: 'basura', emoji: '🗑️', label: 'Bajar basura' },
     { id: 'compra', emoji: '🛒', label: 'Compra' },
@@ -1241,6 +1242,7 @@ const TASK_SUBCATEGORIES = {
   ],
   'bano': [
     { id: 'limpieza', emoji: '🧽', label: 'Limpieza' },
+    { id: 'limpieza-total', emoji: '✨', label: 'Limpieza Total' },
     { id: 'polvo', emoji: '✨', label: 'Polvo' },
     { id: 'ventanas', emoji: '🪟', label: 'Ventanas' },
   ],
@@ -1569,6 +1571,8 @@ function coinsForTask(t) {
   if (t.room && t.room.startsWith('habitat-')) c = COINS.TASK_KIDROOM;
   else if (t.room === 'cocina') c = COINS.TASK_KITCHEN;
   if (t.subcategory === 'limpieza') c = Math.max(c, COINS.TASK_CLEAN);
+  // Tareas especiales de limpieza profunda/total
+  if (t.subcategory === 'limpieza-profunda' || t.subcategory === 'limpieza-total') c = 15;
   return c;
 }
 
