@@ -417,14 +417,14 @@ function renderAll() {
   renderUpcomingEvents();
   renderCloe();
   renderStatsPanel();
-  renderShop();
+  renderRewardsShop();
   paintBadges();
   paintCoinBalance();
   runNotifChecks();
 }
 
 // ── 🛍️ TIENDA ───────────────────────────────────────────
-function renderShop() {
+function renderRewardsShop() {
   const grid = $('rewards-grid');
   const myList = $('my-redemptions');
   const balanceEl = $('shop-balance-num');

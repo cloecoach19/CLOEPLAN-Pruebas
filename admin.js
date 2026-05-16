@@ -280,36 +280,46 @@ async function resolveRedemption(id, newStatus) {
 
 // ── Modal crear/editar premio ────────────────────────────
 function openRewardCreate() {
+  if (!rewardModal || !rewardForm) { showToast('La tienda no se ha cargado bien'); return; }
   $('reward-modal-title').textContent = 'Nuevo premio';
   rewardForm.reset();
-  rewardForm.id.value = '';
-  rewardForm.emoji.value = '🎁';
-  rewardForm.cost.value = 50;
-  rewardForm.active.value = 'true';
+  const els = rewardForm.elements;
+  els.id.value = '';
+  els.emoji.value = '🎁';
+  els.cost.value = 50;
+  els.active.value = 'true';
   $('del-reward-btn').classList.add('hidden');
   rewardModal.classList.remove('hidden');
-  rewardForm.name.focus();
+  try { els.name.focus(); } catch {}
 }
 
 function openRewardEdit(id) {
+  if (!rewardModal || !rewardForm) return;
   const r = rewards.find(x => x.id === id);
   if (!r) return;
   $('reward-modal-title').textContent = 'Editar · ' + r.name;
   rewardForm.reset();
-  rewardForm.id.value = r.id;
-  rewardForm.emoji.value = r.emoji || '🎁';
-  rewardForm.cost.value = r.cost;
-  rewardForm.name.value = r.name;
-  rewardForm.description.value = r.description || '';
-  rewardForm.stock.value = r.stock === null ? '' : r.stock;
-  rewardForm.active.value = r.active ? 'true' : 'false';
+  const els = rewardForm.elements;
+  els.id.value = r.id;
+  els.emoji.value = r.emoji || '🎁';
+  els.cost.value = r.cost;
+  els.name.value = r.name;
+  els.description.value = r.description || '';
+  els.stock.value = r.stock === null ? '' : r.stock;
+  els.active.value = r.active ? 'true' : 'false';
   $('del-reward-btn').classList.remove('hidden');
   rewardModal.classList.remove('hidden');
 }
 
 function closeRewardModal() { rewardModal.classList.add('hidden'); }
 
-rewardForm.addEventListener('submit', async e => {
+// Si por algún motivo no existe el modal de premios (página antigua cacheada),
+// no rompemos el resto del admin.
+if (!rewardForm || !rewardModal) {
+  console.warn('[admin] Tienda no encontrada en el DOM. Recarga forzada con Ctrl+F5 si has actualizado los archivos.');
+}
+
+rewardForm?.addEventListener('submit', async e => {
   e.preventDefault();
   const fd = new FormData(rewardForm);
   const stockRaw = fd.get('stock');
@@ -342,21 +352,29 @@ rewardForm.addEventListener('submit', async e => {
   loadShop();
 });
 
-$('new-reward-btn').addEventListener('click', openRewardCreate);
-$('close-reward-modal').addEventListener('click', closeRewardModal);
-$('cancel-reward').addEventListener('click', closeRewardModal);
-rewardModal.addEventListener('click', e => { if (e.target === rewardModal) closeRewardModal(); });
+// Delegación: aunque el botón "Nuevo premio" no exista todavía o si el script se cargó antes que el DOM,
+// este click siempre funciona.
+document.addEventListener('click', e => {
+  if (e.target.closest('#new-reward-btn')) {
+    e.preventDefault();
+    openRewardCreate();
+  }
+});
 
-$('del-reward-btn').addEventListener('click', () => {
-  const id = rewardForm.id.value;
+$('close-reward-modal')?.addEventListener('click', closeRewardModal);
+$('cancel-reward')?.addEventListener('click', closeRewardModal);
+rewardModal?.addEventListener('click', e => { if (e.target === rewardModal) closeRewardModal(); });
+
+$('del-reward-btn')?.addEventListener('click', () => {
+  const id = rewardForm.elements.id.value;
   const r = rewards.find(x => x.id === id);
   if (!r) return;
   pendingRewardDelete = id;
   $('reward-confirm-text').textContent = `Vas a eliminar "${r.name}". Los canjes existentes mantendrán el nombre histórico pero el premio desaparece de la tienda.`;
   rewardConfirmModal.classList.remove('hidden');
 });
-$('cancel-reward-del').addEventListener('click', () => { rewardConfirmModal.classList.add('hidden'); pendingRewardDelete = null; });
-$('confirm-reward-del').addEventListener('click', async () => {
+$('cancel-reward-del')?.addEventListener('click', () => { rewardConfirmModal.classList.add('hidden'); pendingRewardDelete = null; });
+$('confirm-reward-del')?.addEventListener('click', async () => {
   if (!pendingRewardDelete) return;
   const { error } = await db.from('rewards').delete().eq('id', pendingRewardDelete);
   if (error) { showToast('Error: ' + error.message); return; }
@@ -365,13 +383,13 @@ $('confirm-reward-del').addEventListener('click', async () => {
   closeRewardModal();
   loadShop();
 });
-rewardConfirmModal.addEventListener('click', e => { if (e.target === rewardConfirmModal) { rewardConfirmModal.classList.add('hidden'); pendingRewardDelete = null; } });
+rewardConfirmModal?.addEventListener('click', e => { if (e.target === rewardConfirmModal) { rewardConfirmModal.classList.add('hidden'); pendingRewardDelete = null; } });
 
 // Esc cierra modales de la tienda también
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
-  if (!rewardModal.classList.contains('hidden')) closeRewardModal();
-  if (!rewardConfirmModal.classList.contains('hidden')) { rewardConfirmModal.classList.add('hidden'); pendingRewardDelete = null; }
+  if (rewardModal && !rewardModal.classList.contains('hidden')) closeRewardModal();
+  if (rewardConfirmModal && !rewardConfirmModal.classList.contains('hidden')) { rewardConfirmModal.classList.add('hidden'); pendingRewardDelete = null; }
 });
 
 // Realtime: usuarios + tienda
