@@ -1022,7 +1022,24 @@ function renderTrophies() {
 }
 
 function celebrateTrophy(tr) {
-  showToast(`🏆 ¡Trofeo desbloqueado! ${tr.emoji} ${tr.name}`, 4500);
+  // Award coins for unlocking the trophy
+  const coins = tr.coins || 0;
+  if (coins > 0 && me && me.id) {
+    // Add coins directly to STATE for the user
+    const coinEntry = {
+      id: Date.now().toString(),
+      user_id: me.id,
+      amount: coins,
+      reason: `trophy:${tr.id}`,
+      created_at: new Date().toISOString()
+    };
+    if (!STATE.coin_history) STATE.coin_history = [];
+    STATE.coin_history.push(coinEntry);
+    saveState();
+    updateCoins();
+  }
+  
+  showToast(`🏆 ¡Trofeo desbloqueado! ${tr.emoji} ${tr.name}${coins > 0 ? ` (+${coins} 🪙)` : ''}`, 4500);
   if (typeof notifyOnce === 'function') {
     notifyOnce(`trophy:${tr.id}`, `🏆 ¡Trofeo desbloqueado!`, `${tr.emoji} ${tr.name} — ${tr.desc}`);
   }

@@ -1422,90 +1422,90 @@ const EMOJI_CATALOG = {
 // 'unlocked' se calcula como current >= target
 const TROPHIES = [
   // ── Tareas (común → mítico) ───────────────────────────
-  { id: 'first-task', emoji: '🎯', name: 'Primer paso', desc: 'Completa tu primera misión.', rarity: 'common',
+  { id: 'first-task', emoji: '🎯', name: 'Primer paso', desc: 'Completa tu primera misión.', rarity: 'common', coins: 10,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid).length, target: 1 }) },
-  { id: 'tasks-10', emoji: '✅', name: 'Calentando motores', desc: '10 misiones completadas.', rarity: 'common',
+  { id: 'tasks-10', emoji: '✅', name: 'Calentando motores', desc: '10 misiones completadas.', rarity: 'common', coins: 20,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid).length, target: 10 }) },
-  { id: 'tasks-50', emoji: '⚡', name: 'Máquina', desc: '50 misiones completadas.', rarity: 'rare',
+  { id: 'tasks-50', emoji: '⚡', name: 'Máquina', desc: '50 misiones completadas.', rarity: 'rare', coins: 50,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid).length, target: 50 }) },
-  { id: 'tasks-100', emoji: '💯', name: 'Centena gloriosa', desc: '100 misiones a tus espaldas.', rarity: 'epic',
+  { id: 'tasks-100', emoji: '💯', name: 'Centena gloriosa', desc: '100 misiones a tus espaldas.', rarity: 'epic', coins: 150,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid).length, target: 100 }) },
-  { id: 'tasks-500', emoji: '🏆', name: 'Quinientos finos', desc: '500 misiones. Leyenda en pijama.', rarity: 'legendary',
+  { id: 'tasks-500', emoji: '🏆', name: 'Quinientos finos', desc: '500 misiones. Leyenda en pijama.', rarity: 'legendary', coins: 500,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid).length, target: 500 }) },
-  { id: 'tasks-1000', emoji: '👑', name: 'Mil veces héroe', desc: '1000 misiones. Estatua merecida.', rarity: 'mythic',
+  { id: 'tasks-1000', emoji: '👑', name: 'Mil veces héroe', desc: '1000 misiones. Estatua merecida.', rarity: 'mythic', coins: 1000,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid).length, target: 1000 }) },
 
   // ── Rachas ────────────────────────────────────────────
-  { id: 'streak-3', emoji: '🔥', name: 'Racha encendida', desc: '3 días seguidos haciendo al menos una tarea.', rarity: 'common',
+  { id: 'streak-3', emoji: '🔥', name: 'Racha encendida', desc: '3 días seguidos haciendo al menos una tarea.', rarity: 'common', coins: 15,
     eval: (s, uid) => ({ current: computeStreak(s, uid), target: 3 }) },
-  { id: 'streak-7', emoji: '🔥', name: 'Semana imparable', desc: '7 días seguidos.', rarity: 'rare',
+  { id: 'streak-7', emoji: '🔥', name: 'Semana imparable', desc: '7 días seguidos.', rarity: 'rare', coins: 50,
     eval: (s, uid) => ({ current: computeStreak(s, uid), target: 7 }) },
-  { id: 'streak-30', emoji: '🌋', name: 'Volcán doméstico', desc: '30 días seguidos. Locura sana.', rarity: 'epic',
+  { id: 'streak-30', emoji: '🌋', name: 'Volcán doméstico', desc: '30 días seguidos. Locura sana.', rarity: 'epic', coins: 200,
     eval: (s, uid) => ({ current: computeStreak(s, uid), target: 30 }) },
 
   // ── Horarios extremos ─────────────────────────────────
-  { id: 'early-bird', emoji: '🌅', name: 'Madrugador', desc: 'Una tarea hecha antes de las 7 AM.', rarity: 'rare',
+  { id: 'early-bird', emoji: '🌅', name: 'Madrugador', desc: 'Una tarea hecha antes de las 7 AM.', rarity: 'rare', coins: 30,
     eval: (s, uid) => ({
       current: s.tasks.some(t => t.done && t.assignee === uid && t.done_at && new Date(t.done_at).getHours() < 7) ? 1 : 0,
       target: 1
     }) },
-  { id: 'night-owl', emoji: '🦉', name: 'Búho nocturno', desc: 'Una tarea hecha después de las 23 h.', rarity: 'rare',
+  { id: 'night-owl', emoji: '🦉', name: 'Búho nocturno', desc: 'Una tarea hecha después de las 23 h.', rarity: 'rare', coins: 30,
     eval: (s, uid) => ({
       current: s.tasks.some(t => t.done && t.assignee === uid && t.done_at && new Date(t.done_at).getHours() >= 23) ? 1 : 0,
       target: 1
     }) },
-  { id: 'sprint-5', emoji: '💨', name: 'Sprint relámpago', desc: '5 misiones en un mismo día.', rarity: 'rare',
+  { id: 'sprint-5', emoji: '💨', name: 'Sprint relámpago', desc: '5 misiones en un mismo día.', rarity: 'rare', coins: 40,
     eval: (s, uid) => ({ current: maxTasksOneDay(s, uid), target: 5 }) },
-  { id: 'sprint-10', emoji: '🚀', name: 'Combo decuple', desc: '10 misiones en un mismo día.', rarity: 'epic',
+  { id: 'sprint-10', emoji: '🚀', name: 'Combo decuple', desc: '10 misiones en un mismo día.', rarity: 'epic', coins: 100,
     eval: (s, uid) => ({ current: maxTasksOneDay(s, uid), target: 10 }) },
 
   // ── Especialistas por sala ────────────────────────────
-  { id: 'kitchen-25', emoji: '🍳', name: 'Chef de la casa', desc: '25 misiones de cocina.', rarity: 'rare',
+  { id: 'kitchen-25', emoji: '🍳', name: 'Chef de la casa', desc: '25 misiones de cocina.', rarity: 'rare', coins: 50,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.room === 'cocina').length, target: 25 }) },
-  { id: 'clean-25', emoji: '🧽', name: 'Maestro brillo', desc: '25 misiones de limpieza.', rarity: 'rare',
+  { id: 'clean-25', emoji: '🧽', name: 'Maestro brillo', desc: '25 misiones de limpieza.', rarity: 'rare', coins: 50,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.subcategory === 'limpieza').length, target: 25 }) },
-  { id: 'bath-15', emoji: '🚿', name: 'Spa manager', desc: '15 misiones del baño.', rarity: 'rare',
+  { id: 'bath-15', emoji: '🚿', name: 'Spa manager', desc: '15 misiones del baño.', rarity: 'rare', coins: 40,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.room === 'bano').length, target: 15 }) },
-  { id: 'window-cleaner', emoji: '🪟', name: 'Cazador de huellas', desc: '10 ventanas relucientes.', rarity: 'rare',
+  { id: 'window-cleaner', emoji: '🪟', name: 'Cazador de huellas', desc: '10 ventanas relucientes.', rarity: 'rare', coins: 30,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.subcategory === 'ventanas').length, target: 10 }) },
 
   // ── Cloe ──────────────────────────────────────────────
-  { id: 'cloe-first', emoji: '🐶', name: 'Bienvenida al club', desc: 'Tu primer paseo con Cloe.', rarity: 'common',
+  { id: 'cloe-first', emoji: '🐶', name: 'Bienvenida al club', desc: 'Tu primer paseo con Cloe.', rarity: 'common', coins: 10,
     eval: (s, uid) => ({ current: (s.cloeWalks || []).filter(w => w.assignee === uid).length, target: 1 }) },
-  { id: 'cloe-20', emoji: '🐕', name: 'Paseante VIP', desc: '20 paseos con Cloe.', rarity: 'rare',
+  { id: 'cloe-20', emoji: '🐕', name: 'Paseante VIP', desc: '20 paseos con Cloe.', rarity: 'rare', coins: 50,
     eval: (s, uid) => ({ current: (s.cloeWalks || []).filter(w => w.assignee === uid).length, target: 20 }) },
-  { id: 'cloe-100', emoji: '🐕‍🦺', name: 'Cloe te adora', desc: '100 paseos con Cloe.', rarity: 'epic',
+  { id: 'cloe-100', emoji: '🐕‍🦺', name: 'Cloe te adora', desc: '100 paseos con Cloe.', rarity: 'epic', coins: 150,
     eval: (s, uid) => ({ current: (s.cloeWalks || []).filter(w => w.assignee === uid).length, target: 100 }) },
-  { id: 'cloe-walk-10k', emoji: '⏱️', name: 'Tobillo de hierro', desc: '500 minutos paseando.', rarity: 'epic',
+  { id: 'cloe-walk-10k', emoji: '⏱️', name: 'Tobillo de hierro', desc: '500 minutos paseando.', rarity: 'epic', coins: 150,
     eval: (s, uid) => ({
       current: (s.cloeWalks || []).filter(w => w.assignee === uid).reduce((acc, w) => acc + (w.duration || 30), 0),
       target: 500
     }) },
-  { id: 'poop-scout', emoji: '💩', name: 'Recoge-cacas pro', desc: '50 caquitas registradas.', rarity: 'rare',
+  { id: 'poop-scout', emoji: '💩', name: 'Recoge-cacas pro', desc: '50 caquitas registradas.', rarity: 'rare', coins: 50,
     eval: (s, uid) => ({
       current: (s.cloeDowns || []).filter(d => d.assignee === uid && d.reason === 'caca').length,
       target: 50
     }) },
 
   // ── Compra ────────────────────────────────────────────
-  { id: 'shop-first', emoji: '🛒', name: 'A tu carro', desc: 'Añade tu primer producto.', rarity: 'common',
+  { id: 'shop-first', emoji: '🛒', name: 'A tu carro', desc: 'Añade tu primer producto.', rarity: 'common', coins: 10,
     eval: (s, uid) => ({ current: s.shopping.filter(x => x.added_by === uid).length, target: 1 }) },
-  { id: 'shop-50', emoji: '🛍️', name: 'Carrito serial', desc: '50 productos comprados.', rarity: 'rare',
+  { id: 'shop-50', emoji: '🛍️', name: 'Carrito serial', desc: '50 productos comprados.', rarity: 'rare', coins: 50,
     eval: (s, uid) => ({ current: s.shopping.filter(x => x.added_by === uid && x.done).length, target: 50 }) },
-  { id: 'shop-healthy', emoji: '🥗', name: 'Modo saludable', desc: '20 frutas o verduras compradas.', rarity: 'rare',
+  { id: 'shop-healthy', emoji: '🥗', name: 'Modo saludable', desc: '20 frutas o verduras compradas.', rarity: 'rare', coins: 40,
     eval: (s, uid) => ({
       current: s.shopping.filter(x => x.added_by === uid && x.done && (x.category === 'fruta' || x.category === 'verdura')).length,
       target: 20
     }) },
 
   // ── Eventos / planificación ───────────────────────────
-  { id: 'event-first', emoji: '📅', name: 'Plan en marcha', desc: 'Crea tu primer evento.', rarity: 'common',
+  { id: 'event-first', emoji: '📅', name: 'Plan en marcha', desc: 'Crea tu primer evento.', rarity: 'common', coins: 10,
     eval: (s, uid) => ({ current: s.events.filter(e => e.assignee === uid).length, target: 1 }) },
-  { id: 'event-organizer', emoji: '🎉', name: 'Cerebro de eventos', desc: '20 eventos en tu nombre.', rarity: 'rare',
+  { id: 'event-organizer', emoji: '🎉', name: 'Cerebro de eventos', desc: '20 eventos en tu nombre.', rarity: 'rare', coins: 50,
     eval: (s, uid) => ({ current: s.events.filter(e => e.assignee === uid).length, target: 20 }) },
 
   // ── Diversidad ────────────────────────────────────────
-  { id: 'multitasker', emoji: '🌈', name: 'Manitas total', desc: 'Tareas en 5 habitaciones distintas.', rarity: 'epic',
+  { id: 'multitasker', emoji: '🌈', name: 'Manitas total', desc: 'Tareas en 5 habitaciones distintas.', rarity: 'epic', coins: 150,
     eval: (s, uid) => ({
       current: new Set(s.tasks.filter(t => t.done && t.assignee === uid && t.room).map(t => t.room)).size,
       target: 5
@@ -1604,48 +1604,48 @@ function totalCoins(state, uid) {
 // Se añaden al catálogo TROPHIES principal
 TROPHIES.push(
   // Hábitos diarios
-  { id: 'tooth-10', emoji: '🦷', name: 'Dientes brillantes', desc: '10 cepillados registrados.', rarity: 'common',
+  { id: 'tooth-10', emoji: '🦷', name: 'Dientes brillantes', desc: '10 cepillados registrados.', rarity: 'common', coins: 10,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.subcategory === 'dientes').length, target: 10 }) },
-  { id: 'tooth-50', emoji: '😁', name: 'Sonrisa de anuncio', desc: '50 cepillados. ¡Dentista feliz!', rarity: 'rare',
+  { id: 'tooth-50', emoji: '😁', name: 'Sonrisa de anuncio', desc: '50 cepillados. ¡Dentista feliz!', rarity: 'rare', coins: 50,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.subcategory === 'dientes').length, target: 50 }) },
-  { id: 'bed-10', emoji: '🛏️', name: 'Maestro de la cama', desc: 'Hacer la cama 10 veces.', rarity: 'common',
+  { id: 'bed-10', emoji: '🛏️', name: 'Maestro de la cama', desc: 'Hacer la cama 10 veces.', rarity: 'common', coins: 10,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.subcategory === 'cama').length, target: 10 }) },
-  { id: 'bed-30', emoji: '👑', name: 'Rey de la almohada', desc: '30 camas hechas perfectas.', rarity: 'rare',
+  { id: 'bed-30', emoji: '👑', name: 'Rey de la almohada', desc: '30 camas hechas perfectas.', rarity: 'rare', coins: 50,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.subcategory === 'cama').length, target: 30 }) },
-  { id: 'toys-10', emoji: '🧸', name: 'Recogedor pro', desc: 'Recoger juguetes 10 veces.', rarity: 'common',
+  { id: 'toys-10', emoji: '🧸', name: 'Recogedor pro', desc: 'Recoger juguetes 10 veces.', rarity: 'common', coins: 10,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.subcategory === 'juguetes').length, target: 10 }) },
-  { id: 'backpack-10', emoji: '🎒', name: 'Mochila ninja', desc: 'Preparar mochila 10 veces sin que te lo recuerden.', rarity: 'rare',
+  { id: 'backpack-10', emoji: '🎒', name: 'Mochila ninja', desc: 'Preparar mochila 10 veces sin que te lo recuerden.', rarity: 'rare', coins: 40,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.subcategory === 'mochila').length, target: 10 }) },
-  { id: 'reading-10', emoji: '📚', name: 'Lector intrépido', desc: '10 ratos de lectura.', rarity: 'rare',
+  { id: 'reading-10', emoji: '📚', name: 'Lector intrépido', desc: '10 ratos de lectura.', rarity: 'rare', coins: 30,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && (t.subcategory === 'lectura' || t.subcategory === 'cuento')).length, target: 10 }) },
-  { id: 'reading-50', emoji: '🧙', name: 'Mago de las palabras', desc: '50 sesiones de lectura.', rarity: 'epic',
+  { id: 'reading-50', emoji: '🧙', name: 'Mago de las palabras', desc: '50 sesiones de lectura.', rarity: 'epic', coins: 150,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && (t.subcategory === 'lectura' || t.subcategory === 'cuento')).length, target: 50 }) },
-  { id: 'homework-15', emoji: '✏️', name: 'Cerebro en marcha', desc: '15 deberes terminados.', rarity: 'rare',
+  { id: 'homework-15', emoji: '✏️', name: 'Cerebro en marcha', desc: '15 deberes terminados.', rarity: 'rare', coins: 50,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.subcategory === 'deberes').length, target: 15 }) },
-  { id: 'shower-15', emoji: '🚿', name: 'Limpio como un samurái', desc: '15 duchas registradas.', rarity: 'common',
+  { id: 'shower-15', emoji: '🚿', name: 'Limpio como un samurái', desc: '15 duchas registradas.', rarity: 'common', coins: 10,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && (t.subcategory === 'ducha' || t.subcategory === 'baño')).length, target: 15 }) },
   // Combo de hábitos diarios completos
-  { id: 'kid-day-combo', emoji: '🌟', name: 'Día redondo', desc: 'En un mismo día: cama, dientes y mochila.', rarity: 'rare',
+  { id: 'kid-day-combo', emoji: '🌟', name: 'Día redondo', desc: 'En un mismo día: cama, dientes y mochila.', rarity: 'rare', coins: 50,
     eval: (s, uid) => ({ current: comboKidDays(s, uid), target: 1 }) },
-  { id: 'kid-day-combo-7', emoji: '✨', name: 'Semana de oro', desc: '7 "días redondos" acumulados.', rarity: 'epic',
+  { id: 'kid-day-combo-7', emoji: '✨', name: 'Semana de oro', desc: '7 "días redondos" acumulados.', rarity: 'epic', coins: 150,
     eval: (s, uid) => ({ current: comboKidDays(s, uid), target: 7 }) },
 
   // Monedas
-  { id: 'coin-1', emoji: '🪙', name: 'Primera moneda', desc: 'Gana tu primera moneda.', rarity: 'common',
+  { id: 'coin-1', emoji: '🪙', name: 'Primera moneda', desc: 'Gana tu primera moneda.', rarity: 'common', coins: 10,
     eval: (s, uid) => ({ current: Math.min(totalCoins(s, uid), 1), target: 1 }) },
-  { id: 'coin-100', emoji: '💰', name: 'Hucha que suena', desc: 'Acumula 100 monedas.', rarity: 'common',
+  { id: 'coin-100', emoji: '💰', name: 'Hucha que suena', desc: 'Acumula 100 monedas.', rarity: 'common', coins: 20,
     eval: (s, uid) => ({ current: totalCoins(s, uid), target: 100 }) },
-  { id: 'coin-500', emoji: '💵', name: 'Hucha pesada', desc: 'Acumula 500 monedas.', rarity: 'rare',
+  { id: 'coin-500', emoji: '💵', name: 'Hucha pesada', desc: 'Acumula 500 monedas.', rarity: 'rare', coins: 50,
     eval: (s, uid) => ({ current: totalCoins(s, uid), target: 500 }) },
-  { id: 'coin-2000', emoji: '🤑', name: 'Tesoro pirata', desc: 'Acumula 2.000 monedas.', rarity: 'epic',
+  { id: 'coin-2000', emoji: '🤑', name: 'Tesoro pirata', desc: 'Acumula 2.000 monedas.', rarity: 'epic', coins: 200,
     eval: (s, uid) => ({ current: totalCoins(s, uid), target: 2000 }) },
-  { id: 'coin-10000', emoji: '🏦', name: 'Banco familiar', desc: 'Acumula 10.000 monedas. Reservados para la jubilación.', rarity: 'legendary',
+  { id: 'coin-10000', emoji: '🏦', name: 'Banco familiar', desc: 'Acumula 10.000 monedas. Reservados para la jubilación.', rarity: 'legendary', coins: 500,
     eval: (s, uid) => ({ current: totalCoins(s, uid), target: 10000 }) },
 
   // Estrella diaria
-  { id: 'kid-star-day', emoji: '⭐', name: 'Estrella del día', desc: '5 misiones en un mismo día.', rarity: 'rare',
+  { id: 'kid-star-day', emoji: '⭐', name: 'Estrella del día', desc: '5 misiones en un mismo día.', rarity: 'rare', coins: 50,
     eval: (s, uid) => ({ current: maxTasksOneDay(s, uid), target: 5 }) },
-  { id: 'kid-helper', emoji: '🤝', name: 'Ayudante oficial', desc: '20 misiones en cocina.', rarity: 'rare',
+  { id: 'kid-helper', emoji: '🤝', name: 'Ayudante oficial', desc: '20 misiones en cocina.', rarity: 'rare', coins: 50,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && t.assignee === uid && t.room === 'cocina').length, target: 20 }) },
 );
 
