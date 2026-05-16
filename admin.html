@@ -72,6 +72,12 @@
         <button class="btn accent" id="save-task-coin-rules" disabled>Guardar cambios</button>
       </div>
     </div>
+    <div class="bulk-coin-row" style="display:flex;align-items:center;gap:10px;margin-top:14px;padding:10px 14px;background:var(--bg-2,#f7f7f5);border-radius:10px;">
+      <span class="muted" style="font-size:13px;">Aplicar este valor a todas las tareas:</span>
+      <input type="number" id="bulk-coin-value" min="0" max="9999" placeholder="10" style="width:90px;">
+      <span class="coin-icon">🪙</span>
+      <button type="button" class="btn ghost sm" id="bulk-coin-apply">Aplicar a todas</button>
+    </div>
     <div id="task-coin-rules-list" class="coin-rules-list" style="margin-top:18px;"></div>
   </section>
 
@@ -90,7 +96,10 @@
           <input type="text" name="label" maxlength="60" required placeholder="p.ej. Regar plantas">
         </label>
         <label>Emoji
-          <input type="text" name="emoji" maxlength="4" required placeholder="🌿">
+          <div class="emoji-input-wrap">
+            <input type="text" name="emoji" maxlength="4" required placeholder="🌿" style="text-align:center;font-size:24px;">
+            <button type="button" class="btn ghost sm emoji-picker-btn" data-open-emoji-picker="task">🎨 Elegir</button>
+          </div>
         </label>
         <label>Monedas
           <input type="number" name="value" min="0" max="9999" required value="10">
@@ -182,19 +191,10 @@
           <span>Emoji</span>
           <div class="emoji-input-wrap">
             <input type="text" name="emoji" maxlength="2" value="🎁" style="text-align:center;font-size:28px;" required>
-            <button type="button" class="btn ghost sm emoji-picker-btn" id="open-emoji-picker">🎨 Elegir</button>
+            <button type="button" class="btn ghost sm emoji-picker-btn" data-open-emoji-picker="reward">🎨 Elegir</button>
           </div>
         </label>
         <label><span>Coste 🪙</span><input type="number" name="cost" min="1" value="50" required></label>
-      </div>
-
-      <!-- Panel del picker (oculto por defecto) -->
-      <div class="emoji-picker hidden" id="emoji-picker">
-        <div class="emoji-picker-head">
-          <input type="search" id="emoji-search" placeholder="🔍 Busca por categoría (ej. comida, tech, deporte)" autocomplete="off">
-          <button type="button" class="modal-close" id="close-emoji-picker">×</button>
-        </div>
-        <div class="emoji-picker-body" id="emoji-picker-body"></div>
       </div>
       <label><span>Nombre</span><input type="text" name="name" required placeholder="Película de los viernes…"></label>
       <label><span>Descripción <small class="muted">(opcional)</small></span><textarea name="description" rows="2" placeholder="Detalles del premio"></textarea></label>
@@ -294,6 +294,19 @@
     <div class="form-actions">
       <button class="btn ghost" id="cancel-del">Cancelar</button>
       <button class="btn danger" id="confirm-del">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Picker de emojis global (reutilizable desde varios modales) -->
+<div class="modal hidden" id="emoji-picker-modal" role="dialog" aria-modal="true">
+  <div class="modal-panel" style="max-width:540px;">
+    <div class="emoji-picker">
+      <div class="emoji-picker-head">
+        <input type="search" id="emoji-search" placeholder="🔍 Busca por categoría (ej. comida, tech, deporte)" autocomplete="off">
+        <button type="button" class="modal-close" id="close-emoji-picker">×</button>
+      </div>
+      <div class="emoji-picker-body" id="emoji-picker-body"></div>
     </div>
   </div>
 </div>

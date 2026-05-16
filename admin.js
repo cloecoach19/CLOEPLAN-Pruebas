@@ -575,6 +575,41 @@ async function saveTaskCoinRules() {
 
 $('save-task-coin-rules')?.addEventListener('click', saveTaskCoinRules);
 
+// ── Aplicar el mismo valor a TODAS las tareas a la vez ──
+async function bulkApplyCoinValue() {
+  const input = $('bulk-coin-value');
+  if (!input) return;
+  const val = parseInt(input.value, 10);
+  if (!Number.isFinite(val) || val < 0) {
+    showToast('Pon un valor válido (≥ 0)');
+    return;
+  }
+  const { rowsByRoom } = getMergedTaskRows();
+  const allRows = Object.values(rowsByRoom).flat();
+  if (!allRows.length) { showToast('No hay tareas para actualizar'); return; }
+
+  if (!confirm(`¿Aplicar ${val} 🪙 a TODAS las tareas (${allRows.length})? Sobreescribe los valores actuales.`)) return;
+
+  const btn = $('bulk-coin-apply');
+  if (btn) { btn.disabled = true; btn.textContent = 'Aplicando…'; }
+
+  const upserts = allRows.map(r => ({
+    room: r.room,
+    subcategory: r.subcategory,
+    value: val,
+    label: r.label,
+    emoji: r.emoji,
+  }));
+  const { error } = await db.from('task_coin_rules').upsert(upserts, { onConflict: 'room,subcategory' });
+
+  if (btn) { btn.disabled = false; btn.textContent = 'Aplicar a todas'; }
+  if (error) { showToast('Error: ' + error.message); return; }
+  showToast(`✓ ${val} 🪙 aplicado a ${allRows.length} tareas`);
+  await loadTaskCoinRules();
+}
+
+$('bulk-coin-apply')?.addEventListener('click', bulkApplyCoinValue);
+
 // ── Modal: crear nueva tarea ─────────────────────────────
 const newTaskRuleModal = $('new-task-rule-modal');
 const newTaskRuleForm  = $('new-task-rule-form');
@@ -639,6 +674,9 @@ document.addEventListener('keydown', e => {
 // ═══════════════════════════════════════════════════════
 // 🎨 Picker de emojis para el formulario de premios
 // ═══════════════════════════════════════════════════════
+// Input destino actual del picker (cambia según el modal que lo abre).
+let emojiPickerTarget = null;
+
 function renderEmojiPicker(filterText = '') {
   const body = $('emoji-picker-body');
   if (!body || typeof EMOJI_CATALOG !== 'object') return;
@@ -646,9 +684,7 @@ function renderEmojiPicker(filterText = '') {
 
   const sections = Object.entries(EMOJI_CATALOG).map(([cat, emojis]) => {
     const catMatch = cat.toLowerCase().includes(q);
-    const filteredEmojis = q && !catMatch
-      ? []   // si la categoría no coincide y hay query, omitimos (los emojis no tienen texto)
-      : emojis;
+    const filteredEmojis = q && !catMatch ? [] : emojis;
     if (!filteredEmojis.length) return '';
     return `
       <div class="emoji-cat">
@@ -662,31 +698,41 @@ function renderEmojiPicker(filterText = '') {
 
   body.innerHTML = sections || '<p class="empty">Sin coincidencias. Prueba "comida", "ocio", "tech"…</p>';
 
-  // Click → mete emoji en el input y cierra
   $$('.emoji-cell', body).forEach(b => b.addEventListener('click', () => {
     const emoji = b.dataset.emoji;
-    if (!emoji || !rewardForm) return;
-    rewardForm.elements.emoji.value = emoji;
+    if (!emoji || !emojiPickerTarget) return;
+    emojiPickerTarget.value = emoji;
+    emojiPickerTarget.dispatchEvent(new Event('input', { bubbles: true }));
     closeEmojiPicker();
   }));
 }
 
-function openEmojiPicker() {
-  $('emoji-picker')?.classList.remove('hidden');
-  renderEmojiPicker($('emoji-search')?.value || '');
+function openEmojiPicker(target) {
+  emojiPickerTarget = target || null;
+  $('emoji-picker-modal')?.classList.remove('hidden');
+  if ($('emoji-search')) $('emoji-search').value = '';
+  renderEmojiPicker('');
   setTimeout(() => $('emoji-search')?.focus(), 60);
 }
 function closeEmojiPicker() {
-  $('emoji-picker')?.classList.add('hidden');
+  $('emoji-picker-modal')?.classList.add('hidden');
+  emojiPickerTarget = null;
 }
 
-$('open-emoji-picker')?.addEventListener('click', openEmojiPicker);
+// Botones que abren el picker: data-open-emoji-picker="reward" o "task".
+document.addEventListener('click', e => {
+  const btn = e.target.closest('[data-open-emoji-picker]');
+  if (!btn) return;
+  const kind = btn.dataset.openEmojiPicker;
+  if (kind === 'reward' && rewardForm) openEmojiPicker(rewardForm.elements.emoji);
+  else if (kind === 'task' && newTaskRuleForm) openEmojiPicker(newTaskRuleForm.elements.emoji);
+});
+
 $('close-emoji-picker')?.addEventListener('click', closeEmojiPicker);
 $('emoji-search')?.addEventListener('input', e => renderEmojiPicker(e.target.value));
 
-// Esc dentro del picker
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && !$('emoji-picker')?.classList.contains('hidden')) {
+  if (e.key === 'Escape' && !$('emoji-picker-modal')?.classList.contains('hidden')) {
     closeEmojiPicker();
   }
 });

@@ -547,17 +547,16 @@ textarea { resize: vertical; min-height: 60px; }
   overflow: hidden;
 }
 .hero::before {
-  content: '★';
+  content: '';
   position: absolute;
-  top: 20px;
-  right: 28px;
-  width: auto;
-  height: auto;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 86px;
-  line-height: 1;
-  transform: rotate(14deg);
+  top: 16px;
+  right: 20px;
+  width: 130px;
+  height: 130px;
+  background: url('Cloe.png') center/contain no-repeat;
+  opacity: 0.22;
+  transform: rotate(8deg);
+  pointer-events: none;
 }
 .hero h1 { font-size: 2.8rem; margin: 4px 0 8px; color: var(--ink); background: none; -webkit-text-fill-color: var(--ink); }
 .hero-stats {
