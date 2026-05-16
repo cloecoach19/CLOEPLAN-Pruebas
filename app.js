@@ -288,7 +288,7 @@ $$('.tabs > .tab[data-tab]').forEach(b => b.addEventListener('click', () => {
   if (location.hash !== '#' + activeTab) history.replaceState(null, '', '#' + activeTab);
 }));
 const initTab = (location.hash || '#hoy').slice(1);
-if (['hoy','tareas','compra','calendario','tienda','stats'].includes(initTab)) {
+if (['hoy','tareas','compra','calendario','cloe','tienda','stats'].includes(initTab)) {
   document.querySelector(`.tab[data-tab="${initTab}"]`)?.click();
 }
 
@@ -427,7 +427,7 @@ function openEventEditor(event, date, color) {
 
 // ── Carga ────────────────────────────────────────────────
 async function loadAll() {
-  const [u, t, s, e, cw, cd, rw, rd, cr] = await Promise.all([
+  const results = await Promise.all([
     db.from('users').select('id,name,email,role,member_id,color,status').order('name'),
     db.from('tasks').select('*').order('done').order('due_date',{nullsFirst:false}).order('due_time',{nullsFirst:true}),
     db.from('shopping').select('*').order('done').order('category').order('created_at'),
@@ -438,6 +438,12 @@ async function loadAll() {
     db.from('redemptions').select('*').order('created_at', { ascending: false }),
     db.from('coin_rules').select('*').order('sort_order'),
   ]);
+  const [u, t, s, e, cw, cd, rw, rd, cr] = results;
+  const firstError = results.find(r => r && r.error);
+  if (firstError) {
+    console.error('loadAll error', firstError.error);
+    showToast('Error al cargar datos. Revisa tu conexión.');
+  }
   STATE.users = (u.data || []).filter(x => x.status === 'active');
   STATE.tasks = t.data || [];
   STATE.shopping = s.data || [];
@@ -520,7 +526,10 @@ function renderRewardsShop() {
   if (me.role === 'Admin') {
     adminBtn?.classList.remove('hidden');
     adminCard?.classList.remove('hidden');
-    adminBtn?.addEventListener('click', () => openRewardEditor(null), { once: true });
+    if (adminBtn && !adminBtn.dataset.bound) {
+      adminBtn.dataset.bound = '1';
+      adminBtn.addEventListener('click', () => openRewardEditor(null));
+    }
 
     const pending = (STATE.redemptions || []).filter(r => r.status === 'pending');
     pendingList.innerHTML = pending.length
@@ -542,7 +551,7 @@ function redemptionRowHTML(r) {
   const when = new Date(r.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
   return `
     <div class="row redemption ${statusInfo.cls}">
-      <span class="row-emoji" style="font-size:22px;">${r.reward_emoji || '🎁'}</span>
+      <span class="row-emoji" style="font-size:22px;">${esc(r.reward_emoji || '🎁')}</span>
       <span class="row-title">${esc(r.reward_name)}</span>
       <span class="row-meta">
         <span class="chip mini-cost"><span class="coin-icon">🪙</span> ${r.cost_paid}</span>
@@ -558,7 +567,7 @@ function adminRedemptionRowHTML(r) {
   const when = new Date(r.created_at).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   return `
     <div class="row redemption pending">
-      <span class="row-emoji" style="font-size:22px;">${r.reward_emoji || '🎁'}</span>
+      <span class="row-emoji" style="font-size:22px;">${esc(r.reward_emoji || '🎁')}</span>
       ${avatarHTML(user, 'xs')}
       <span class="row-title">${esc(user?.name || '?')} pide ${esc(r.reward_name)}</span>
       <span class="row-meta">
@@ -878,38 +887,40 @@ function getTypeColor(room, subcatId) {
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
+let chartFiltersWired = false;
 function initChartFilters() {
   const now = new Date();
   const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  
-  // Inicializar siempre las fechas por defecto
+
   if (!chartDateFrom || !chartDateTo) {
     chartDateFrom = firstDayOfMonth;
     chartDateTo = now;
   }
-  
+
   const fromInput = $('chart-date-from');
   const toInput = $('chart-date-to');
   if (!fromInput || !toInput) return;
-  
+
   fromInput.value = formatDateForInput(chartDateFrom);
   toInput.value = formatDateForInput(chartDateTo);
-  
+
+  if (chartFiltersWired) return;
+  chartFiltersWired = true;
+
   fromInput.addEventListener('change', (e) => {
     chartDateFrom = new Date(e.target.value + 'T00:00:00');
     renderTypeChart();
   });
-  
+
   toInput.addEventListener('change', (e) => {
     chartDateTo = new Date(e.target.value + 'T23:59:59');
     renderTypeChart();
   });
-  
+
   $('chart-reset')?.addEventListener('click', () => {
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    chartDateFrom = firstDayOfMonth;
-    chartDateTo = now;
+    const n = new Date();
+    chartDateFrom = new Date(n.getFullYear(), n.getMonth(), 1);
+    chartDateTo = n;
     fromInput.value = formatDateForInput(chartDateFrom);
     toInput.value = formatDateForInput(chartDateTo);
     renderTypeChart();
@@ -934,8 +945,8 @@ function renderTypeChart() {
     chartDateTo = now;
   }
   
-  const fromStr = chartDateFrom.toISOString().slice(0, 10);
-  const toStr = chartDateTo.toISOString().slice(0, 10);
+  const fromStr = formatDateForInput(chartDateFrom);
+  const toStr = formatDateForInput(chartDateTo);
   
   // Build task types map from all subcategories across rooms
   const taskTypes = {};
@@ -1116,23 +1127,8 @@ function renderTrophies() {
 }
 
 function celebrateTrophy(tr) {
-  // Award coins for unlocking the trophy
   const coins = tr.coins || 0;
-  if (coins > 0 && me && me.id) {
-    // Add coins directly to STATE for the user
-    const coinEntry = {
-      id: Date.now().toString(),
-      user_id: me.id,
-      amount: coins,
-      reason: `trophy:${tr.id}`,
-      created_at: new Date().toISOString()
-    };
-    if (!STATE.coin_history) STATE.coin_history = [];
-    STATE.coin_history.push(coinEntry);
-    saveState();
-    updateCoins();
-  }
-  
+
   // 🎉 FIESTA DE TROFEO - Efectos especiales
   createTrophyParty(tr);
   
@@ -1470,11 +1466,13 @@ function wireTaskRows(root) {
       if (nt && nt !== original) { await db.from('tasks').update({ title: nt }).eq('id', id); loadAll(); }
       else el.textContent = original;
     };
-    el.addEventListener('blur', save, { once: true });
-    el.addEventListener('keydown', e => {
+    const onKey = e => {
       if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
-      if (e.key === 'Escape') { el.textContent = original; el.blur(); }
-    });
+      else if (e.key === 'Escape') { el.textContent = original; el.blur(); }
+    };
+    const onBlur = async () => { el.removeEventListener('keydown', onKey); await save(); };
+    el.addEventListener('blur', onBlur, { once: true });
+    el.addEventListener('keydown', onKey);
   }));
 }
 
@@ -1755,11 +1753,13 @@ function wireShopRows(root) {
       if (nn && nn !== original) { await db.from('shopping').update({ name: nn }).eq('id', id); loadAll(); }
       else el.textContent = original;
     };
-    el.addEventListener('blur', save, { once: true });
-    el.addEventListener('keydown', e => {
+    const onKey = e => {
       if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
-      if (e.key === 'Escape') { el.textContent = original; el.blur(); }
-    });
+      else if (e.key === 'Escape') { el.textContent = original; el.blur(); }
+    };
+    const onBlur = async () => { el.removeEventListener('keydown', onKey); await save(); };
+    el.addEventListener('blur', onBlur, { once: true });
+    el.addEventListener('keydown', onKey);
   }));
 }
 
@@ -2067,11 +2067,13 @@ function wireEventRows(root) {
       if (nt && nt !== original) { await db.from('events').update({ title: nt }).eq('id', id); loadAll(); }
       else el.textContent = original;
     };
-    el.addEventListener('blur', save, { once: true });
-    el.addEventListener('keydown', e => {
+    const onKey = e => {
       if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
-      if (e.key === 'Escape') { el.textContent = original; el.blur(); }
-    });
+      else if (e.key === 'Escape') { el.textContent = original; el.blur(); }
+    };
+    const onBlur = async () => { el.removeEventListener('keydown', onKey); await save(); };
+    el.addEventListener('blur', onBlur, { once: true });
+    el.addEventListener('keydown', onKey);
   }));
 }
 

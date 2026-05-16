@@ -1,13 +1,27 @@
 // Helpers compartidos entre páginas
+if (!window.supabase || !window.supabase.createClient) {
+  document.body && (document.body.innerHTML =
+    '<div style="padding:2rem;font-family:sans-serif;text-align:center">' +
+    '<h2>No se pudo cargar Supabase</h2>' +
+    '<p>Revisa tu conexión y recarga la página.</p></div>');
+  throw new Error('Supabase SDK no cargado');
+}
 const { createClient } = window.supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SESSION_KEY = 'cloe-user';
 function getUser() {
-  try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; }
+  try {
+    const u = JSON.parse(localStorage.getItem(SESSION_KEY));
+    return (u && typeof u === 'object') ? u : null;
+  } catch { return null; }
 }
-function setUser(u) { localStorage.setItem(SESSION_KEY, JSON.stringify(u)); }
-function clearUser() { localStorage.removeItem(SESSION_KEY); }
+function setUser(u) {
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify(u)); } catch {}
+}
+function clearUser() {
+  try { localStorage.removeItem(SESSION_KEY); } catch {}
+}
 
 function requireUser(redirect = 'index.html') {
   const u = getUser();
@@ -27,12 +41,14 @@ function todayISO() {
 
 function fmtDate(iso) {
   if (!iso) return '';
-  const d = new Date(iso + 'T00:00');
+  const norm = String(iso).slice(0, 10);
+  const d = new Date(norm + 'T00:00');
+  if (isNaN(d.getTime())) return '';
   const today = todayISO();
   const tmrw = new Date(); tmrw.setDate(tmrw.getDate()+1);
   const tmrwISO = `${tmrw.getFullYear()}-${String(tmrw.getMonth()+1).padStart(2,'0')}-${String(tmrw.getDate()).padStart(2,'0')}`;
-  if (iso === today) return 'Hoy';
-  if (iso === tmrwISO) return 'Mañana';
+  if (norm === today) return 'Hoy';
+  if (norm === tmrwISO) return 'Mañana';
   return d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
@@ -1297,7 +1313,9 @@ function emojiForEventCat(id) { return (CATEGORIES_EVENT.find(c => c.id === id) 
 function avatarHTML(user, size) {
   if (!user) return '<span class="av" style="background:var(--ink-3)">?</span>';
   const cls = size === 'xs' ? 'av xs' : size === 'lg' ? 'av lg' : 'av';
-  return `<span class="${cls} av-${esc(user.color || 'marina')}" title="${esc(user.name)}">${esc(user.member_id || user.name[0] || '?')}</span>`;
+  const name = (typeof user.name === 'string') ? user.name : '';
+  const initial = user.member_id || (name && name[0]) || '?';
+  return `<span class="${cls} av-${esc(user.color || 'marina')}" title="${esc(name)}">${esc(initial)}</span>`;
 }
 
 // Función para aclarar un color hexadecimal
@@ -1515,8 +1533,9 @@ const TROPHIES = [
 
 function computeStreak(state, uid) {
   // Cuenta días consecutivos hasta hoy con al menos una tarea hecha por el usuario
+  const tasks = (state && state.tasks) || [];
   const days = new Set(
-    state.tasks
+    tasks
       .filter(t => t.done && t.done_at && t.assignee === uid)
       .map(t => t.done_at.slice(0, 10))
   );
@@ -1534,7 +1553,7 @@ function computeStreak(state, uid) {
 
 function maxTasksOneDay(state, uid) {
   const counts = {};
-  state.tasks
+  ((state && state.tasks) || [])
     .filter(t => t.done && t.done_at && t.assignee === uid)
     .forEach(t => {
       const k = t.done_at.slice(0, 10);
@@ -1582,22 +1601,22 @@ function coinsForTask(t) {
 
 function totalCoins(state, uid) {
   let sum = 0;
-  for (const t of state.tasks) {
+  for (const t of ((state && state.tasks) || [])) {
     if (t.done && t.assignee === uid) sum += coinsForTask(t);
   }
-  for (const w of (state.cloeWalks || [])) {
+  for (const w of ((state && state.cloeWalks) || [])) {
     if (w.assignee === uid) sum += COINS.CLOE_WALK;
   }
-  for (const d of (state.cloeDowns || [])) {
+  for (const d of ((state && state.cloeDowns) || [])) {
     if (d.assignee === uid) sum += COINS.CLOE_DOWN;
   }
-  for (const s of state.shopping) {
+  for (const s of ((state && state.shopping) || [])) {
     if (s.done && s.added_by === uid) sum += COINS.SHOP_DONE;
   }
   // Descontar canjes aprobados o entregados (los rechazados no cuentan; los pending no se han confirmado aún)
-  for (const r of (state.redemptions || [])) {
+  for (const r of ((state && state.redemptions) || [])) {
     if (r.user_id === uid && (r.status === 'approved' || r.status === 'delivered')) {
-      sum -= r.cost_paid || 0;
+      sum -= Math.max(0, r.cost_paid || 0);
     }
   }
   return Math.max(0, sum);

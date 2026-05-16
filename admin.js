@@ -24,8 +24,16 @@ let users = [];
 let pendingDelete = null;
 
 async function loadUsers() {
-  const { data } = await db.from('users').select('*').order('created_at');
-  users = data || [];
+  const { data, error } = await db
+    .from('users')
+    .select('id,name,email,role,status,member_id,color,last_seen,created_at')
+    .order('created_at');
+  if (error) {
+    if (typeof showToast === 'function') showToast('Error al cargar usuarios');
+    users = [];
+  } else {
+    users = data || [];
+  }
   render();
 }
 
@@ -196,7 +204,7 @@ function renderRewardsGrid() {
   grid.innerHTML = rewards.map(r => `
     <div class="reward-card ${r.active ? '' : 'locked'}">
       <button class="reward-edit" data-edit-reward="${esc(r.id)}" title="Editar">✏️</button>
-      <div class="reward-emoji">${r.emoji || '🎁'}</div>
+      <div class="reward-emoji">${esc(r.emoji || '🎁')}</div>
       <div class="reward-name">${esc(r.name)}</div>
       ${r.description ? `<div class="reward-desc">${esc(r.description)}</div>` : ''}
       <div class="reward-cost"><span class="coin-icon">🪙</span> ${r.cost}</div>
@@ -228,7 +236,7 @@ function redemptionRow(r, withActions) {
 
   return `
     <div class="row redemption ${statusInfo.cls}">
-      <span class="row-emoji" style="font-size:22px;">${r.reward_emoji || '🎁'}</span>
+      <span class="row-emoji" style="font-size:22px;">${esc(r.reward_emoji || '🎁')}</span>
       ${avatarHTML(user, 'xs')}
       <span class="row-title">${esc(user?.name || '?')} → ${esc(r.reward_name)}</span>
       <span class="row-meta">
@@ -413,7 +421,7 @@ function renderCoinRules() {
   }
   list.innerHTML = coinRules.map(r => `
     <div class="coin-rule" data-key="${esc(r.key)}">
-      <span class="coin-rule-emoji">${r.emoji || '✨'}</span>
+      <span class="coin-rule-emoji">${esc(r.emoji || '✨')}</span>
       <div class="coin-rule-text">
         <div class="coin-rule-label">${esc(r.label)}</div>
         <div class="coin-rule-desc">${esc(r.description || '')}</div>
