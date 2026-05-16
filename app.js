@@ -845,18 +845,21 @@ function renderTypeChart() {
   const fromStr = chartDateFrom.toISOString().slice(0, 10);
   const toStr = chartDateTo.toISOString().slice(0, 10);
   
-  // Get all task types from TASK_SUBCATEGORIES
+  // Build task types map from all subcategories across rooms
   const taskTypes = {};
   
   Object.keys(TASK_SUBCATEGORIES).forEach(room => {
-    taskTypes[room] = { 
-      label: TASK_SUBCATEGORIES[room][0]?.label || room,
-      emoji: TASK_SUBCATEGORIES[room][0]?.emoji || '📋',
-      color: getRoomColor(room)
-    };
+    TASK_SUBCATEGORIES[room].forEach(subcat => {
+      const key = `${room}:${subcat.id}`;
+      taskTypes[key] = { 
+        label: subcat.label,
+        emoji: subcat.emoji,
+        color: getRoomColor(room)
+      };
+    });
   });
   
-  // Count tasks by user and type
+  // Count tasks by user and type (using subcategory)
   const dataByUser = new Map();
   STATE.users.forEach(u => dataByUser.set(u.id, { user: u, byType: {} }));
   
@@ -867,10 +870,21 @@ function renderTypeChart() {
     if (!t.assignee || !dataByUser.has(t.assignee)) return;
     
     const userData = dataByUser.get(t.assignee);
-    const typeKey = t.room || 'otros';
+    // Use subcategory as type, fallback to room if no subcategory
+    const typeKey = t.subcategory && t.room 
+      ? `${t.room}:${t.subcategory}`
+      : t.room || 'otros';
     
     if (!taskTypes[typeKey]) {
-      taskTypes[typeKey] = { label: typeKey, emoji: '📋', color: '#9CA3AF' };
+      // Try to find subcategory info
+      const subcatInfo = t.subcategory && TASK_SUBCATEGORIES[t.room]
+        ? TASK_SUBCATEGORIES[t.room].find(s => s.id === t.subcategory)
+        : null;
+      taskTypes[typeKey] = { 
+        label: subcatInfo?.label || typeKey, 
+        emoji: subcatInfo?.emoji || '📋', 
+        color: getRoomColor(t.room || 'otros') 
+      };
     }
     
     if (!userData.byType[typeKey]) userData.byType[typeKey] = 0;
