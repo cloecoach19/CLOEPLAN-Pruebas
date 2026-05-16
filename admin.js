@@ -392,12 +392,94 @@ document.addEventListener('keydown', e => {
   if (rewardConfirmModal && !rewardConfirmModal.classList.contains('hidden')) { rewardConfirmModal.classList.add('hidden'); pendingRewardDelete = null; }
 });
 
-// Realtime: usuarios + tienda
+// ═══════════════════════════════════════════════════════
+// 🪙 Reglas de monedas
+// ═══════════════════════════════════════════════════════
+let coinRules = [];
+let coinDirty = false;
+
+async function loadCoinRules() {
+  const { data } = await db.from('coin_rules').select('*').order('sort_order');
+  coinRules = data || [];
+  renderCoinRules();
+}
+
+function renderCoinRules() {
+  const list = $('coin-rules-list');
+  if (!list) return;
+  if (!coinRules.length) {
+    list.innerHTML = '<p class="empty">No hay reglas configuradas. Ejecuta el SQL de setup.</p>';
+    return;
+  }
+  list.innerHTML = coinRules.map(r => `
+    <div class="coin-rule" data-key="${esc(r.key)}">
+      <span class="coin-rule-emoji">${r.emoji || '✨'}</span>
+      <div class="coin-rule-text">
+        <div class="coin-rule-label">${esc(r.label)}</div>
+        <div class="coin-rule-desc">${esc(r.description || '')}</div>
+      </div>
+      <div class="coin-rule-input">
+        <input type="number" min="0" max="9999" value="${r.value}" data-rule-key="${esc(r.key)}">
+        <span class="coin-icon">🪙</span>
+      </div>
+    </div>
+  `).join('');
+
+  // Listener de cambios para activar el botón guardar
+  $$('input[data-rule-key]', list).forEach(inp => {
+    inp.addEventListener('input', () => {
+      coinDirty = true;
+      $('save-coin-rules').disabled = false;
+    });
+  });
+}
+
+async function saveCoinRules() {
+  const list = $('coin-rules-list');
+  if (!list) return;
+  const inputs = $$('input[data-rule-key]', list);
+  const updates = [];
+  inputs.forEach(inp => {
+    const key = inp.dataset.ruleKey;
+    const val = parseInt(inp.value, 10);
+    const cur = coinRules.find(r => r.key === key);
+    if (cur && Number.isFinite(val) && val >= 0 && val !== cur.value) {
+      updates.push({ key, value: val });
+    }
+  });
+  if (!updates.length) {
+    showToast('No hay cambios que guardar');
+    coinDirty = false;
+    $('save-coin-rules').disabled = true;
+    return;
+  }
+  const btn = $('save-coin-rules');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  for (const u of updates) {
+    const { error } = await db.from('coin_rules').update({ value: u.value }).eq('key', u.key);
+    if (error) {
+      showToast('Error: ' + error.message);
+      btn.disabled = false; btn.textContent = 'Guardar cambios';
+      return;
+    }
+  }
+  btn.textContent = '✓ Guardado';
+  coinDirty = false;
+  showToast(`✓ ${updates.length} ${updates.length === 1 ? 'regla actualizada' : 'reglas actualizadas'}`);
+  setTimeout(() => { btn.textContent = 'Guardar cambios'; btn.disabled = true; }, 1800);
+  loadCoinRules();
+}
+
+$('save-coin-rules')?.addEventListener('click', saveCoinRules);
+
+// Realtime: usuarios + tienda + reglas de monedas
 db.channel('cloe-admin')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'users'       }, () => { loadUsers(); loadShop(); })
   .on('postgres_changes', { event: '*', schema: 'public', table: 'rewards'     }, loadShop)
   .on('postgres_changes', { event: '*', schema: 'public', table: 'redemptions' }, loadShop)
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'coin_rules'  }, () => { if (!coinDirty) loadCoinRules(); })
   .subscribe();
 
 loadUsers();
 loadShop();
+loadCoinRules();

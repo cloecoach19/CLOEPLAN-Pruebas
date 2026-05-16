@@ -85,6 +85,26 @@ create table if not exists cloe_downs (
   created_at timestamptz default now()
 );
 
+-- ── Reglas de monedas (configurables desde admin) ────────
+create table if not exists coin_rules (
+  key         text primary key,
+  label       text not null,
+  emoji       text default '✨',
+  value       int  not null default 0,
+  description text default '',
+  sort_order  int  not null default 0
+);
+
+insert into coin_rules (key, label, emoji, value, description, sort_order) values
+  ('TASK_BASE',    'Tarea básica',            '✓',   10, 'Cualquier tarea hecha (base)',           10),
+  ('TASK_KIDROOM', 'Tarea en cuarto de niño', '🧒',  15, 'Bonus en habitaciones de hijos',         20),
+  ('TASK_KITCHEN', 'Tarea de cocina',         '🍳',   8, 'Tareas dentro de la cocina',             30),
+  ('TASK_CLEAN',   'Limpieza (cualquiera)',   '🧽',  12, 'Si la subcategoría es "limpieza"',       40),
+  ('CLOE_WALK',    'Pasear a Cloe',           '🚶',  20, 'Por cada paseo registrado',              50),
+  ('CLOE_DOWN',    'Bajar a Cloe',            '⬇️',   5, 'Por cada bajada (pipí, caca, etc.)',     60),
+  ('SHOP_DONE',    'Producto comprado',       '🛒',   2, 'Por cada ítem marcado en la lista',      70)
+on conflict (key) do nothing;
+
 -- ── Tienda: catálogo de premios ───────────────────────────
 create table if not exists rewards (
   id          uuid primary key default gen_random_uuid(),
@@ -122,6 +142,7 @@ alter table cloe_walks  enable row level security;
 alter table cloe_downs  enable row level security;
 alter table rewards     enable row level security;
 alter table redemptions enable row level security;
+alter table coin_rules  enable row level security;
 
 drop policy if exists "public" on users;
 drop policy if exists "public" on tasks;
@@ -131,6 +152,7 @@ drop policy if exists "public" on cloe_walks;
 drop policy if exists "public" on cloe_downs;
 drop policy if exists "public" on rewards;
 drop policy if exists "public" on redemptions;
+drop policy if exists "public" on coin_rules;
 
 create policy "public" on users    for all using (true) with check (true);
 create policy "public" on tasks    for all using (true) with check (true);
@@ -140,10 +162,11 @@ create policy "public" on cloe_walks  for all using (true) with check (true);
 create policy "public" on cloe_downs  for all using (true) with check (true);
 create policy "public" on rewards     for all using (true) with check (true);
 create policy "public" on redemptions for all using (true) with check (true);
+create policy "public" on coin_rules  for all using (true) with check (true);
 
 -- ── Realtime ──────────────────────────────────────────────
 -- Tras ejecutar este SQL, ve a Database → Replication y activa
--- las 8 tablas (users, tasks, shopping, events, cloe_walks, cloe_downs, rewards, redemptions).
+-- las 9 tablas (users, tasks, shopping, events, cloe_walks, cloe_downs, rewards, redemptions, coin_rules).
 -- Sin esto los cambios no se sincronizan en vivo entre dispositivos.
 
 -- ── Premios iniciales (demo) ──────────────────────────────

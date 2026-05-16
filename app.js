@@ -197,6 +197,52 @@ function runNotifChecks() {
 // Tick cada minuto
 setInterval(runNotifChecks, 60_000);
 
+// ── Auto-refresco temporal ───────────────────────────────
+// Mantiene la app "viva": saludo correcto a cualquier hora,
+// día actual resaltado bien aunque cambies de día con la app abierta,
+// y datos frescos cuando vuelves a la pestaña tras un rato.
+let _lastTickDay   = todayISO();
+let _lastTickHour  = new Date().getHours();
+let _lastTickStamp = Date.now();
+
+function timeTick() {
+  if (!STATE || !STATE.users) return; // aún no ha cargado
+
+  const now      = new Date();
+  const nowDay   = todayISO();
+  const nowHour  = now.getHours();
+  const elapsed  = Date.now() - _lastTickStamp;
+
+  const dayChanged   = nowDay !== _lastTickDay;
+  const hourChanged  = nowHour !== _lastTickHour;
+  const longGap      = elapsed > 5 * 60_000; // el dispositivo durmió >5 min
+
+  if (dayChanged || longGap) {
+    // Cambió el día o volvemos de dormir: recarga todo desde Supabase
+    loadAll();
+  } else if (hourChanged) {
+    // Solo cambió la franja horaria: actualiza saludo y banners ligeros
+    renderGreeting();
+    renderHoy();
+    paintBadges();
+  }
+
+  _lastTickDay   = nowDay;
+  _lastTickHour  = nowHour;
+  _lastTickStamp = Date.now();
+}
+
+// Cada 60 s comprobamos cambios de hora / día
+setInterval(timeTick, 60_000);
+
+// Cuando la pestaña vuelve al primer plano (cambio de app, móvil bloqueado…)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') timeTick();
+});
+
+// Cuando recuperas conexión tras estar offline
+window.addEventListener('online', () => loadAll());
+
 // ── Badges en tabs y título ──────────────────────────────
 function paintBadges() {
   if (!STATE || !STATE.tasks) return;
@@ -381,7 +427,7 @@ function openEventEditor(event, date, color) {
 
 // ── Carga ────────────────────────────────────────────────
 async function loadAll() {
-  const [u, t, s, e, cw, cd, rw, rd] = await Promise.all([
+  const [u, t, s, e, cw, cd, rw, rd, cr] = await Promise.all([
     db.from('users').select('id,name,email,role,member_id,color,status').order('name'),
     db.from('tasks').select('*').order('done').order('due_date',{nullsFirst:false}).order('due_time',{nullsFirst:true}),
     db.from('shopping').select('*').order('done').order('category').order('created_at'),
@@ -390,6 +436,7 @@ async function loadAll() {
     db.from('cloe_downs').select('*').order('datetime', { ascending: false }),
     db.from('rewards').select('*').order('cost'),
     db.from('redemptions').select('*').order('created_at', { ascending: false }),
+    db.from('coin_rules').select('*').order('sort_order'),
   ]);
   STATE.users = (u.data || []).filter(x => x.status === 'active');
   STATE.tasks = t.data || [];
@@ -399,6 +446,8 @@ async function loadAll() {
   STATE.cloeDowns = cd.data || [];
   STATE.rewards = rw.data || [];
   STATE.redemptions = rd.data || [];
+  STATE.coinRules = cr.data || [];
+  applyCoinRules(STATE.coinRules);
   renderAll();
 }
 
@@ -1758,6 +1807,7 @@ const realtimeChannel = db.channel('cloe-sync')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'cloe_downs' }, debouncedLoad)
   .on('postgres_changes', { event: '*', schema: 'public', table: 'rewards'    }, debouncedLoad)
   .on('postgres_changes', { event: '*', schema: 'public', table: 'redemptions'}, debouncedLoad)
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'coin_rules' }, debouncedLoad)
   .subscribe();
 
 // Cleanup al cerrar / salir

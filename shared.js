@@ -1478,16 +1478,27 @@ function maxTasksOneDay(state, uid) {
 }
 
 // ═══════════════ MONEDAS 🪙 ═══════════════
-// Cuántas monedas vale cada acción.
+// Valores por defecto (semilla). El admin los puede modificar desde su panel
+// y al cargar la app se sobrescriben con los de la tabla coin_rules.
 const COINS = {
-  TASK_BASE:    10,   // por tarea hecha
-  TASK_KIDROOM: 15,   // bonus si es en habitación de niño
+  TASK_BASE:    10,
+  TASK_KIDROOM: 15,
   TASK_KITCHEN:  8,
-  TASK_CLEAN:   12,   // limpiezas valen un poco más
+  TASK_CLEAN:   12,
   CLOE_WALK:    20,
   CLOE_DOWN:     5,
-  SHOP_DONE:     2,   // por producto comprado
+  SHOP_DONE:     2,
 };
+
+// Aplica las reglas guardadas en la tabla coin_rules sobre el objeto COINS
+function applyCoinRules(rules) {
+  if (!Array.isArray(rules)) return;
+  for (const r of rules) {
+    if (r && r.key && Number.isFinite(r.value) && r.key in COINS) {
+      COINS[r.key] = r.value;
+    }
+  }
+}
 
 function coinsForTask(t) {
   if (!t || !t.done) return 0;
