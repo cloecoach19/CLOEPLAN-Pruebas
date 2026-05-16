@@ -1358,13 +1358,10 @@ function openTaskModal() {
     if (!btn) return;
     const subcatId = btn.dataset.subcat;
 
-    // Caso especial Cloe: al elegir subcategoría se abre la subventana correspondiente
-    if (taskModalState.room === 'cloe') {
-      openCloeSubwindowFromModal(subcatId);
-      return;
-    }
+    // Cloe: tratar tanto "pasear" como "bajar" como selección múltiple normal
+    // Ya no se abre la subventana automáticamente
 
-    // Resto de habitaciones: selección múltiple
+    // Resto de habitaciones y tareas de Cloe: selección múltiple
     if (selectedSubcats.has(subcatId)) {
       selectedSubcats.delete(subcatId);
       btn.classList.remove('selected');
