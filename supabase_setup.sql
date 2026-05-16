@@ -96,13 +96,14 @@ create table if not exists coin_rules (
 );
 
 insert into coin_rules (key, label, emoji, value, description, sort_order) values
-  ('TASK_BASE',    'Tarea básica',            '✓',   10, 'Cualquier tarea hecha (base)',           10),
-  ('TASK_KIDROOM', 'Tarea en cuarto de niño', '🧒',  15, 'Bonus en habitaciones de hijos',         20),
-  ('TASK_KITCHEN', 'Tarea de cocina',         '🍳',   8, 'Tareas dentro de la cocina',             30),
-  ('TASK_CLEAN',   'Limpieza (cualquiera)',   '🧽',  12, 'Si la subcategoría es "limpieza"',       40),
-  ('CLOE_WALK',    'Pasear a Cloe',           '🚶',  20, 'Por cada paseo registrado',              50),
-  ('CLOE_DOWN',    'Bajar a Cloe',            '⬇️',   5, 'Por cada bajada (pipí, caca, etc.)',     60),
-  ('SHOP_DONE',    'Producto comprado',       '🛒',   2, 'Por cada ítem marcado en la lista',      70)
+  ('TASK_BASE',       'Tarea básica',            '✓',   10, 'Cualquier tarea hecha (base)',           10),
+  ('TASK_KIDROOM',    'Tarea en cuarto de niño', '🧒',  15, 'Bonus en habitaciones de hijos',         20),
+  ('TASK_KITCHEN',    'Tarea de cocina',         '🍳',   8, 'Tareas dentro de la cocina',             30),
+  ('TASK_CLEAN',      'Limpieza (cualquiera)',   '🧽',  12, 'Si la subcategoría es "limpieza"',       40),
+  ('TASK_DEEP_CLEAN', 'Limpieza profunda/Total', '✨',  15, 'Limpieza profunda en cocina o baño',     45),
+  ('CLOE_WALK',       'Pasear a Cloe',           '🚶',  20, 'Por cada paseo registrado',              50),
+  ('CLOE_DOWN',       'Bajar a Cloe',            '⬇️',   5, 'Por cada bajada (pipí, caca, etc.)',     60),
+  ('SHOP_DONE',       'Producto comprado',       '🛒',   2, 'Por cada ítem marcado en la lista',      70)
 on conflict (key) do nothing;
 
 -- ── Tienda: catálogo de premios ───────────────────────────

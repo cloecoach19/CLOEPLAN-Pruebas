@@ -1546,13 +1546,14 @@ function maxTasksOneDay(state, uid) {
 // Valores por defecto (semilla). El admin los puede modificar desde su panel
 // y al cargar la app se sobrescriben con los de la tabla coin_rules.
 const COINS = {
-  TASK_BASE:    10,
-  TASK_KIDROOM: 15,
-  TASK_KITCHEN:  8,
-  TASK_CLEAN:   12,
-  CLOE_WALK:    20,
-  CLOE_DOWN:     5,
-  SHOP_DONE:     2,
+  TASK_BASE:       10,
+  TASK_KIDROOM:    15,
+  TASK_KITCHEN:     8,
+  TASK_CLEAN:      12,
+  TASK_DEEP_CLEAN: 15,  // Limpieza profunda (cocina) y Limpieza Total (baño)
+  CLOE_WALK:       20,
+  CLOE_DOWN:        5,
+  SHOP_DONE:        2,
 };
 
 // Aplica las reglas guardadas en la tabla coin_rules sobre el objeto COINS
@@ -1572,7 +1573,7 @@ function coinsForTask(t) {
   else if (t.room === 'cocina') c = COINS.TASK_KITCHEN;
   if (t.subcategory === 'limpieza') c = Math.max(c, COINS.TASK_CLEAN);
   // Tareas especiales de limpieza profunda/total
-  if (t.subcategory === 'limpieza-profunda' || t.subcategory === 'limpieza-total') c = 15;
+  if (t.subcategory === 'limpieza-profunda' || t.subcategory === 'limpieza-total') c = COINS.TASK_DEEP_CLEAN;
   return c;
 }
 
