@@ -231,7 +231,7 @@ function renderGreeting() {
   const hi = h < 6 ? 'Modo ninja nocturno' : h < 13 ? 'Buenos días, máquina' : h < 21 ? 'Buenas tardes, crack' : 'Buenas noches, leyenda';
   $('greeting').textContent = `${hi}, ${me.name.split(' ')[0]}`;
   const fecha = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
-  $('today-eyebrow').textContent = fecha.toUpperCase();
+  $('today-eyebrow').textContent = '// ' + fecha.toLowerCase();
 }
 
 // ── Tabs ─────────────────────────────────────────────────
@@ -252,8 +252,8 @@ $$('.tab[data-scope]').forEach(b => b.addEventListener('click', () => {
   $$('.tab[data-scope]').forEach(x => x.classList.toggle('active', x.dataset.scope === tasksScope));
   // Actualizar título de la sección
   $('tasks-section-title').textContent = tasksScope === 'today' 
-    ? 'Misiones completadas hoy' 
-    : 'Mapa semanal de misiones';
+    ? 'Hazañas que han caído hoy'
+    : 'Tu semana de combate';
   renderTasks();
 }));
 
@@ -405,8 +405,8 @@ function renderAll() {
   renderHoy();
   // Inicializar título de la sección de tareas
   $('tasks-section-title').textContent = tasksScope === 'today' 
-    ? 'Misiones completadas hoy' 
-    : 'Mapa semanal de misiones';
+    ? 'Hazañas que han caído hoy'
+    : 'Tu semana de combate';
   renderTasks();
   renderShop();
   renderCalendar();
@@ -738,7 +738,7 @@ function renderTasks() {
             </button>
           `).join('')}
         </div>
-        <p class="wk-cal-sub">${totalDone}/${totalAll} hechas esta semana 💪</p>
+        <p class="wk-cal-sub">${totalDone}/${totalAll} cazadas esta semana ⚔️</p>
         <div class="wk-cal-stack">
           ${weekDays.map(d => renderWeekDayCard(d, false)).join('')}
         </div>
@@ -775,7 +775,7 @@ function renderWeekDayCard(d, soloMode) {
       <div class="wk-day-body">
         ${total
           ? `<div class="row-list">${d.tasks.map(taskRowHTML).join('')}</div>`
-          : `<div class="wk-day-empty">${d.isToday ? '🚀 Sin misiones aún hoy' : (d.isFuture ? '🌱 Aquí brotarán nuevas misiones' : '😴 Día sin hazañas')}</div>`
+          : `<div class="wk-day-empty">${d.isToday ? '🚀 El día está virgen, dale candela' : (d.isFuture ? '🌱 Aquí brotará el caos pronto' : '😴 Día sin pelea registrada')}</div>`
         }
       </div>
     </article>

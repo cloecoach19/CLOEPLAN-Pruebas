@@ -3,7 +3,7 @@
    Paleta "alegre & moderna" + tipografía Plus Jakarta Sans
    ═══════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400..800&family=JetBrains+Mono:wght@400..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Space+Grotesk:wght@400..700&family=JetBrains+Mono:wght@400..700&display=swap');
 
 :root {
   /* Colores principales - Paleta alegre y vibrante */
@@ -42,9 +42,10 @@
   --m-cielo:  #A8D8EA;
   --m-lima:   #D4E8A8;
   
-  --font-ui: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-  --tracking-display: -0.03em;
+  --font-ui:      'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Space Grotesk', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+  --tracking-display: -0.04em;
 
   --r-s: 16px;
   --r-m: 20px;
@@ -272,10 +273,21 @@
 
 /* Eyebrow ninja en mono */
 [data-theme="dark"] .eyebrow {
-  font-family: var(--font-mono);
   color: var(--accent-2);
   text-shadow: 0 0 12px rgba(0, 245, 255, 0.30);
 }
+
+/* Display extra en hero, fechas grandes, día de calendario, números de moneda */
+.hero h1,
+.wk-day-date,
+.wk-pill-num,
+.stat-tile .v,
+.logo-text {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 96;
+  letter-spacing: -0.04em;
+}
+.btn.lg, .btn.accent { font-family: var(--font-display); font-variation-settings: "opsz" 24; }
 
 * { box-sizing: border-box; }
 img { max-width: 100%; height: auto; }
@@ -297,13 +309,15 @@ a { color: var(--accent); text-decoration: none; }
 
 /* ── Tipografía ────────────────────────────────────────── */
 .display {
-  font-family: var(--font-ui);
+  font-family: var(--font-display);
   letter-spacing: var(--tracking-display);
   font-weight: 800;
+  font-variation-settings: "opsz" 96;
 }
 .eyebrow {
+  font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--ink-3);
   font-weight: 700;
@@ -311,10 +325,15 @@ a { color: var(--accent); text-decoration: none; }
 .mono { font-family: var(--font-mono); }
 .muted { color: var(--ink-2); }
 
-h1, h2, h3 { font-family: var(--font-ui); letter-spacing: var(--tracking-display); margin: 0; }
-h1 { font-size: 2.5rem; font-weight: 800; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-h2 { font-size: 1.75rem; font-weight: 800; }
-h3 { font-size: 1.25rem; font-weight: 800; }
+h1, h2, h3 {
+  font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
+  font-variation-settings: "opsz" 96;
+  margin: 0;
+}
+h1 { font-size: 2.6rem; font-weight: 800; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+h2 { font-size: 1.85rem; font-weight: 800; }
+h3 { font-size: 1.3rem; font-weight: 800; }
 
 /* ── Layout base ───────────────────────────────────────── */
 .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
