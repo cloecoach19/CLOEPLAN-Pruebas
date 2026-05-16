@@ -394,19 +394,9 @@ function openEventEditor(event, date, color) {
     
     let error;
     if (isEdit) {
-      // Si el evento ya está en Google, propagar el cambio
-      if (event?.gcal_event_id && typeof gcalPushEvent === 'function') {
-        const patch = await gcalPushEvent({ ...event, ...payload, gcal_event_id: event.gcal_event_id }, 'update');
-        if (patch) Object.assign(payload, patch);
-      }
       const result = await db.from('events').update(payload).eq('id', data.id);
       error = result.error;
     } else {
-      // Push a Google si conectado
-      if (typeof gcalPushEvent === 'function' && typeof gcalIsConnected === 'function' && gcalIsConnected()) {
-        const patch = await gcalPushEvent(payload, 'create');
-        if (patch) Object.assign(payload, patch);
-      }
       const result = await db.from('events').insert(payload);
       error = result.error;
     }
@@ -428,9 +418,6 @@ function openEventEditor(event, date, color) {
   // Manejar eliminación (solo edición)
   if (isEdit) {
     $('delete-event-btn').addEventListener('click', async () => {
-      if (event?.gcal_event_id && typeof gcalPushEvent === 'function') {
-        await gcalPushEvent(event, 'delete');
-      }
       await db.from('events').delete().eq('id', event.id);
       modal.classList.add('hidden');
       loadAll();
@@ -1553,12 +1540,10 @@ function eventRowHTML(e) {
   const emoji = emojiForEventCat(e.category);
   const color = user?.color || 'marina';
   const lightColor = getLightColor(color);
-  const gChip = e.gcal_event_id ? '<span class="chip gcal-chip" title="Sincronizado con Google Calendar">G</span>' : '';
   return `
-    <div class="row ${e.gcal_event_id ? 'from-gcal' : ''}" data-event-id="${esc(e.id)}" style="border-left:3px solid ${lightColor};">
+    <div class="row" data-event-id="${esc(e.id)}" style="border-left:3px solid ${lightColor};">
       <span class="row-emoji">${emoji}</span>
       <span class="row-title" data-edit-event="${esc(e.id)}" title="Doble clic para editar o click para abrir editor">${esc(e.title)}</span>
-      ${gChip}
       <span class="row-meta">
         <span class="row-time">${fmtDate(e.date)}${e.time ? ' · ' + esc(e.time) : ''}</span>
         ${avatarHTML(user, 'xs')}
@@ -1651,10 +1636,6 @@ function renderCloe() {
 function wireEventRows(root) {
   $$('[data-del-event]', root).forEach(b => b.addEventListener('click', async () => {
     const id = b.dataset.delEvent;
-    const evt = STATE.events.find(x => x.id === id);
-    if (evt?.gcal_event_id && typeof gcalPushEvent === 'function') {
-      await gcalPushEvent(evt, 'delete');
-    }
     await db.from('events').delete().eq('id', id);
     loadAll();
   }));
@@ -1707,26 +1688,12 @@ $('qa-event').addEventListener('submit', e => {
     const title = $('qa-ev-title').value.trim();
     const date  = $('qa-ev-date').value;
     if (!title || !date) return;
-    const payload = {
-      title,
-      date,
-      time: $('qa-ev-time').value || null,
-      category: $('qa-ev-cat').value || 'general',
-      assignee: $('qa-ev-assignee').value || null,
-    };
-    if (typeof gcalPushEvent === 'function' && typeof gcalIsConnected === 'function' && gcalIsConnected()) {
-      const patch = await gcalPushEvent(payload, 'create');
-      if (patch) Object.assign(payload, patch);
-    }
     const { error } = await db.from('events').insert({
       title,
       date,
       time: $('qa-ev-time').value || null,
       category: $('qa-ev-cat').value || 'general',
       assignee: $('qa-ev-assignee').value || null,
-      gcal_event_id: payload.gcal_event_id,
-      gcal_calendar_id: payload.gcal_calendar_id,
-      gcal_synced_at: payload.gcal_synced_at,
     });
     if (error) { showToast('Error: ' + error.message); return; }
     $('qa-ev-title').value = ''; $('qa-ev-time').value = '';
@@ -1738,42 +1705,48 @@ $('qa-event').addEventListener('submit', e => {
 $('qa-cloe-walk').addEventListener('submit', e => {
   e.preventDefault();
   withFormLock(e.target, async () => {
-  const datetime = $('cloe-walk-datetime').value;
-  const duration = parseInt($('cloe-walk-duration').value) || 30;
-  const assignee = $('cloe-walk-walker').value || null;
-  
-  if (!datetime) {
-    showToast('Pon fecha y hora, que Cloe no viaja en el tiempo');
-    return;
-  }
-  
-  // Insertar en tabla de paseos
-  const { error: walkError } = await db.from('cloe_walks').insert({
-    datetime,
-    duration,
-    assignee,
-  });
-  if (walkError) { showToast('Error: ' + walkError.message); return; }
-  
-  // También insertar como tarea realizada hoy (scope='today', done=true)
-  const dateOnly = datetime.split('T')[0];
-  const timeOnly = datetime.split('T')[1]?.slice(0, 5) || null;
-  const { error: taskError } = await insertTask({
-    title: 'Pasear a Cloe como leyenda',
-    category: 'pasear',
-    room: 'cloe',
-    subcategory: 'pasear',
-    emoji: '🚶',
-    assignee,
-    scope: 'today',
-    done: true,
-    done_at: new Date().toISOString(),
-    due_date: dateOnly,
-    due_time: timeOnly,
-  });
-  if (taskError) { showToast('Error al guardar tarea: ' + taskError.message); return; }
+    const datetime = $('cloe-walk-datetime').value;
+    const duration = parseInt($('cloe-walk-duration').value) || 30;
+    const assignee = $('cloe-walk-walker').value || me.id;  // fallback al usuario actual
 
-  loadAll();
+    if (!datetime) {
+      showToast('Pon fecha y hora, que Cloe no viaja en el tiempo');
+      return;
+    }
+
+    // Insertar en tabla de paseos
+    const { error: walkError } = await db.from('cloe_walks').insert({
+      datetime,
+      duration,
+      assignee,
+    });
+    if (walkError) { showToast('Error en paseo: ' + walkError.message); console.error('[cloe walk]', walkError); return; }
+
+    // También insertar como tarea realizada (aparece en pestaña Tareas)
+    const dateOnly = datetime.split('T')[0];
+    const timeOnly = datetime.split('T')[1]?.slice(0, 5) || null;
+    const dow = (new Date(dateOnly + 'T00:00').getDay() + 6) % 7;
+    const { error: taskError } = await insertTask({
+      title: 'Pasear a Cloe',
+      category: 'pasear',
+      room: 'cloe',
+      subcategory: 'pasear',
+      emoji: '🚶',
+      assignee,
+      scope: 'today',
+      done: true,
+      done_at: new Date().toISOString(),
+      due_date: dateOnly,
+      due_time: timeOnly,
+      weekday: WEEKDAYS[dow],
+    });
+    if (taskError) {
+      console.error('[cloe walk → task]', taskError);
+      showToast('⚠️ Paseo guardado pero falló crear la tarea: ' + taskError.message);
+    } else {
+      showToast(`✓ Paseo fichado · tarea añadida en Tareas`);
+    }
+    loadAll();
   });
 });
 
@@ -1781,43 +1754,50 @@ $('qa-cloe-walk').addEventListener('submit', e => {
 $('qa-cloe-down').addEventListener('submit', e => {
   e.preventDefault();
   withFormLock(e.target, async () => {
-  const datetime = $('cloe-down-datetime').value;
-  const reason = $('cloe-down-reason').value || 'otro';
-  const assignee = $('cloe-down-person').value || null;
-  
-  if (!datetime) {
-    showToast('Pon fecha y hora, que esta expedición necesita coordenadas');
-    return;
-  }
-  
-  // Insertar en tabla de bajadas
-  const { error: downError } = await db.from('cloe_downs').insert({
-    datetime,
-    reason,
-    assignee,
-  });
-  if (downError) { showToast('Error: ' + downError.message); return; }
-  
-  // También insertar como tarea realizada hoy (scope='today', done=true)
-  const dateOnly = datetime.split('T')[0];
-  const timeOnly = datetime.split('T')[1]?.slice(0, 5) || null;
-  const reasonEmoji = { pipi: '🚽', caca: '💩', jugar: '🎾', comer: '🍖', otro: '📝' }[reason] || '📝';
-  const { error: taskError } = await insertTask({
-    title: `Bajar a Cloe en modo ${reason}`,
-    category: 'bajar',
-    room: 'cloe',
-    subcategory: 'bajar',
-    emoji: reasonEmoji,
-    assignee,
-    scope: 'today',
-    done: true,
-    done_at: new Date().toISOString(),
-    due_date: dateOnly,
-    due_time: timeOnly,
-  });
-  if (taskError) { showToast('Error al guardar tarea: ' + taskError.message); return; }
+    const datetime = $('cloe-down-datetime').value;
+    const reason = $('cloe-down-reason').value || 'otro';
+    const assignee = $('cloe-down-person').value || me.id;  // fallback al usuario actual
 
-  loadAll();
+    if (!datetime) {
+      showToast('Pon fecha y hora, que esta expedición necesita coordenadas');
+      return;
+    }
+
+    // Insertar en tabla de bajadas
+    const { error: downError } = await db.from('cloe_downs').insert({
+      datetime,
+      reason,
+      assignee,
+    });
+    if (downError) { showToast('Error en bajada: ' + downError.message); console.error('[cloe down]', downError); return; }
+
+    // También insertar como tarea realizada (aparece en pestaña Tareas)
+    const dateOnly = datetime.split('T')[0];
+    const timeOnly = datetime.split('T')[1]?.slice(0, 5) || null;
+    const dow = (new Date(dateOnly + 'T00:00').getDay() + 6) % 7;
+    const reasonEmoji = { pipi: '🚽', caca: '💩', jugar: '🎾', comer: '🍖', otro: '📝' }[reason] || '📝';
+    const reasonLabel = { pipi: 'pipí', caca: 'caca', jugar: 'jugar', comer: 'comer', otro: 'otro' }[reason] || reason;
+    const { error: taskError } = await insertTask({
+      title: `Bajar a Cloe (${reasonLabel})`,
+      category: 'bajar',
+      room: 'cloe',
+      subcategory: 'bajar',
+      emoji: reasonEmoji,
+      assignee,
+      scope: 'today',
+      done: true,
+      done_at: new Date().toISOString(),
+      due_date: dateOnly,
+      due_time: timeOnly,
+      weekday: WEEKDAYS[dow],
+    });
+    if (taskError) {
+      console.error('[cloe down → task]', taskError);
+      showToast('⚠️ Bajada guardada pero falló crear la tarea: ' + taskError.message);
+    } else {
+      showToast(`✓ Bajada fichada · tarea añadida en Tareas`);
+    }
+    loadAll();
   });
 });
 
@@ -1851,10 +1831,3 @@ window.addEventListener('beforeunload', () => {
 
 setCloeDefaultDatetime();
 loadAll();
-
-// ── Google Calendar (sync bidireccional) ─────────────────
-if (typeof gcalEnabled === 'function' && gcalEnabled()) {
-  $('gcal-toggle')?.addEventListener('click', gcalToggle);
-  // Pequeño delay para que GIS termine de cargar
-  setTimeout(() => { gcalRefreshButton(); gcalStartAutoSync(); }, 800);
-}
