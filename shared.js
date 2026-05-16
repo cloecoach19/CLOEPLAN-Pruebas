@@ -1586,15 +1586,24 @@ function applyCoinRules(rules) {
   }
 }
 
-function coinsForTask(t) {
+// Devuelve, si existe, la regla específica room×subcategory definida por el admin.
+function specificTaskCoinRule(state, room, subcategory) {
+  if (!state || !state.taskCoinRules || !room || !subcategory) return null;
+  const hit = state.taskCoinRules.find(r => r.room === room && r.subcategory === subcategory);
+  return hit ? Math.max(0, hit.value || 0) : null;
+}
+
+function coinsForTask(t, state) {
   if (!t || !t.done) return 0;
-  // La tarea de lectura no da monedas
+  // 1) Regla específica room×subcategory (si el admin la ha definido).
+  const specific = specificTaskCoinRule(state, t.room, t.subcategory);
+  if (specific !== null) return specific;
+  // 2) Fallbacks globales (8 buckets de coin_rules).
   if (t.subcategory === 'lectura') return 0;
   let c = COINS.TASK_BASE;
   if (t.room && t.room.startsWith('habitat-')) c = COINS.TASK_KIDROOM;
   else if (t.room === 'cocina') c = COINS.TASK_KITCHEN;
   if (t.subcategory === 'limpieza') c = Math.max(c, COINS.TASK_CLEAN);
-  // Tareas especiales de limpieza profunda/total
   if (t.subcategory === 'limpieza-profunda' || t.subcategory === 'limpieza-total') c = COINS.TASK_DEEP_CLEAN;
   return c;
 }
@@ -1602,7 +1611,7 @@ function coinsForTask(t) {
 function totalCoins(state, uid) {
   let sum = 0;
   for (const t of ((state && state.tasks) || [])) {
-    if (t.done && t.assignee === uid) sum += coinsForTask(t);
+    if (t.done && t.assignee === uid) sum += coinsForTask(t, state);
   }
   for (const w of ((state && state.cloeWalks) || [])) {
     if (w.assignee === uid) sum += COINS.CLOE_WALK;
@@ -1612,6 +1621,10 @@ function totalCoins(state, uid) {
   }
   for (const s of ((state && state.shopping) || [])) {
     if (s.done && s.added_by === uid) sum += COINS.SHOP_DONE;
+  }
+  // Sumar las monedas otorgadas por trofeos desbloqueados (snapshot en BD).
+  for (const tu of ((state && state.trophiesUnlocked) || [])) {
+    if (tu.user_id === uid) sum += Math.max(0, tu.coins || 0);
   }
   // Descontar canjes aprobados o entregados (los rechazados no cuentan; los pending no se han confirmado aún)
   for (const r of ((state && state.redemptions) || [])) {

@@ -54,7 +54,7 @@ async function insertTask(payload) {
   return db.from('tasks').insert(fallback);
 }
 
-const STATE = { users: [], tasks: [], shopping: [], events: [], cloeWalks: [], cloeDowns: [], rewards: [], redemptions: [] };
+const STATE = { users: [], tasks: [], shopping: [], events: [], cloeWalks: [], cloeDowns: [], rewards: [], redemptions: [], coinRules: [], trophiesUnlocked: [], taskCoinRules: [] };
 let activeTab = 'hoy';
 let tasksScope = 'week';
 const calDate = new Date(); calDate.setDate(1);
@@ -437,8 +437,10 @@ async function loadAll() {
     db.from('rewards').select('*').order('cost'),
     db.from('redemptions').select('*').order('created_at', { ascending: false }),
     db.from('coin_rules').select('*').order('sort_order'),
+    db.from('trophies_unlocked').select('*'),
+    db.from('task_coin_rules').select('*'),
   ]);
-  const [u, t, s, e, cw, cd, rw, rd, cr] = results;
+  const [u, t, s, e, cw, cd, rw, rd, cr, tu, tcr] = results;
   const firstError = results.find(r => r && r.error);
   if (firstError) {
     console.error('loadAll error', firstError.error);
@@ -453,6 +455,8 @@ async function loadAll() {
   STATE.rewards = rw.data || [];
   STATE.redemptions = rd.data || [];
   STATE.coinRules = cr.data || [];
+  STATE.trophiesUnlocked = tu.data || [];
+  STATE.taskCoinRules = tcr.data || [];
   applyCoinRules(STATE.coinRules);
   renderAll();
 }
@@ -696,14 +700,16 @@ function paintCoinBalance() {
   if (!el) return;
   const prev = _lastCoinBalance;
   el.textContent = total.toLocaleString('es-ES');
-  if (prev !== null && total > prev) {
-    const delta = total - prev;
-    flyCoin(delta);
-    const chip = $('coin-balance');
+  const chip = $('coin-balance');
+  if (chip && prev !== null && total !== prev) {
+    if (total > prev) flyCoin(total - prev);
     chip.classList.remove('coin-pop');
     void chip.offsetWidth;
     chip.classList.add('coin-pop');
   }
+  // Replicar el balance en el panel de la tienda (si está montado).
+  const shopBal = $('shop-balance-num');
+  if (shopBal) shopBal.textContent = total.toLocaleString('es-ES');
   _lastCoinBalance = total;
 }
 
@@ -828,7 +834,7 @@ function renderCoinRulesTable() {
       room: info.room,
       subcategory: info.subcatId
     };
-    const coins = coinsForTask(fakeTask);
+    const coins = coinsForTask(fakeTask, STATE);
     rows.push({ ...info, coins });
   });
   
@@ -1067,12 +1073,35 @@ function getRoomColor(room) {
 }
 
 // ── Trofeos / premios ────────────────────────────────────
-const TROPHY_KEY = 'cloe-trophies-unlocked';
-function loadUnlockedTrophies() {
-  try { return new Set(JSON.parse(localStorage.getItem(TROPHY_KEY) || '[]')); } catch { return new Set(); }
+// Persistencia cross-device en tabla `trophies_unlocked`.
+// `localStorage` se usa solo como caché de "ya celebrado en este dispositivo"
+// para no repetir la fiesta cuando llega un evento realtime.
+const TROPHY_CELEBRATED_KEY = 'cloe-trophies-celebrated';
+function loadCelebrated() {
+  try { return new Set(JSON.parse(localStorage.getItem(TROPHY_CELEBRATED_KEY) || '[]')); } catch { return new Set(); }
 }
-function saveUnlockedTrophies(set) {
-  localStorage.setItem(TROPHY_KEY, JSON.stringify([...set]));
+function saveCelebrated(set) {
+  try { localStorage.setItem(TROPHY_CELEBRATED_KEY, JSON.stringify([...set])); } catch {}
+}
+function trophiesUnlockedForMe() {
+  return new Set(
+    (STATE.trophiesUnlocked || [])
+      .filter(t => t.user_id === me.id)
+      .map(t => t.trophy_id)
+  );
+}
+
+async function persistTrophyUnlock(tr) {
+  // Upsert idempotente: si ya existe la fila no pasa nada (constraint único).
+  const { error } = await db.from('trophies_unlocked').insert({
+    user_id: me.id,
+    trophy_id: tr.id,
+    coins: tr.coins || 0
+  });
+  // 23505 = unique_violation → ya estaba desbloqueado en otro dispositivo, ignorar
+  if (error && error.code !== '23505') {
+    console.error('persistTrophyUnlock', error);
+  }
 }
 
 function renderTrophies() {
@@ -1086,18 +1115,22 @@ function renderTrophies() {
     return { ...tr, ...r, unlocked, pct: Math.min(100, (r.current / r.target) * 100) };
   });
 
-  // Detectar nuevos desbloqueos para celebrarlos
-  const previouslyUnlocked = loadUnlockedTrophies();
+  // Detectar nuevos desbloqueos para celebrarlos y persistirlos en BD.
+  const alreadyPersisted = trophiesUnlockedForMe();
+  const alreadyCelebrated = loadCelebrated();
   const nowUnlocked = new Set(evaluated.filter(t => t.unlocked).map(t => t.id));
-  const justUnlocked = [...nowUnlocked].filter(id => !previouslyUnlocked.has(id));
+  const justUnlocked = [...nowUnlocked].filter(id => !alreadyPersisted.has(id));
   if (justUnlocked.length) {
+    const celebratedNext = new Set(alreadyCelebrated);
     justUnlocked.forEach(id => {
       const tr = evaluated.find(t => t.id === id);
-      celebrateTrophy(tr);
+      persistTrophyUnlock(tr);
+      if (!celebratedNext.has(id)) {
+        celebrateTrophy(tr);
+        celebratedNext.add(id);
+      }
     });
-    saveUnlockedTrophies(nowUnlocked);
-  } else if (nowUnlocked.size !== previouslyUnlocked.size) {
-    saveUnlockedTrophies(nowUnlocked);
+    saveCelebrated(celebratedNext);
   }
 
   // Orden: desbloqueados primero, luego por progreso descendente
@@ -2221,6 +2254,8 @@ const realtimeChannel = db.channel('cloe-sync')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'rewards'    }, debouncedLoad)
   .on('postgres_changes', { event: '*', schema: 'public', table: 'redemptions'}, debouncedLoad)
   .on('postgres_changes', { event: '*', schema: 'public', table: 'coin_rules' }, debouncedLoad)
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'trophies_unlocked' }, debouncedLoad)
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'task_coin_rules' }, debouncedLoad)
   .subscribe();
 
 // Cleanup al cerrar / salir

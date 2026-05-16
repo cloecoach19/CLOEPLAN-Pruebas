@@ -106,6 +106,29 @@ insert into coin_rules (key, label, emoji, value, description, sort_order) value
   ('SHOP_DONE',       'Producto comprado',       '🛒',   2, 'Por cada ítem marcado en la lista',      70)
 on conflict (key) do nothing;
 
+-- ── Monedas por tarea concreta (room × subcategory) ──────
+-- Reglas finas que sobreescriben las globales de `coin_rules`.
+-- Si no hay fila para una combinación, se usa el fallback global.
+create table if not exists task_coin_rules (
+  room        text not null,
+  subcategory text not null,
+  value       int  not null default 0,
+  updated_at  timestamptz not null default now(),
+  primary key (room, subcategory)
+);
+
+-- ── Trofeos desbloqueados por usuario ─────────────────────
+-- Persistencia cross-device: cada vez que un usuario desbloquea un trofeo
+-- se inserta una fila. Único por (user_id, trophy_id) para que no se duplique.
+create table if not exists trophies_unlocked (
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid not null references users(id) on delete cascade,
+  trophy_id    text not null,                    -- coincide con TROPHIES[i].id en shared.js
+  coins        int  not null default 0,          -- snapshot de las monedas otorgadas
+  unlocked_at  timestamptz not null default now(),
+  unique (user_id, trophy_id)
+);
+
 -- ── Tienda: catálogo de premios ───────────────────────────
 create table if not exists rewards (
   id          uuid primary key default gen_random_uuid(),
@@ -144,6 +167,8 @@ alter table cloe_downs  enable row level security;
 alter table rewards     enable row level security;
 alter table redemptions enable row level security;
 alter table coin_rules  enable row level security;
+alter table trophies_unlocked enable row level security;
+alter table task_coin_rules    enable row level security;
 
 drop policy if exists "public" on users;
 drop policy if exists "public" on tasks;
@@ -154,6 +179,8 @@ drop policy if exists "public" on cloe_downs;
 drop policy if exists "public" on rewards;
 drop policy if exists "public" on redemptions;
 drop policy if exists "public" on coin_rules;
+drop policy if exists "public" on trophies_unlocked;
+drop policy if exists "public" on task_coin_rules;
 
 create policy "public" on users    for all using (true) with check (true);
 create policy "public" on tasks    for all using (true) with check (true);
@@ -164,10 +191,12 @@ create policy "public" on cloe_downs  for all using (true) with check (true);
 create policy "public" on rewards     for all using (true) with check (true);
 create policy "public" on redemptions for all using (true) with check (true);
 create policy "public" on coin_rules  for all using (true) with check (true);
+create policy "public" on trophies_unlocked for all using (true) with check (true);
+create policy "public" on task_coin_rules    for all using (true) with check (true);
 
 -- ── Realtime ──────────────────────────────────────────────
 -- Tras ejecutar este SQL, ve a Database → Replication y activa
--- las 9 tablas (users, tasks, shopping, events, cloe_walks, cloe_downs, rewards, redemptions, coin_rules).
+-- las 11 tablas (users, tasks, shopping, events, cloe_walks, cloe_downs, rewards, redemptions, coin_rules, trophies_unlocked, task_coin_rules).
 -- Sin esto los cambios no se sincronizan en vivo entre dispositivos.
 
 -- ── Premios iniciales (demo) ──────────────────────────────
