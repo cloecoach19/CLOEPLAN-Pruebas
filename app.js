@@ -63,6 +63,21 @@ const calDate = new Date(); calDate.setDate(1);
 const $ = (id) => document.getElementById(id);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
+// ── Catálogo de tareas (hardcoded + custom del admin) ────
+// Devuelve subcategorías de una habitación, mergeando las personalizadas
+// que el admin haya creado en `task_coin_rules`.
+function subcatsOf(roomId) {
+  if (typeof getTaskCatalog === 'function') {
+    const cat = getTaskCatalog(STATE)[roomId] || [];
+    return cat.map(s => ({ id: s.id, label: s.label, emoji: s.emoji }));
+  }
+  return (typeof TASK_SUBCATEGORIES !== 'undefined' && TASK_SUBCATEGORIES[roomId]) || [];
+}
+function allRoomIds() {
+  if (typeof getTaskCatalog === 'function') return Object.keys(getTaskCatalog(STATE));
+  return (typeof TASK_SUBCATEGORIES !== 'undefined') ? Object.keys(TASK_SUBCATEGORIES) : [];
+}
+
 // ── Header de usuario ────────────────────────────────────
 $('user-av').outerHTML = avatarHTML(me, 'sm').replace('<span ', '<span id="user-av" ');
 $('user-name').textContent = me.name;
@@ -816,9 +831,9 @@ function renderCoinRulesTable() {
   
   // Construir lista única de todos los tipos de tarea (room:subcategory)
   const taskTypes = new Map();
-  
-  Object.keys(TASK_SUBCATEGORIES).forEach(room => {
-    TASK_SUBCATEGORIES[room].forEach(subcat => {
+
+  allRoomIds().forEach(room => {
+    subcatsOf(room).forEach(subcat => {
       const key = `${room}:${subcat.id}`;
       const roomInfo = TASK_ROOMS.find(r => r.id === room);
       taskTypes.set(key, { 
@@ -964,11 +979,11 @@ function renderTypeChart() {
   
   // Build task types map from all subcategories across rooms
   const taskTypes = {};
-  
-  Object.keys(TASK_SUBCATEGORIES).forEach(room => {
-    TASK_SUBCATEGORIES[room].forEach(subcat => {
+
+  allRoomIds().forEach(room => {
+    subcatsOf(room).forEach(subcat => {
       const key = `${room}:${subcat.id}`;
-      taskTypes[key] = { 
+      taskTypes[key] = {
         label: subcat.label,
         emoji: subcat.emoji,
         color: getTypeColor(room, subcat.id)
@@ -994,8 +1009,8 @@ function renderTypeChart() {
     
     if (!taskTypes[typeKey]) {
       // Try to find subcategory info
-      const subcatInfo = t.subcategory && TASK_SUBCATEGORIES[t.room]
-        ? TASK_SUBCATEGORIES[t.room].find(s => s.id === t.subcategory)
+      const subcatInfo = t.subcategory && t.room
+        ? subcatsOf(t.room).find(s => s.id === t.subcategory)
         : null;
       taskTypes[typeKey] = { 
         label: subcatInfo?.label || typeKey, 
@@ -1343,8 +1358,8 @@ function taskRowHTML(t) {
   const user = STATE.users.find(u => u.id === t.assignee);
   const emoji = t.emoji || '✨';
   const roomInfo = t.room ? TASK_ROOMS.find(r => r.id === t.room) : null;
-  const subcatInfo = t.subcategory && TASK_SUBCATEGORIES[t.room]
-    ? TASK_SUBCATEGORIES[t.room].find(s => s.id === t.subcategory)
+  const subcatInfo = t.subcategory && t.room
+    ? subcatsOf(t.room).find(s => s.id === t.subcategory)
     : null;
   
   const today = todayISO();
@@ -1616,7 +1631,7 @@ function openTaskModal() {
       btn.classList.add('selected');
       taskModalState.room = btn.dataset.room;
 
-      const subcats = TASK_SUBCATEGORIES[taskModalState.room] || [];
+      const subcats = subcatsOf(taskModalState.room);
       $('task-subcat-grid').innerHTML = subcats.map(s => `
         <button class="task-subcat-btn card-sm" data-subcat="${esc(s.id)}" data-emoji="${esc(s.emoji)}">
           <div class="task-subcat-emoji">${s.emoji}</div>
@@ -1684,7 +1699,7 @@ function openTaskModal() {
     }
     
     const assignee = $('task-assignee-select').value || me.id;
-    const subcats = TASK_SUBCATEGORIES[taskModalState.room];
+    const subcats = subcatsOf(taskModalState.room);
     
     // Crear una tarea por cada subcategoría seleccionada
     const tasksToCreate = taskModalState.subcategories.map(subcatId => {

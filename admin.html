@@ -56,34 +56,52 @@
     <p class="empty hidden" id="empty">Aún no hay equipo. Esto parece una casa modo solitario.</p>
   </section>
 
-  <!-- 🪙 Reglas de monedas -->
+  <!-- 🪙 Tareas y monedas -->
   <section class="card">
     <div class="section-header">
       <div>
         <p class="eyebrow">// economía del dojo</p>
-        <h1 class="display">Reglas de monedas 🪙</h1>
-        <p class="muted" style="margin:4px 0 0;font-size:14px;">Decide cuánto vale cada acción. Cambios en vivo para todos.</p>
-      </div>
-      <button class="btn accent" id="save-coin-rules" disabled>Guardar cambios</button>
-    </div>
-    <div id="coin-rules-list" class="coin-rules-list" style="margin-top:18px;"></div>
-  </section>
-
-  <!-- 🪙 Monedas por tarea concreta -->
-  <section class="card">
-    <div class="section-header">
-      <div>
-        <p class="eyebrow">// reglas finas</p>
-        <h1 class="display">Monedas por tarea concreta 🎯</h1>
+        <h1 class="display">Tareas y monedas 🪙</h1>
         <p class="muted" style="margin:4px 0 0;font-size:14px;">
-          Sobreescribe el valor de cada tarea individual. Si dejas el valor a
-          <em>auto</em>, se usa la regla global de arriba.
+          Define qué tareas existen y cuántas monedas vale cada una. El valor que pongas
+          aquí es el definitivo.
         </p>
       </div>
-      <button class="btn accent" id="save-task-coin-rules" disabled>Guardar cambios</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn ghost" id="new-task-rule-btn">+ Nueva tarea</button>
+        <button class="btn accent" id="save-task-coin-rules" disabled>Guardar cambios</button>
+      </div>
     </div>
     <div id="task-coin-rules-list" class="coin-rules-list" style="margin-top:18px;"></div>
   </section>
+
+  <!-- Modal: nueva tarea -->
+  <div class="modal hidden" id="new-task-rule-modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <header class="modal-head">
+        <h2 id="new-task-rule-title">Nueva tarea</h2>
+        <button class="icon-btn" id="close-new-task-rule" aria-label="Cerrar">✕</button>
+      </header>
+      <form id="new-task-rule-form" class="form-grid">
+        <label>Habitación
+          <select name="room" required></select>
+        </label>
+        <label>Nombre de la tarea
+          <input type="text" name="label" maxlength="60" required placeholder="p.ej. Regar plantas">
+        </label>
+        <label>Emoji
+          <input type="text" name="emoji" maxlength="4" required placeholder="🌿">
+        </label>
+        <label>Monedas
+          <input type="number" name="value" min="0" max="9999" required value="10">
+        </label>
+        <div class="form-row">
+          <button type="button" class="btn ghost" id="cancel-new-task-rule">Cancelar</button>
+          <button type="submit" class="btn accent">Crear</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- 🛍️ Gestión de la tienda -->
   <section class="card">
@@ -115,7 +133,42 @@
     <h4 class="eyebrow" style="margin: 28px 0 10px;">// historial reciente</h4>
     <div id="redemptions-history" class="row-list"></div>
   </section>
+
+  <!-- ⚠️ Zona peligrosa -->
+  <section class="card" style="border:1px solid rgba(220,38,38,0.35);">
+    <div class="section-header">
+      <div>
+        <p class="eyebrow" style="color:#dc2626;">// zona peligrosa</p>
+        <h2 class="display">Resetear la app</h2>
+        <p class="muted" style="margin:4px 0 0;font-size:13px;">
+          Borra tareas, compra, calendario, paseos/bajadas de Cloe, canjes y
+          trofeos desbloqueados. Mantiene usuarios, premios y reglas de monedas.
+        </p>
+      </div>
+      <button class="btn danger" id="reset-app-btn">Resetear app</button>
+    </div>
+  </section>
 </main>
+
+<!-- Modal de confirmación de reset -->
+<div class="modal hidden" id="reset-modal">
+  <div class="modal-panel" style="max-width:440px;">
+    <h3>¿Resetear toda la app?</h3>
+    <p class="muted" style="margin:10px 0 14px;">
+      Se borrarán <strong>todas</strong> las tareas, lista de la compra, eventos
+      del calendario, paseos/bajadas de Cloe, canjes y trofeos desbloqueados.
+      Esto no se puede deshacer.
+    </p>
+    <label style="display:block;margin-bottom:14px;">
+      <span>Escribe <code>RESETEAR</code> para confirmar</span>
+      <input type="text" id="reset-confirm-input" autocomplete="off" style="margin-top:6px;width:100%;">
+    </label>
+    <div class="form-actions">
+      <button class="btn ghost" id="cancel-reset">Cancelar</button>
+      <button class="btn danger" id="confirm-reset" disabled>Borrar todo</button>
+    </div>
+  </div>
+</div>
 
 <!-- Modal premio -->
 <div class="modal hidden" id="reward-modal">

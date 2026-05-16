@@ -1586,26 +1586,45 @@ function applyCoinRules(rules) {
   }
 }
 
-// Devuelve, si existe, la regla específica room×subcategory definida por el admin.
-function specificTaskCoinRule(state, room, subcategory) {
-  if (!state || !state.taskCoinRules || !room || !subcategory) return null;
-  const hit = state.taskCoinRules.find(r => r.room === room && r.subcategory === subcategory);
-  return hit ? Math.max(0, hit.value || 0) : null;
+// Catálogo unificado: TASK_SUBCATEGORIES (hardcoded) + filas de task_coin_rules.
+// La fila de BD pisa cualquier valor del hardcoded. Las filas custom (que
+// no existen en TASK_SUBCATEGORIES) se añaden al catálogo.
+function getTaskCatalog(state) {
+  const out = {};
+  if (typeof TASK_SUBCATEGORIES !== 'undefined') {
+    for (const room of Object.keys(TASK_SUBCATEGORIES)) {
+      out[room] = (TASK_SUBCATEGORIES[room] || []).map(s => ({
+        id: s.id, label: s.label, emoji: s.emoji, value: null, sort_order: 100
+      }));
+    }
+  }
+  const rules = (state && state.taskCoinRules) || [];
+  for (const r of rules) {
+    if (!r || !r.room || !r.subcategory) continue;
+    if (!out[r.room]) out[r.room] = [];
+    const idx = out[r.room].findIndex(s => s.id === r.subcategory);
+    const merged = {
+      id: r.subcategory,
+      label: r.label || (idx >= 0 ? out[r.room][idx].label : r.subcategory),
+      emoji: r.emoji || (idx >= 0 ? out[r.room][idx].emoji : '✨'),
+      value: Math.max(0, r.value || 0),
+      sort_order: r.sort_order ?? 100,
+    };
+    if (idx >= 0) out[r.room][idx] = merged;
+    else out[r.room].push(merged);
+  }
+  for (const room of Object.keys(out)) {
+    out[room].sort((a, b) => (a.sort_order - b.sort_order) || a.label.localeCompare(b.label));
+  }
+  return out;
 }
 
 function coinsForTask(t, state) {
   if (!t || !t.done) return 0;
-  // 1) Regla específica room×subcategory (si el admin la ha definido).
-  const specific = specificTaskCoinRule(state, t.room, t.subcategory);
-  if (specific !== null) return specific;
-  // 2) Fallbacks globales (8 buckets de coin_rules).
-  if (t.subcategory === 'lectura') return 0;
-  let c = COINS.TASK_BASE;
-  if (t.room && t.room.startsWith('habitat-')) c = COINS.TASK_KIDROOM;
-  else if (t.room === 'cocina') c = COINS.TASK_KITCHEN;
-  if (t.subcategory === 'limpieza') c = Math.max(c, COINS.TASK_CLEAN);
-  if (t.subcategory === 'limpieza-profunda' || t.subcategory === 'limpieza-total') c = COINS.TASK_DEEP_CLEAN;
-  return c;
+  if (!t.room || !t.subcategory) return 0;
+  const rules = (state && state.taskCoinRules) || [];
+  const hit = rules.find(r => r.room === t.room && r.subcategory === t.subcategory);
+  return hit ? Math.max(0, hit.value || 0) : 0;
 }
 
 function totalCoins(state, uid) {

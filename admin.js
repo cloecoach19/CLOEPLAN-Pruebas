@@ -401,91 +401,7 @@ document.addEventListener('keydown', e => {
 });
 
 // ═══════════════════════════════════════════════════════
-// 🪙 Reglas de monedas
-// ═══════════════════════════════════════════════════════
-let coinRules = [];
-let coinDirty = false;
-
-async function loadCoinRules() {
-  const { data } = await db.from('coin_rules').select('*').order('sort_order');
-  coinRules = data || [];
-  if (typeof applyCoinRules === 'function') applyCoinRules(coinRules);
-  renderCoinRules();
-  // Repinta también la lista fina porque su columna "auto" depende de las reglas globales.
-  if (typeof taskCoinDirty !== 'undefined' && !taskCoinDirty) renderTaskCoinRules();
-}
-
-function renderCoinRules() {
-  const list = $('coin-rules-list');
-  if (!list) return;
-  if (!coinRules.length) {
-    list.innerHTML = '<p class="empty">No hay reglas configuradas. Ejecuta el SQL de setup.</p>';
-    return;
-  }
-  list.innerHTML = coinRules.map(r => `
-    <div class="coin-rule" data-key="${esc(r.key)}">
-      <span class="coin-rule-emoji">${esc(r.emoji || '✨')}</span>
-      <div class="coin-rule-text">
-        <div class="coin-rule-label">${esc(r.label)}</div>
-        <div class="coin-rule-desc">${esc(r.description || '')}</div>
-      </div>
-      <div class="coin-rule-input">
-        <input type="number" min="0" max="9999" value="${r.value}" data-rule-key="${esc(r.key)}">
-        <span class="coin-icon">🪙</span>
-      </div>
-    </div>
-  `).join('');
-
-  // Listener de cambios para activar el botón guardar
-  $$('input[data-rule-key]', list).forEach(inp => {
-    inp.addEventListener('input', () => {
-      coinDirty = true;
-      $('save-coin-rules').disabled = false;
-    });
-  });
-}
-
-async function saveCoinRules() {
-  const list = $('coin-rules-list');
-  if (!list) return;
-  const inputs = $$('input[data-rule-key]', list);
-  const updates = [];
-  inputs.forEach(inp => {
-    const key = inp.dataset.ruleKey;
-    const val = parseInt(inp.value, 10);
-    const cur = coinRules.find(r => r.key === key);
-    if (cur && Number.isFinite(val) && val >= 0 && val !== cur.value) {
-      updates.push({ key, value: val });
-    }
-  });
-  if (!updates.length) {
-    showToast('No hay cambios que guardar');
-    coinDirty = false;
-    $('save-coin-rules').disabled = true;
-    return;
-  }
-  const btn = $('save-coin-rules');
-  btn.disabled = true; btn.textContent = 'Guardando…';
-  for (const u of updates) {
-    const { error } = await db.from('coin_rules').update({ value: u.value }).eq('key', u.key);
-    if (error) {
-      showToast('Error: ' + error.message);
-      btn.disabled = false; btn.textContent = 'Guardar cambios';
-      return;
-    }
-  }
-  btn.textContent = '✓ Guardado';
-  coinDirty = false;
-  showToast(`✓ ${updates.length} ${updates.length === 1 ? 'regla actualizada' : 'reglas actualizadas'}`);
-  setTimeout(() => { btn.textContent = 'Guardar cambios'; btn.disabled = true; }, 1800);
-  // Forzar recarga inmediata para aplicar los nuevos valores
-  await loadCoinRules();
-}
-
-$('save-coin-rules')?.addEventListener('click', saveCoinRules);
-
-// ═══════════════════════════════════════════════════════
-// 🪙 Reglas de monedas por tarea concreta (room × subcategory)
+// 🪙 Tareas y monedas (catálogo único)
 // ═══════════════════════════════════════════════════════
 let taskCoinRules = [];
 let taskCoinDirty = false;
@@ -497,13 +413,54 @@ async function loadTaskCoinRules() {
     if (/relation|does not exist|42P01/i.test(msg)) {
       showToast('⚠️ Falta ejecutar supabase_setup.sql (tabla task_coin_rules)', 6000);
     } else {
-      showToast('Error al cargar reglas finas');
+      showToast('Error al cargar tareas');
     }
     taskCoinRules = [];
   } else {
     taskCoinRules = data || [];
   }
   renderTaskCoinRules();
+}
+
+function getMergedTaskRows() {
+  // Combina TASK_SUBCATEGORIES (hardcoded) con las filas de la BD.
+  // Cada fila resultante puede tener `value` (si está definido en BD) o null.
+  const byKey = new Map(taskCoinRules.map(r => [`${r.room}:${r.subcategory}`, r]));
+  const rooms = (typeof TASK_ROOMS !== 'undefined') ? TASK_ROOMS.slice() : [];
+  const seenKeys = new Set();
+  const rowsByRoom = {};
+
+  for (const room of rooms) {
+    const subs = (typeof TASK_SUBCATEGORIES !== 'undefined' && TASK_SUBCATEGORIES[room.id]) || [];
+    rowsByRoom[room.id] = subs.map(s => {
+      const key = `${room.id}:${s.id}`;
+      seenKeys.add(key);
+      const dbRow = byKey.get(key);
+      return {
+        room: room.id,
+        subcategory: s.id,
+        label: (dbRow && dbRow.label) || s.label,
+        emoji: (dbRow && dbRow.emoji) || s.emoji || '✨',
+        value: dbRow ? Math.max(0, dbRow.value || 0) : null,
+        custom: false,
+      };
+    });
+  }
+  // Filas custom: existen en BD pero no en el hardcoded.
+  for (const r of taskCoinRules) {
+    const key = `${r.room}:${r.subcategory}`;
+    if (seenKeys.has(key)) continue;
+    if (!rowsByRoom[r.room]) rowsByRoom[r.room] = [];
+    rowsByRoom[r.room].push({
+      room: r.room,
+      subcategory: r.subcategory,
+      label: r.label || r.subcategory,
+      emoji: r.emoji || '✨',
+      value: Math.max(0, r.value || 0),
+      custom: true,
+    });
+  }
+  return { rooms, rowsByRoom };
 }
 
 function renderTaskCoinRules() {
@@ -513,36 +470,36 @@ function renderTaskCoinRules() {
     list.innerHTML = '<p class="empty">Catálogo de tareas no disponible.</p>';
     return;
   }
-  // Asegura que el cálculo del "auto" usa las reglas globales más recientes.
-  if (typeof applyCoinRules === 'function') applyCoinRules(coinRules);
 
-  const byKey = new Map(taskCoinRules.map(r => [`${r.room}:${r.subcategory}`, r.value]));
+  const { rooms, rowsByRoom } = getMergedTaskRows();
 
-  const sections = TASK_ROOMS.map(room => {
-    const subs = TASK_SUBCATEGORIES[room.id] || [];
-    if (!subs.length) return '';
-    const rows = subs.map(sub => {
-      const key = `${room.id}:${sub.id}`;
-      const fallback = coinsForTask({ done: true, room: room.id, subcategory: sub.id }, { taskCoinRules: [] });
-      const current = byKey.has(key) ? byKey.get(key) : '';
+  const sections = rooms.map(room => {
+    const rs = rowsByRoom[room.id] || [];
+    if (!rs.length) return '';
+    const rowsHTML = rs.map(r => {
+      const placeholder = r.value === null ? '0' : '';
+      const value = r.value === null ? '' : r.value;
+      const delBtn = r.custom
+        ? `<button type="button" class="icon-btn danger" data-del-task-rule data-room="${esc(r.room)}" data-sub="${esc(r.subcategory)}" title="Eliminar tarea">🗑</button>`
+        : '';
       return `
-        <div class="coin-rule" data-room="${esc(room.id)}" data-sub="${esc(sub.id)}">
-          <span class="coin-rule-emoji">${esc(sub.emoji || '✨')}</span>
+        <div class="coin-rule">
+          <span class="coin-rule-emoji">${esc(r.emoji)}</span>
           <div class="coin-rule-text">
-            <div class="coin-rule-label">${esc(sub.label)}</div>
-            <div class="coin-rule-desc">auto: 🪙 ${fallback}</div>
+            <div class="coin-rule-label">${esc(r.label)}${r.custom ? ' <small class="muted">(personalizada)</small>' : ''}</div>
           </div>
           <div class="coin-rule-input">
-            <input type="number" min="0" max="9999" placeholder="auto" value="${current === '' ? '' : current}"
-                   data-task-room="${esc(room.id)}" data-task-sub="${esc(sub.id)}">
+            <input type="number" min="0" max="9999" placeholder="${placeholder}" value="${value}"
+                   data-task-room="${esc(r.room)}" data-task-sub="${esc(r.subcategory)}">
             <span class="coin-icon">🪙</span>
+            ${delBtn}
           </div>
         </div>`;
     }).join('');
     return `
       <details class="task-coin-room" open>
         <summary><strong>${esc(room.emoji)} ${esc(room.label)}</strong></summary>
-        ${rows}
+        ${rowsHTML}
       </details>`;
   }).join('');
 
@@ -554,32 +511,45 @@ function renderTaskCoinRules() {
       $('save-task-coin-rules').disabled = false;
     });
   });
+  $$('[data-del-task-rule]', list).forEach(b => b.addEventListener('click', () => {
+    deleteTaskRule(b.dataset.room, b.dataset.sub);
+  }));
+}
+
+async function deleteTaskRule(room, subcategory) {
+  if (!confirm('¿Eliminar esta tarea personalizada?')) return;
+  const { error } = await db.from('task_coin_rules').delete().eq('room', room).eq('subcategory', subcategory);
+  if (error) { showToast('Error: ' + error.message); return; }
+  showToast('Tarea eliminada');
+  await loadTaskCoinRules();
 }
 
 async function saveTaskCoinRules() {
   const list = $('task-coin-rules-list');
   if (!list) return;
   const inputs = $$('input[data-task-room]', list);
-  const upserts = [];
-  const deletes = [];
-  const currentKeys = new Set(taskCoinRules.map(r => `${r.room}:${r.subcategory}`));
+  const { rowsByRoom } = getMergedTaskRows();
+  const allRows = Object.values(rowsByRoom).flat();
+  const rowByKey = new Map(allRows.map(r => [`${r.room}:${r.subcategory}`, r]));
 
+  const upserts = [];
   inputs.forEach(inp => {
     const room = inp.dataset.taskRoom;
     const sub  = inp.dataset.taskSub;
     const raw  = inp.value.trim();
     const key  = `${room}:${sub}`;
-    if (raw === '') {
-      if (currentKeys.has(key)) deletes.push({ room, subcategory: sub });
-      return;
-    }
-    const val = parseInt(raw, 10);
+    const row  = rowByKey.get(key);
+    const val  = raw === '' ? 0 : parseInt(raw, 10);
     if (!Number.isFinite(val) || val < 0) return;
-    const cur = taskCoinRules.find(r => r.room === room && r.subcategory === sub);
-    if (!cur || cur.value !== val) upserts.push({ room, subcategory: sub, value: val });
+    if (!row || row.value !== val) {
+      upserts.push({
+        room, subcategory: sub, value: val,
+        label: row?.label || sub, emoji: row?.emoji || '✨'
+      });
+    }
   });
 
-  if (!upserts.length && !deletes.length) {
+  if (!upserts.length) {
     showToast('No hay cambios que guardar');
     taskCoinDirty = false;
     $('save-task-coin-rules').disabled = true;
@@ -589,28 +559,82 @@ async function saveTaskCoinRules() {
   const btn = $('save-task-coin-rules');
   btn.disabled = true; btn.textContent = 'Guardando…';
 
-  if (upserts.length) {
-    const { error } = await db.from('task_coin_rules').upsert(upserts, { onConflict: 'room,subcategory' });
-    if (error) {
-      showToast('Error: ' + error.message);
-      btn.disabled = false; btn.textContent = 'Guardar cambios';
-      return;
-    }
-  }
-  for (const d of deletes) {
-    const { error } = await db.from('task_coin_rules').delete().eq('room', d.room).eq('subcategory', d.subcategory);
-    if (error) { showToast('Error: ' + error.message); btn.disabled = false; btn.textContent = 'Guardar cambios'; return; }
+  const { error } = await db.from('task_coin_rules').upsert(upserts, { onConflict: 'room,subcategory' });
+  if (error) {
+    showToast('Error: ' + error.message);
+    btn.disabled = false; btn.textContent = 'Guardar cambios';
+    return;
   }
 
   btn.textContent = '✓ Guardado';
   taskCoinDirty = false;
-  const n = upserts.length + deletes.length;
-  showToast(`✓ ${n} ${n === 1 ? 'tarea actualizada' : 'tareas actualizadas'}`);
+  showToast(`✓ ${upserts.length} ${upserts.length === 1 ? 'tarea actualizada' : 'tareas actualizadas'}`);
   setTimeout(() => { btn.textContent = 'Guardar cambios'; btn.disabled = true; }, 1800);
   await loadTaskCoinRules();
 }
 
 $('save-task-coin-rules')?.addEventListener('click', saveTaskCoinRules);
+
+// ── Modal: crear nueva tarea ─────────────────────────────
+const newTaskRuleModal = $('new-task-rule-modal');
+const newTaskRuleForm  = $('new-task-rule-form');
+
+function openNewTaskRuleModal() {
+  if (!newTaskRuleModal) return;
+  // Rellenar selector de habitación
+  const sel = newTaskRuleForm?.querySelector('[name=room]');
+  if (sel && typeof TASK_ROOMS !== 'undefined') {
+    sel.innerHTML = TASK_ROOMS.map(r => `<option value="${esc(r.id)}">${esc(r.emoji)} ${esc(r.label)}</option>`).join('');
+  }
+  newTaskRuleForm?.reset();
+  if (sel) sel.value = sel.value || (TASK_ROOMS?.[0]?.id || '');
+  newTaskRuleForm?.querySelector('[name=value]')?.setAttribute('value', '10');
+  newTaskRuleModal.classList.remove('hidden');
+  newTaskRuleForm?.querySelector('[name=label]')?.focus();
+}
+function closeNewTaskRuleModal() { newTaskRuleModal?.classList.add('hidden'); }
+
+function slugify(s) {
+  return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'tarea';
+}
+
+$('new-task-rule-btn')?.addEventListener('click', openNewTaskRuleModal);
+$('close-new-task-rule')?.addEventListener('click', closeNewTaskRuleModal);
+$('cancel-new-task-rule')?.addEventListener('click', closeNewTaskRuleModal);
+
+newTaskRuleForm?.addEventListener('submit', async e => {
+  e.preventDefault();
+  const fd = new FormData(newTaskRuleForm);
+  const room  = String(fd.get('room') || '').trim();
+  const label = String(fd.get('label') || '').trim();
+  const emoji = String(fd.get('emoji') || '').trim() || '✨';
+  const value = parseInt(fd.get('value'), 10);
+  if (!room || !label || !Number.isFinite(value) || value < 0) {
+    showToast('Revisa los campos'); return;
+  }
+  let base = slugify(label);
+  let sub = base, n = 1;
+  const keys = new Set(taskCoinRules.map(r => `${r.room}:${r.subcategory}`));
+  const hardcodedKeys = new Set();
+  if (typeof TASK_SUBCATEGORIES !== 'undefined' && TASK_SUBCATEGORIES[room]) {
+    TASK_SUBCATEGORIES[room].forEach(s => hardcodedKeys.add(`${room}:${s.id}`));
+  }
+  while (keys.has(`${room}:${sub}`) || hardcodedKeys.has(`${room}:${sub}`)) {
+    n++; sub = `${base}-${n}`;
+  }
+  const { error } = await db.from('task_coin_rules').upsert({
+    room, subcategory: sub, label, emoji, value
+  }, { onConflict: 'room,subcategory' });
+  if (error) { showToast('Error: ' + error.message); return; }
+  closeNewTaskRuleModal();
+  showToast(`✓ Tarea "${label}" creada`);
+  await loadTaskCoinRules();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && newTaskRuleModal && !newTaskRuleModal.classList.contains('hidden')) closeNewTaskRuleModal();
+});
 
 // ═══════════════════════════════════════════════════════
 // 🎨 Picker de emojis para el formulario de premios
@@ -668,15 +692,80 @@ document.addEventListener('keydown', e => {
 });
 
 // Realtime: usuarios + tienda + reglas de monedas
+// ═══════════════════════════════════════════════════════
+// ⚠️ Reset de la app
+// ═══════════════════════════════════════════════════════
+// Tablas que se vacían en el reset. Se mantienen: users, rewards,
+// coin_rules, task_coin_rules (catálogo y economía).
+const RESET_TABLES = [
+  'redemptions',
+  'trophies_unlocked',
+  'tasks',
+  'shopping',
+  'events',
+  'cloe_walks',
+  'cloe_downs',
+];
+
+const resetModal = $('reset-modal');
+const resetInput = $('reset-confirm-input');
+const resetConfirmBtn = $('confirm-reset');
+
+function openResetModal() {
+  if (!resetModal) return;
+  if (resetInput) resetInput.value = '';
+  if (resetConfirmBtn) resetConfirmBtn.disabled = true;
+  resetModal.classList.remove('hidden');
+  resetInput?.focus();
+}
+function closeResetModal() { resetModal?.classList.add('hidden'); }
+
+$('reset-app-btn')?.addEventListener('click', openResetModal);
+$('cancel-reset')?.addEventListener('click', closeResetModal);
+
+resetInput?.addEventListener('input', () => {
+  if (resetConfirmBtn) resetConfirmBtn.disabled = resetInput.value.trim() !== 'RESETEAR';
+});
+
+resetConfirmBtn?.addEventListener('click', async () => {
+  if (resetInput?.value.trim() !== 'RESETEAR') return;
+  resetConfirmBtn.disabled = true;
+  resetConfirmBtn.textContent = 'Borrando…';
+  const errors = [];
+  for (const table of RESET_TABLES) {
+    // Borra todas las filas. Filtro `id != null` para evitar el guard de
+    // supabase-js que exige cláusula where (sirve para uuid y bigint).
+    const { error } = await db.from(table).delete().not('id', 'is', null);
+    if (error && !/relation|does not exist|42P01/i.test((error.message || '') + ' ' + (error.code || ''))) {
+      errors.push(`${table}: ${error.message}`);
+    }
+  }
+  // Limpiar caché local de "trofeos celebrados" para que vuelvan a celebrarse
+  // tras volver a alcanzarlos.
+  try { localStorage.removeItem('cloe-trophies-celebrated'); } catch {}
+  try { localStorage.removeItem('cloe-trophies-unlocked'); } catch {}
+
+  if (errors.length) {
+    showToast('Reset parcial: ' + errors[0], 6000);
+    console.error('Reset errors', errors);
+  } else {
+    showToast('✓ App reseteada. Empezamos de cero.', 5000);
+  }
+  resetConfirmBtn.textContent = 'Borrar todo';
+  closeResetModal();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && resetModal && !resetModal.classList.contains('hidden')) closeResetModal();
+});
+
 db.channel('cloe-admin')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'users'       }, () => { loadUsers(); loadShop(); })
   .on('postgres_changes', { event: '*', schema: 'public', table: 'rewards'     }, loadShop)
   .on('postgres_changes', { event: '*', schema: 'public', table: 'redemptions' }, loadShop)
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'coin_rules'  }, () => { if (!coinDirty) loadCoinRules(); })
   .on('postgres_changes', { event: '*', schema: 'public', table: 'task_coin_rules' }, () => { if (!taskCoinDirty) loadTaskCoinRules(); })
   .subscribe();
 
 loadUsers();
 loadShop();
-loadCoinRules();
 loadTaskCoinRules();

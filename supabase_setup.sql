@@ -106,16 +106,25 @@ insert into coin_rules (key, label, emoji, value, description, sort_order) value
   ('SHOP_DONE',       'Producto comprado',       '🛒',   2, 'Por cada ítem marcado en la lista',      70)
 on conflict (key) do nothing;
 
--- ── Monedas por tarea concreta (room × subcategory) ──────
--- Reglas finas que sobreescriben las globales de `coin_rules`.
--- Si no hay fila para una combinación, se usa el fallback global.
+-- ── Tareas: catálogo + monedas (room × subcategory) ──────
+-- Fuente única de verdad para "qué tareas existen" y "cuántas monedas
+-- da cada una". El admin lo edita; si una fila no tiene label/emoji,
+-- la app usa los hardcoded de shared.js (TASK_SUBCATEGORIES).
 create table if not exists task_coin_rules (
   room        text not null,
   subcategory text not null,
   value       int  not null default 0,
+  label       text,
+  emoji       text,
+  sort_order  int  not null default 100,
   updated_at  timestamptz not null default now(),
   primary key (room, subcategory)
 );
+
+-- Migraciones para tablas ya existentes:
+alter table task_coin_rules add column if not exists label text;
+alter table task_coin_rules add column if not exists emoji text;
+alter table task_coin_rules add column if not exists sort_order int not null default 100;
 
 -- ── Trofeos desbloqueados por usuario ─────────────────────
 -- Persistencia cross-device: cada vez que un usuario desbloquea un trofeo
