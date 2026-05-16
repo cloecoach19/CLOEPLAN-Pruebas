@@ -1627,7 +1627,11 @@ function coinsForTask(t, state) {
   return hit ? Math.max(0, hit.value || 0) : 0;
 }
 
-function totalCoins(state, uid) {
+// Saldo de monedas ganadas por ACTIVIDAD (tareas, cloe, compra) menos canjes.
+// NO incluye los bonos de trofeos — esa función es la que se usa también para
+// evaluar los trofeos `coin-N` y por eso debe ser independiente de TROPHIES,
+// si no entra en recursión infinita.
+function baseCoins(state, uid) {
   let sum = 0;
   for (const t of ((state && state.tasks) || [])) {
     if (t.done && t.assignee === uid) sum += coinsForTask(t, state);
@@ -1641,37 +1645,46 @@ function totalCoins(state, uid) {
   for (const s of ((state && state.shopping) || [])) {
     if (s.done && s.added_by === uid) sum += COINS.SHOP_DONE;
   }
-  // Sumar las monedas otorgadas por trofeos actualmente desbloqueados.
-  // Evaluamos el catálogo en memoria (mismo resultado en todos los dispositivos)
-  // para no depender de que la tabla `trophies_unlocked` exista o esté sincronizada.
-  if (typeof TROPHIES !== 'undefined' && Array.isArray(TROPHIES)) {
-    for (const tr of TROPHIES) {
-      if (!tr || typeof tr.eval !== 'function') continue;
-      try {
-        const r = tr.eval(state, uid);
-        if (r && r.current >= r.target) {
-          sum += Math.max(0, tr.coins || 0);
-        }
-      } catch { /* trofeo con eval defectuoso → lo ignoramos */ }
-    }
-  }
-  // Suma extra: trofeos persistidos en BD cuyo id ya no existe en el catálogo
-  // (compatibilidad si se retira un trofeo: no se le quita lo ya ganado).
-  if (state && Array.isArray(state.trophiesUnlocked) && typeof TROPHIES !== 'undefined') {
-    const known = new Set(TROPHIES.map(t => t.id));
-    for (const tu of state.trophiesUnlocked) {
-      if (tu.user_id === uid && !known.has(tu.trophy_id)) {
-        sum += Math.max(0, tu.coins || 0);
-      }
-    }
-  }
-  // Descontar canjes aprobados o entregados (los rechazados no cuentan; los pending no se han confirmado aún)
   for (const r of ((state && state.redemptions) || [])) {
     if (r.user_id === uid && (r.status === 'approved' || r.status === 'delivered')) {
       sum -= Math.max(0, r.cost_paid || 0);
     }
   }
   return Math.max(0, sum);
+}
+
+// Re-entrancy guard: si totalCoins llama a un tr.eval que vuelve a llamar a
+// totalCoins (caso que NO debería ocurrir tras este refactor pero blindamos),
+// devolvemos baseCoins para evitar stack overflow.
+let _totalCoinsDepth = 0;
+function totalCoins(state, uid) {
+  if (_totalCoinsDepth > 0) return baseCoins(state, uid);
+  _totalCoinsDepth++;
+  try {
+    let sum = baseCoins(state, uid);
+    // Bonos por trofeos actualmente desbloqueados (evaluación in-memory).
+    if (typeof TROPHIES !== 'undefined' && Array.isArray(TROPHIES)) {
+      for (const tr of TROPHIES) {
+        if (!tr || typeof tr.eval !== 'function') continue;
+        try {
+          const r = tr.eval(state, uid);
+          if (r && r.current >= r.target) sum += Math.max(0, tr.coins || 0);
+        } catch { /* trofeo con eval defectuoso → ignorar */ }
+      }
+    }
+    // Trofeos persistidos cuyo id ya no existe en el catálogo (no se les quita lo ganado).
+    if (state && Array.isArray(state.trophiesUnlocked) && typeof TROPHIES !== 'undefined') {
+      const known = new Set(TROPHIES.map(t => t.id));
+      for (const tu of state.trophiesUnlocked) {
+        if (tu.user_id === uid && !known.has(tu.trophy_id)) {
+          sum += Math.max(0, tu.coins || 0);
+        }
+      }
+    }
+    return Math.max(0, sum);
+  } finally {
+    _totalCoinsDepth--;
+  }
 }
 
 // ═══════════════ TROFEOS INFANTILES 🧒 ═══════════════
@@ -1706,15 +1719,15 @@ TROPHIES.push(
 
   // Monedas
   { id: 'coin-1', emoji: '🪙', name: 'Primera moneda', desc: 'Gana tu primera moneda.', rarity: 'common', coins: 10,
-    eval: (s, uid) => ({ current: Math.min(totalCoins(s, uid), 1), target: 1 }) },
+    eval: (s, uid) => ({ current: Math.min(baseCoins(s, uid), 1), target: 1 }) },
   { id: 'coin-100', emoji: '💰', name: 'Hucha que suena', desc: 'Acumula 100 monedas.', rarity: 'common', coins: 20,
-    eval: (s, uid) => ({ current: totalCoins(s, uid), target: 100 }) },
+    eval: (s, uid) => ({ current: baseCoins(s, uid), target: 100 }) },
   { id: 'coin-500', emoji: '💵', name: 'Hucha pesada', desc: 'Acumula 500 monedas.', rarity: 'rare', coins: 50,
-    eval: (s, uid) => ({ current: totalCoins(s, uid), target: 500 }) },
+    eval: (s, uid) => ({ current: baseCoins(s, uid), target: 500 }) },
   { id: 'coin-2000', emoji: '🤑', name: 'Tesoro pirata', desc: 'Acumula 2.000 monedas.', rarity: 'epic', coins: 200,
-    eval: (s, uid) => ({ current: totalCoins(s, uid), target: 2000 }) },
+    eval: (s, uid) => ({ current: baseCoins(s, uid), target: 2000 }) },
   { id: 'coin-10000', emoji: '🏦', name: 'Banco familiar', desc: 'Acumula 10.000 monedas. Reservados para la jubilación.', rarity: 'legendary', coins: 500,
-    eval: (s, uid) => ({ current: totalCoins(s, uid), target: 10000 }) },
+    eval: (s, uid) => ({ current: baseCoins(s, uid), target: 10000 }) },
 
   // Estrella diaria
   { id: 'kid-star-day', emoji: '⭐', name: 'Estrella del día', desc: '5 misiones en un mismo día.', rarity: 'rare', coins: 50,
