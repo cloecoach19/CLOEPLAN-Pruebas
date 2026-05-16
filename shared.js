@@ -1512,7 +1512,13 @@ function totalCoins(state, uid) {
   for (const s of state.shopping) {
     if (s.done && s.added_by === uid) sum += COINS.SHOP_DONE;
   }
-  return sum;
+  // Descontar canjes aprobados o entregados (los rechazados no cuentan; los pending no se han confirmado aún)
+  for (const r of (state.redemptions || [])) {
+    if (r.user_id === uid && (r.status === 'approved' || r.status === 'delivered')) {
+      sum -= r.cost_paid || 0;
+    }
+  }
+  return Math.max(0, sum);
 }
 
 // ═══════════════ TROFEOS INFANTILES 🧒 ═══════════════

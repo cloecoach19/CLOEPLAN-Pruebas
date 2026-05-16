@@ -54,7 +54,7 @@ async function insertTask(payload) {
   return db.from('tasks').insert(fallback);
 }
 
-const STATE = { users: [], tasks: [], shopping: [], events: [], cloeWalks: [], cloeDowns: [] };
+const STATE = { users: [], tasks: [], shopping: [], events: [], cloeWalks: [], cloeDowns: [], rewards: [], redemptions: [] };
 let activeTab = 'hoy';
 let tasksScope = 'week';
 const calDate = new Date(); calDate.setDate(1);
@@ -242,7 +242,7 @@ $$('.tabs > .tab[data-tab]').forEach(b => b.addEventListener('click', () => {
   if (location.hash !== '#' + activeTab) history.replaceState(null, '', '#' + activeTab);
 }));
 const initTab = (location.hash || '#hoy').slice(1);
-if (['hoy','tareas','compra','calendario','stats'].includes(initTab)) {
+if (['hoy','tareas','compra','calendario','tienda','stats'].includes(initTab)) {
   document.querySelector(`.tab[data-tab="${initTab}"]`)?.click();
 }
 
@@ -381,13 +381,15 @@ function openEventEditor(event, date, color) {
 
 // ── Carga ────────────────────────────────────────────────
 async function loadAll() {
-  const [u, t, s, e, cw, cd] = await Promise.all([
+  const [u, t, s, e, cw, cd, rw, rd] = await Promise.all([
     db.from('users').select('id,name,email,role,member_id,color,status').order('name'),
     db.from('tasks').select('*').order('done').order('due_date',{nullsFirst:false}).order('due_time',{nullsFirst:true}),
     db.from('shopping').select('*').order('done').order('category').order('created_at'),
     db.from('events').select('*').order('date').order('time',{nullsFirst:true}),
     db.from('cloe_walks').select('*').order('datetime', { ascending: false }),
     db.from('cloe_downs').select('*').order('datetime', { ascending: false }),
+    db.from('rewards').select('*').order('cost'),
+    db.from('redemptions').select('*').order('created_at', { ascending: false }),
   ]);
   STATE.users = (u.data || []).filter(x => x.status === 'active');
   STATE.tasks = t.data || [];
@@ -395,6 +397,8 @@ async function loadAll() {
   STATE.events = e.data || [];
   STATE.cloeWalks = cw.data || [];
   STATE.cloeDowns = cd.data || [];
+  STATE.rewards = rw.data || [];
+  STATE.redemptions = rd.data || [];
   renderAll();
 }
 
@@ -413,9 +417,214 @@ function renderAll() {
   renderUpcomingEvents();
   renderCloe();
   renderStatsPanel();
+  renderShop();
   paintBadges();
   paintCoinBalance();
   runNotifChecks();
+}
+
+// ── 🛍️ TIENDA ───────────────────────────────────────────
+function renderShop() {
+  const grid = $('rewards-grid');
+  const myList = $('my-redemptions');
+  const balanceEl = $('shop-balance-num');
+  const adminCard = $('shop-admin-card');
+  const adminBtn = $('shop-new-reward-btn');
+  const pendingList = $('pending-redemptions');
+  if (!grid) return;
+
+  const balance = totalCoins(STATE, me.id);
+  if (balanceEl) balanceEl.textContent = balance.toLocaleString('es-ES');
+
+  // Premios disponibles
+  const active = (STATE.rewards || []).filter(r => r.active);
+  grid.innerHTML = active.length ? active.map(r => {
+    const canAfford = balance >= r.cost;
+    const outOfStock = r.stock !== null && r.stock <= 0;
+    const disabled = !canAfford || outOfStock;
+    return `
+      <div class="reward-card ${disabled ? 'locked' : ''}">
+        ${me.role === 'Admin' ? `<button class="reward-edit" data-edit-reward="${esc(r.id)}" title="Editar">✏️</button>` : ''}
+        <div class="reward-emoji">${r.emoji || '🎁'}</div>
+        <div class="reward-name">${esc(r.name)}</div>
+        ${r.description ? `<div class="reward-desc">${esc(r.description)}</div>` : ''}
+        <div class="reward-cost"><span class="coin-icon">🪙</span> ${r.cost}</div>
+        ${r.stock !== null ? `<div class="reward-stock">${outOfStock ? 'Agotado' : 'Quedan ' + r.stock}</div>` : ''}
+        <button class="btn accent sm reward-buy" data-reward-id="${esc(r.id)}" ${disabled ? 'disabled' : ''}>
+          ${outOfStock ? '😢 Agotado' : (canAfford ? '✨ Canjear' : `Faltan ${r.cost - balance} 🪙`)}
+        </button>
+      </div>
+    `;
+  }).join('') : '<p class="empty">La tienda está vacía. Pídele al admin que añada premios.</p>';
+
+  // Engancha botones canjear
+  $$('.reward-buy', grid).forEach(b => b.addEventListener('click', () => redeemReward(b.dataset.rewardId)));
+  $$('[data-edit-reward]', grid).forEach(b => b.addEventListener('click', () => openRewardEditor(b.dataset.editReward)));
+
+  // Mis canjes
+  const mine = (STATE.redemptions || []).filter(r => r.user_id === me.id).slice(0, 12);
+  myList.innerHTML = mine.length ? mine.map(redemptionRowHTML).join('') : '<p class="empty">Aún no has canjeado ningún premio.</p>';
+
+  // Admin: panel de pendientes + botón nuevo premio
+  if (me.role === 'Admin') {
+    adminBtn?.classList.remove('hidden');
+    adminCard?.classList.remove('hidden');
+    adminBtn?.addEventListener('click', () => openRewardEditor(null), { once: true });
+
+    const pending = (STATE.redemptions || []).filter(r => r.status === 'pending');
+    pendingList.innerHTML = pending.length
+      ? pending.map(adminRedemptionRowHTML).join('')
+      : '<p class="empty">Sin pedidos pendientes. La familia está tranquila 😎</p>';
+    $$('[data-approve]', pendingList).forEach(b => b.addEventListener('click', () => resolveRedemption(b.dataset.approve, 'approved')));
+    $$('[data-reject]',  pendingList).forEach(b => b.addEventListener('click', () => resolveRedemption(b.dataset.reject,  'rejected')));
+    $$('[data-deliver]', pendingList).forEach(b => b.addEventListener('click', () => resolveRedemption(b.dataset.deliver, 'delivered')));
+  }
+}
+
+function redemptionRowHTML(r) {
+  const statusInfo = {
+    pending:   { lbl: '⏳ Esperando aprobación', cls: 'pending' },
+    approved:  { lbl: '✅ Aprobado',              cls: 'approved' },
+    rejected:  { lbl: '❌ Rechazado',             cls: 'rejected' },
+    delivered: { lbl: '🎉 Entregado',             cls: 'delivered' },
+  }[r.status] || { lbl: r.status, cls: '' };
+  const when = new Date(r.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+  return `
+    <div class="row redemption ${statusInfo.cls}">
+      <span class="row-emoji" style="font-size:22px;">${r.reward_emoji || '🎁'}</span>
+      <span class="row-title">${esc(r.reward_name)}</span>
+      <span class="row-meta">
+        <span class="chip mini-cost"><span class="coin-icon">🪙</span> ${r.cost_paid}</span>
+        <span class="chip status-${statusInfo.cls}">${statusInfo.lbl}</span>
+        <span class="row-time">${when}</span>
+      </span>
+    </div>
+  `;
+}
+
+function adminRedemptionRowHTML(r) {
+  const user = STATE.users.find(u => u.id === r.user_id);
+  const when = new Date(r.created_at).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  return `
+    <div class="row redemption pending">
+      <span class="row-emoji" style="font-size:22px;">${r.reward_emoji || '🎁'}</span>
+      ${avatarHTML(user, 'xs')}
+      <span class="row-title">${esc(user?.name || '?')} pide ${esc(r.reward_name)}</span>
+      <span class="row-meta">
+        <span class="chip mini-cost"><span class="coin-icon">🪙</span> ${r.cost_paid}</span>
+        <span class="row-time">${when}</span>
+        <button class="btn accent sm" data-approve="${esc(r.id)}">✓ Aprobar</button>
+        <button class="btn ghost sm"  data-reject="${esc(r.id)}">✗ Rechazar</button>
+      </span>
+    </div>
+  `;
+}
+
+async function redeemReward(rewardId) {
+  const reward = STATE.rewards.find(r => r.id === rewardId);
+  if (!reward) return;
+  const balance = totalCoins(STATE, me.id);
+  if (balance < reward.cost) {
+    showToast(`Te faltan ${reward.cost - balance} 🪙 para canjear "${reward.name}"`);
+    return;
+  }
+  if (reward.stock !== null && reward.stock <= 0) {
+    showToast('Agotado, prueba más tarde');
+    return;
+  }
+  // Insertar canje
+  const { error } = await db.from('redemptions').insert({
+    user_id: me.id,
+    reward_id: reward.id,
+    reward_name: reward.name,
+    reward_emoji: reward.emoji || '🎁',
+    cost_paid: reward.cost,
+    status: 'pending',
+  });
+  if (error) { showToast('Error: ' + error.message); return; }
+  showToast(`🎁 Has pedido "${reward.name}". Esperando aprobación de un admin.`, 3500);
+  loadAll();
+}
+
+async function resolveRedemption(id, newStatus) {
+  const patch = {
+    status: newStatus,
+    resolved_by: me.id,
+    resolved_at: new Date().toISOString(),
+  };
+  const { error } = await db.from('redemptions').update(patch).eq('id', id);
+  if (error) { showToast('Error: ' + error.message); return; }
+  // Si entregado y el premio tenía stock, descuento -1
+  if (newStatus === 'approved' || newStatus === 'delivered') {
+    const r = STATE.redemptions.find(x => x.id === id);
+    const reward = STATE.rewards.find(rw => rw.id === r?.reward_id);
+    if (reward && reward.stock !== null && reward.stock > 0) {
+      await db.from('rewards').update({ stock: reward.stock - 1 }).eq('id', reward.id);
+    }
+  }
+  showToast(newStatus === 'approved' ? '✓ Aprobado' : newStatus === 'rejected' ? '✗ Rechazado' : '🎉 Entregado');
+  loadAll();
+}
+
+function openRewardEditor(rewardId) {
+  const reward = rewardId ? STATE.rewards.find(r => r.id === rewardId) : null;
+  const isEdit = !!reward;
+  modalBody.innerHTML = `
+    <h3>${isEdit ? '✏️ Editar premio' : '🎁 Nuevo premio'}</h3>
+    <form id="reward-form" style="margin-top:18px;">
+      <div class="form-row">
+        <label><span>Emoji</span><input type="text" name="emoji" maxlength="2" value="${esc(reward?.emoji || '🎁')}" style="text-align:center;font-size:24px;"></label>
+        <label><span>Coste 🪙</span><input type="number" name="cost" min="1" value="${reward?.cost || 50}" required></label>
+      </div>
+      <label><span>Nombre</span><input type="text" name="name" value="${esc(reward?.name || '')}" required placeholder="Película de los viernes..."></label>
+      <label><span>Descripción</span><textarea name="description" rows="2" placeholder="Detalles opcionales">${esc(reward?.description || '')}</textarea></label>
+      <label><span>Stock (vacío = infinito)</span><input type="number" name="stock" min="0" value="${reward?.stock ?? ''}" placeholder="∞"></label>
+      <label><span>Activo</span>
+        <select name="active">
+          <option value="true" ${reward?.active !== false ? 'selected' : ''}>Sí, visible en la tienda</option>
+          <option value="false" ${reward?.active === false ? 'selected' : ''}>No, oculto</option>
+        </select>
+      </label>
+      <div class="form-actions">
+        ${isEdit ? '<button type="button" class="btn danger" id="del-reward-btn">Eliminar</button>' : ''}
+        <button type="button" class="btn ghost" id="cancel-reward">Cancelar</button>
+        <button type="submit" class="btn accent">${isEdit ? 'Guardar' : 'Crear premio'}</button>
+      </div>
+    </form>
+  `;
+  modal.classList.remove('hidden');
+
+  $('reward-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const payload = {
+      name: fd.get('name').trim(),
+      emoji: fd.get('emoji').trim() || '🎁',
+      cost: parseInt(fd.get('cost'), 10) || 1,
+      description: fd.get('description').trim(),
+      active: fd.get('active') === 'true',
+      stock: fd.get('stock') === '' ? null : parseInt(fd.get('stock'), 10),
+    };
+    if (!payload.name) { showToast('Nombre obligatorio'); return; }
+    let err;
+    if (isEdit) {
+      ({ error: err } = await db.from('rewards').update(payload).eq('id', reward.id));
+    } else {
+      payload.created_by = me.id;
+      ({ error: err } = await db.from('rewards').insert(payload));
+    }
+    if (err) { showToast('Error: ' + err.message); return; }
+    modal.classList.add('hidden');
+    loadAll();
+  });
+
+  $('cancel-reward').addEventListener('click', () => modal.classList.add('hidden'));
+  if (isEdit) $('del-reward-btn').addEventListener('click', async () => {
+    if (!confirm(`¿Eliminar "${reward.name}"?`)) return;
+    await db.from('rewards').delete().eq('id', reward.id);
+    modal.classList.add('hidden');
+    loadAll();
+  });
 }
 
 // ── Monedas en el header ─────────────────────────────────
@@ -1547,6 +1756,8 @@ const realtimeChannel = db.channel('cloe-sync')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'users'    }, debouncedLoad)
   .on('postgres_changes', { event: '*', schema: 'public', table: 'cloe_walks'  }, debouncedLoad)
   .on('postgres_changes', { event: '*', schema: 'public', table: 'cloe_downs' }, debouncedLoad)
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'rewards'    }, debouncedLoad)
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'redemptions'}, debouncedLoad)
   .subscribe();
 
 // Cleanup al cerrar / salir
