@@ -454,6 +454,8 @@ async function loadAll() {
 function renderAll() {
   renderGreeting();
   fillSelects();
+  // Inicializar filtros de fecha ANTES de renderizar stats
+  initChartFilters();
   renderStats();
   renderHoy();
   // Inicializar título de la sección de tareas
@@ -466,7 +468,6 @@ function renderAll() {
   renderUpcomingEvents();
   renderCloe();
   renderStatsPanel();
-  initChartFilters();
   renderRewardsShop();
   paintBadges();
   paintCoinBalance();
@@ -789,8 +790,11 @@ function initChartFilters() {
   const now = new Date();
   const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   
-  chartDateFrom = firstDayOfMonth;
-  chartDateTo = now;
+  // Inicializar siempre las fechas por defecto
+  if (!chartDateFrom || !chartDateTo) {
+    chartDateFrom = firstDayOfMonth;
+    chartDateTo = now;
+  }
   
   const fromInput = $('chart-date-from');
   const toInput = $('chart-date-to');
@@ -830,6 +834,13 @@ function formatDateForInput(date) {
 function renderTypeChart() {
   const container = $('stats-type-chart');
   if (!container) return;
+  
+  // Asegurar que las fechas están inicializadas
+  if (!chartDateFrom || !chartDateTo) {
+    const now = new Date();
+    chartDateFrom = new Date(now.getFullYear(), now.getMonth(), 1);
+    chartDateTo = now;
+  }
   
   const fromStr = chartDateFrom.toISOString().slice(0, 10);
   const toStr = chartDateTo.toISOString().slice(0, 10);
