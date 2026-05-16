@@ -1055,24 +1055,128 @@ function celebrateTrophy(tr) {
     updateCoins();
   }
   
+  // 🎉 FIESTA DE TROFEO - Efectos especiales
+  createTrophyParty(tr);
+  
   showToast(`🏆 ¡Trofeo desbloqueado! ${tr.emoji} ${tr.name}${coins > 0 ? ` (+${coins} 🪙)` : ''}`, 4500);
   if (typeof notifyOnce === 'function') {
     notifyOnce(`trophy:${tr.id}`, `🏆 ¡Trofeo desbloqueado!`, `${tr.emoji} ${tr.name} — ${tr.desc}`);
   }
-  // Confetti DOM rápido
-  const burst = document.createElement('div');
-  burst.className = 'trophy-burst';
-  for (let i = 0; i < 30; i++) {
-    const p = document.createElement('span');
-    p.className = 'confetti';
-    p.style.setProperty('--x', (Math.random() * 360 - 180) + 'px');
-    p.style.setProperty('--y', (Math.random() * -260 - 80) + 'px');
-    p.style.setProperty('--r', (Math.random() * 720 - 360) + 'deg');
-    p.style.background = ['#FF1A4D', '#00F5FF', '#FFD93D', '#B14CFF', '#22F5A5'][i % 5];
-    burst.appendChild(p);
+}
+
+function createTrophyParty(tr) {
+  // 1. Overlay festivo con fondo degradado animado
+  const overlay = document.createElement('div');
+  overlay.className = 'trophy-party-overlay';
+  overlay.innerHTML = `
+    <div class="trophy-party-bg"></div>
+    <div class="trophy-party-message">
+      <div class="trophy-big-emoji">${tr.emoji}</div>
+      <h1 class="trophy-title">¡FELICIDADES!</h1>
+      <h2 class="trophy-subtitle">${tr.name}</h2>
+      <p class="trophy-desc-large">${tr.desc}</p>
+      ${tr.coins > 0 ? `<div class="trophy-coins">+${tr.coins} 🪙</div>` : ''}
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  
+  // 2. Confeti masivo (60 partículas)
+  const confettiContainer = document.createElement('div');
+  confettiContainer.className = 'trophy-confetti-container';
+  const colors = ['#FF1A4D', '#00F5FF', '#FFD93D', '#B14CFF', '#22F5A5', '#FF6B35', '#F7C548', '#05D5AA'];
+  
+  for (let i = 0; i < 60; i++) {
+    const confetti = document.createElement('div');
+    confetti.className = 'party-confetti';
+    confetti.style.setProperty('--delay', (Math.random() * 0.5) + 's');
+    confetti.style.setProperty('--duration', (Math.random() * 2 + 2) + 's');
+    confetti.style.setProperty('--start-x', (Math.random() * 100) + 'vw');
+    confetti.style.setProperty('--rotation', (Math.random() * 360) + 'deg');
+    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.left = confetti.style.getPropertyValue('--start-x');
+    confettiContainer.appendChild(confetti);
   }
-  document.body.appendChild(burst);
-  setTimeout(() => burst.remove(), 2200);
+  overlay.appendChild(confettiContainer);
+  
+  // 3. Emojis flotantes del trofeo
+  const emojiContainer = document.createElement('div');
+  emojiContainer.className = 'trophy-emoji-float-container';
+  for (let i = 0; i < 8; i++) {
+    const floatEmoji = document.createElement('div');
+    floatEmoji.className = 'trophy-floating-emoji';
+    floatEmoji.textContent = ['🏆', '⭐', '🎉', '🎊', '✨', '🌟'][i % 6];
+    floatEmoji.style.setProperty('--float-delay', (i * 0.2) + 's');
+    floatEmoji.style.setProperty('--float-x', ((i - 3.5) * 80) + 'px');
+    emojiContainer.appendChild(floatEmoji);
+  }
+  overlay.appendChild(emojiContainer);
+  
+  // 4. Sonido de celebración (Web Audio API)
+  playCelebrationSound();
+  
+  // 5. Animación de pulsación en el overlay
+  setTimeout(() => overlay.classList.add('party-active'), 50);
+  
+  // Limpiar después de 4 segundos
+  setTimeout(() => {
+    overlay.classList.remove('party-active');
+    setTimeout(() => overlay.remove(), 500);
+  }, 4000);
+}
+
+function playCelebrationSound() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    
+    const ctx = new AudioContext();
+    const now = ctx.currentTime;
+    
+    // Acorde mayor festivo (Do - Mi - Sol - Do)
+    const frequencies = [523.25, 659.25, 783.99, 1046.50];
+    
+    frequencies.forEach((freq, index) => {
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.value = freq;
+      
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.setValueAtTime(0.3, now + index * 0.1);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + index * 0.1 + 0.5);
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      
+      oscillator.start(now + index * 0.1);
+      oscillator.stop(now + index * 0.1 + 0.5);
+    });
+    
+    // Pequeño aplauso sintético
+    const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < noiseBuffer.length; i++) {
+      output[i] = Math.random() * 2 - 1;
+    }
+    
+    const noiseSource = ctx.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+    const noiseFilter = ctx.createBiquadFilter();
+    noiseFilter.type = 'lowpass';
+    noiseFilter.frequency.value = 1000;
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.15, now + 0.3);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+    
+    noiseSource.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(ctx.destination);
+    noiseSource.start(now + 0.3);
+    
+  } catch (e) {
+    console.log('Audio no disponible:', e);
+  }
 }
 
 // ── Selects de categorías y asignados ────────────────────
