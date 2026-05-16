@@ -303,7 +303,7 @@ $$('.tabs > .tab[data-tab]').forEach(b => b.addEventListener('click', () => {
   if (location.hash !== '#' + activeTab) history.replaceState(null, '', '#' + activeTab);
 }));
 const initTab = (location.hash || '#hoy').slice(1);
-if (['hoy','tareas','compra','calendario','cloe','tienda','stats'].includes(initTab)) {
+if (['hoy','tareas','compra','calendario','tienda','stats'].includes(initTab)) {
   document.querySelector(`.tab[data-tab="${initTab}"]`)?.click();
 }
 
@@ -819,82 +819,6 @@ function renderStatsPanel() {
 
   // Render type chart
   renderTypeChart();
-  
-  // Render coin rules table
-  renderCoinRulesTable();
-}
-
-// ── Tabla de reglas de monedas por tipo de tarea ────────────────
-function renderCoinRulesTable() {
-  const container = $('coin-rules-table');
-  if (!container) return;
-  
-  // Construir lista única de todos los tipos de tarea (room:subcategory)
-  const taskTypes = new Map();
-
-  allRoomIds().forEach(room => {
-    subcatsOf(room).forEach(subcat => {
-      const key = `${room}:${subcat.id}`;
-      const roomInfo = TASK_ROOMS.find(r => r.id === room);
-      taskTypes.set(key, { 
-        room: room,
-        roomId: room,
-        subcatId: subcat.id,
-        label: subcat.label,
-        emoji: subcat.emoji,
-        roomLabel: roomInfo?.label || room,
-        roomEmoji: roomInfo?.emoji || '🏠'
-      });
-    });
-  });
-  
-  // Calcular monedas para cada tipo de tarea
-  const rows = [];
-  taskTypes.forEach((info, key) => {
-    // Crear una tarea ficticia para calcular monedas
-    const fakeTask = {
-      done: true,
-      room: info.room,
-      subcategory: info.subcatId
-    };
-    const coins = coinsForTask(fakeTask, STATE);
-    rows.push({ ...info, coins });
-  });
-  
-  // Ordenar por monedas (desc) y luego por label
-  rows.sort((a, b) => {
-    if (b.coins !== a.coins) return b.coins - a.coins;
-    return a.label.localeCompare(b.label);
-  });
-  
-  // Agrupar por valor de monedas
-  const byCoins = new Map();
-  rows.forEach(row => {
-    if (!byCoins.has(row.coins)) byCoins.set(row.coins, []);
-    byCoins.get(row.coins).push(row);
-  });
-  
-  const sortedCoinValues = [...byCoins.keys()].sort((a, b) => b - a);
-  
-  container.innerHTML = sortedCoinValues.map(coins => {
-    const tasks = byCoins.get(coins);
-    return `
-      <div class="coin-rule-group">
-        <div class="coin-rule-header">
-          <span class="coin-value">🪙 ${coins}</span>
-          <span class="muted">${tasks.length} ${tasks.length === 1 ? 'tarea' : 'tareas'}</span>
-        </div>
-        <div class="coin-rule-tasks">
-          ${tasks.map(t => `
-            <div class="coin-rule-task">
-              <span class="task-emoji">${t.roomEmoji}${t.emoji}</span>
-              <span class="task-label">${t.roomLabel} · ${t.label}</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
-  }).join('') || '<p class="empty">No hay tareas configuradas.</p>';
 }
 
 // ── Type Chart: Tareas por tipo y usuario ────────────────
