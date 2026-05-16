@@ -466,6 +466,7 @@ function renderAll() {
   renderUpcomingEvents();
   renderCloe();
   renderStatsPanel();
+  initChartFilters();
   renderRewardsShop();
   paintBadges();
   paintCoinBalance();
