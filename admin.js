@@ -467,7 +467,8 @@ async function saveCoinRules() {
   coinDirty = false;
   showToast(`✓ ${updates.length} ${updates.length === 1 ? 'regla actualizada' : 'reglas actualizadas'}`);
   setTimeout(() => { btn.textContent = 'Guardar cambios'; btn.disabled = true; }, 1800);
-  loadCoinRules();
+  // Forzar recarga inmediata para aplicar los nuevos valores
+  await loadCoinRules();
 }
 
 $('save-coin-rules')?.addEventListener('click', saveCoinRules);
