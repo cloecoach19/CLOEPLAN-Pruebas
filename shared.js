@@ -1223,6 +1223,7 @@ const TASK_SUBCATEGORIES = {
     { id: 'ducha', emoji: '🚿', label: 'Ducharse' },
     { id: 'deberes', emoji: '✏️', label: 'Hacer deberes' },
     { id: 'ropa', emoji: '👕', label: 'Recoger ropa' },
+    { id: 'lectura', emoji: '📚', label: 'Leer un buen rato' },
     { id: 'limpieza', emoji: '🧽', label: 'Limpieza' },
     { id: 'polvo', emoji: '✨', label: 'Polvo' },
     { id: 'ventanas', emoji: '🪟', label: 'Ventanas' },

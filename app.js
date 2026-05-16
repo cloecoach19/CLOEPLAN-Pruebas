@@ -786,6 +786,22 @@ function renderStatsPanel() {
 // ── Type Chart: Tareas por tipo y usuario ────────────────
 let chartDateFrom, chartDateTo;
 
+// Genera un color único para cada tipo de tarea (room:subcategory)
+function getTypeColor(room, subcatId) {
+  const key = `${room}:${subcatId}`;
+  // Usar un hash simple para generar colores consistentes
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = ((hash << 5) - hash) + key.charCodeAt(i);
+    hash |= 0;
+  }
+  // Generar colores vibrantes pero distintos
+  const hue = Math.abs(hash % 360);
+  const saturation = 70 + (Math.abs(hash) % 20); // 70-90%
+  const lightness = 55 + (Math.abs(hash) % 15); // 55-70%
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
+
 function initChartFilters() {
   const now = new Date();
   const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -854,7 +870,7 @@ function renderTypeChart() {
       taskTypes[key] = { 
         label: subcat.label,
         emoji: subcat.emoji,
-        color: getRoomColor(room)
+        color: getTypeColor(room, subcat.id)
       };
     });
   });
@@ -883,7 +899,7 @@ function renderTypeChart() {
       taskTypes[typeKey] = { 
         label: subcatInfo?.label || typeKey, 
         emoji: subcatInfo?.emoji || '📋', 
-        color: getRoomColor(t.room || 'otros') 
+        color: t.subcategory && t.room ? getTypeColor(t.room, t.subcategory) : getRoomColor(t.room || 'otros') 
       };
     }
     
