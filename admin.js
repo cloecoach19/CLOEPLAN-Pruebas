@@ -156,9 +156,230 @@ document.addEventListener('keydown', e => {
   if (!confirmModal.classList.contains('hidden')) closeConfirm();
 });
 
-// Realtime
+// ═══════════════════════════════════════════════════════
+// 🛍️ Gestión de tienda
+// ═══════════════════════════════════════════════════════
+let rewards = [];
+let redemptions = [];
+let allUsers = []; // necesario para mostrar nombre/avatar en pedidos
+const rewardModal       = $('reward-modal');
+const rewardForm        = $('reward-form');
+const rewardConfirmModal = $('reward-confirm-modal');
+let pendingRewardDelete = null;
+
+async function loadShop() {
+  const [rw, rd, us] = await Promise.all([
+    db.from('rewards').select('*').order('cost'),
+    db.from('redemptions').select('*').order('created_at', { ascending: false }),
+    db.from('users').select('id,name,member_id,color,role,status'),
+  ]);
+  rewards     = rw.data || [];
+  redemptions = rd.data || [];
+  allUsers    = us.data || [];
+  renderShop();
+}
+
+function renderShop() {
+  renderRewardsGrid();
+  renderRedemptions();
+}
+
+function renderRewardsGrid() {
+  const grid = $('rewards-admin-grid');
+  const empty = $('rewards-empty');
+  if (!rewards.length) {
+    grid.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+  grid.innerHTML = rewards.map(r => `
+    <div class="reward-card ${r.active ? '' : 'locked'}">
+      <button class="reward-edit" data-edit-reward="${esc(r.id)}" title="Editar">✏️</button>
+      <div class="reward-emoji">${r.emoji || '🎁'}</div>
+      <div class="reward-name">${esc(r.name)}</div>
+      ${r.description ? `<div class="reward-desc">${esc(r.description)}</div>` : ''}
+      <div class="reward-cost"><span class="coin-icon">🪙</span> ${r.cost}</div>
+      <div class="reward-stock">
+        ${r.stock === null ? '∞ disponible' : (r.stock <= 0 ? 'Agotado' : `Stock: ${r.stock}`)}
+        ${r.active ? '' : ' · oculto'}
+      </div>
+    </div>
+  `).join('');
+  $$('[data-edit-reward]', grid).forEach(b => b.addEventListener('click', () => openRewardEdit(b.dataset.editReward)));
+}
+
+function userById(id) { return allUsers.find(u => u.id === id); }
+
+function redemptionRow(r, withActions) {
+  const user = userById(r.user_id);
+  const when = new Date(r.created_at).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const statusInfo = {
+    pending:   { lbl: '⏳ Pendiente',  cls: 'pending' },
+    approved:  { lbl: '✅ Aprobado',   cls: 'approved' },
+    rejected:  { lbl: '❌ Rechazado',  cls: 'rejected' },
+    delivered: { lbl: '🎉 Entregado',  cls: 'delivered' },
+  }[r.status] || { lbl: r.status, cls: '' };
+
+  const actions = withActions ? `
+    <button class="btn accent sm" data-approve="${esc(r.id)}">✓ Aprobar</button>
+    <button class="btn ghost sm"  data-reject="${esc(r.id)}">✗ Rechazar</button>
+  ` : (r.status === 'approved' ? `<button class="btn ghost sm" data-deliver="${esc(r.id)}">📦 Marcar entregado</button>` : '');
+
+  return `
+    <div class="row redemption ${statusInfo.cls}">
+      <span class="row-emoji" style="font-size:22px;">${r.reward_emoji || '🎁'}</span>
+      ${avatarHTML(user, 'xs')}
+      <span class="row-title">${esc(user?.name || '?')} → ${esc(r.reward_name)}</span>
+      <span class="row-meta">
+        <span class="chip mini-cost"><span class="coin-icon">🪙</span> ${r.cost_paid}</span>
+        <span class="chip status-${statusInfo.cls}">${statusInfo.lbl}</span>
+        <span class="row-time">${when}</span>
+        ${actions}
+      </span>
+    </div>
+  `;
+}
+
+function renderRedemptions() {
+  const pending = redemptions.filter(r => r.status === 'pending');
+  const others  = redemptions.filter(r => r.status !== 'pending').slice(0, 30);
+
+  $('pending-count').textContent = pending.length ? `${pending.length} esperando` : 'Bandeja limpia 😎';
+  $('redemptions-list').innerHTML = pending.length
+    ? pending.map(r => redemptionRow(r, true)).join('')
+    : '<p class="empty">Sin pedidos pendientes. Buen rollo en la casa.</p>';
+  $('redemptions-history').innerHTML = others.length
+    ? others.map(r => redemptionRow(r, false)).join('')
+    : '<p class="empty muted" style="font-size:13px;">Aquí aparecerá el histórico de canjes.</p>';
+
+  $$('[data-approve]').forEach(b => b.addEventListener('click', () => resolveRedemption(b.dataset.approve, 'approved')));
+  $$('[data-reject]').forEach(b => b.addEventListener('click', () => resolveRedemption(b.dataset.reject, 'rejected')));
+  $$('[data-deliver]').forEach(b => b.addEventListener('click', () => resolveRedemption(b.dataset.deliver, 'delivered')));
+}
+
+async function resolveRedemption(id, newStatus) {
+  const patch = {
+    status: newStatus,
+    resolved_by: me.id,
+    resolved_at: new Date().toISOString(),
+  };
+  const { error } = await db.from('redemptions').update(patch).eq('id', id);
+  if (error) { showToast('Error: ' + error.message); return; }
+  // Descontar stock al aprobar (si aplica)
+  if (newStatus === 'approved' || newStatus === 'delivered') {
+    const r = redemptions.find(x => x.id === id);
+    const rw = rewards.find(x => x.id === r?.reward_id);
+    if (rw && rw.stock !== null && rw.stock > 0) {
+      await db.from('rewards').update({ stock: rw.stock - 1 }).eq('id', rw.id);
+    }
+  }
+  showToast(newStatus === 'approved' ? '✓ Aprobado' : newStatus === 'rejected' ? '✗ Rechazado' : '🎉 Entregado');
+  loadShop();
+}
+
+// ── Modal crear/editar premio ────────────────────────────
+function openRewardCreate() {
+  $('reward-modal-title').textContent = 'Nuevo premio';
+  rewardForm.reset();
+  rewardForm.id.value = '';
+  rewardForm.emoji.value = '🎁';
+  rewardForm.cost.value = 50;
+  rewardForm.active.value = 'true';
+  $('del-reward-btn').classList.add('hidden');
+  rewardModal.classList.remove('hidden');
+  rewardForm.name.focus();
+}
+
+function openRewardEdit(id) {
+  const r = rewards.find(x => x.id === id);
+  if (!r) return;
+  $('reward-modal-title').textContent = 'Editar · ' + r.name;
+  rewardForm.reset();
+  rewardForm.id.value = r.id;
+  rewardForm.emoji.value = r.emoji || '🎁';
+  rewardForm.cost.value = r.cost;
+  rewardForm.name.value = r.name;
+  rewardForm.description.value = r.description || '';
+  rewardForm.stock.value = r.stock === null ? '' : r.stock;
+  rewardForm.active.value = r.active ? 'true' : 'false';
+  $('del-reward-btn').classList.remove('hidden');
+  rewardModal.classList.remove('hidden');
+}
+
+function closeRewardModal() { rewardModal.classList.add('hidden'); }
+
+rewardForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const fd = new FormData(rewardForm);
+  const stockRaw = fd.get('stock');
+  const payload = {
+    name: fd.get('name').trim(),
+    emoji: (fd.get('emoji') || '🎁').trim() || '🎁',
+    cost: parseInt(fd.get('cost'), 10) || 1,
+    description: (fd.get('description') || '').trim(),
+    stock: stockRaw === '' || stockRaw == null ? null : parseInt(stockRaw, 10),
+    active: fd.get('active') === 'true',
+  };
+  if (!payload.name) { showToast('El nombre es obligatorio'); return; }
+  if (payload.cost < 1) { showToast('El coste debe ser positivo'); return; }
+
+  const submit = rewardForm.querySelector('button[type="submit"]');
+  submit.disabled = true; submit.textContent = 'Guardando…';
+
+  const id = fd.get('id');
+  let err;
+  if (id) {
+    ({ error: err } = await db.from('rewards').update(payload).eq('id', id));
+  } else {
+    payload.created_by = me.id;
+    ({ error: err } = await db.from('rewards').insert(payload));
+  }
+
+  submit.disabled = false; submit.textContent = 'Guardar';
+  if (err) { showToast('Error: ' + err.message); return; }
+  closeRewardModal();
+  loadShop();
+});
+
+$('new-reward-btn').addEventListener('click', openRewardCreate);
+$('close-reward-modal').addEventListener('click', closeRewardModal);
+$('cancel-reward').addEventListener('click', closeRewardModal);
+rewardModal.addEventListener('click', e => { if (e.target === rewardModal) closeRewardModal(); });
+
+$('del-reward-btn').addEventListener('click', () => {
+  const id = rewardForm.id.value;
+  const r = rewards.find(x => x.id === id);
+  if (!r) return;
+  pendingRewardDelete = id;
+  $('reward-confirm-text').textContent = `Vas a eliminar "${r.name}". Los canjes existentes mantendrán el nombre histórico pero el premio desaparece de la tienda.`;
+  rewardConfirmModal.classList.remove('hidden');
+});
+$('cancel-reward-del').addEventListener('click', () => { rewardConfirmModal.classList.add('hidden'); pendingRewardDelete = null; });
+$('confirm-reward-del').addEventListener('click', async () => {
+  if (!pendingRewardDelete) return;
+  const { error } = await db.from('rewards').delete().eq('id', pendingRewardDelete);
+  if (error) { showToast('Error: ' + error.message); return; }
+  rewardConfirmModal.classList.add('hidden');
+  pendingRewardDelete = null;
+  closeRewardModal();
+  loadShop();
+});
+rewardConfirmModal.addEventListener('click', e => { if (e.target === rewardConfirmModal) { rewardConfirmModal.classList.add('hidden'); pendingRewardDelete = null; } });
+
+// Esc cierra modales de la tienda también
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (!rewardModal.classList.contains('hidden')) closeRewardModal();
+  if (!rewardConfirmModal.classList.contains('hidden')) { rewardConfirmModal.classList.add('hidden'); pendingRewardDelete = null; }
+});
+
+// Realtime: usuarios + tienda
 db.channel('cloe-admin')
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, loadUsers)
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'users'       }, () => { loadUsers(); loadShop(); })
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'rewards'     }, loadShop)
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'redemptions' }, loadShop)
   .subscribe();
 
 loadUsers();
+loadShop();

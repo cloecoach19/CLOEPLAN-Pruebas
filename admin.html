@@ -55,7 +55,81 @@
     </div>
     <p class="empty hidden" id="empty">Aún no hay equipo. Esto parece una casa modo solitario.</p>
   </section>
+
+  <!-- 🛍️ Gestión de la tienda -->
+  <section class="card">
+    <div class="section-header">
+      <div>
+        <p class="eyebrow">// vitrina admin</p>
+        <h1 class="display">Tienda de premios 🛍️</h1>
+        <p class="muted" style="margin:4px 0 0;font-size:14px;">Crea premios, ponles precio en monedas y gestiona el stock.</p>
+      </div>
+      <button class="btn accent" id="new-reward-btn">+ Nuevo premio</button>
+    </div>
+
+    <div id="rewards-admin-grid" class="rewards-grid" style="margin-top:18px;"></div>
+    <p class="empty hidden" id="rewards-empty">Aún no hay premios. Crea el primero con el botón ⤴</p>
+  </section>
+
+  <!-- ⏳ Pedidos pendientes -->
+  <section class="card">
+    <div class="section-header">
+      <div>
+        <p class="eyebrow">// bandeja de canjes</p>
+        <h2 class="display">Pedidos pendientes</h2>
+        <p class="muted" style="margin:4px 0 0;font-size:13px;">Aprueba o rechaza para confirmar el gasto de monedas de la familia.</p>
+      </div>
+      <span class="muted" id="pending-count">…</span>
+    </div>
+    <div id="redemptions-list" class="row-list" style="margin-top:14px;"></div>
+
+    <h4 class="eyebrow" style="margin: 28px 0 10px;">// historial reciente</h4>
+    <div id="redemptions-history" class="row-list"></div>
+  </section>
 </main>
+
+<!-- Modal premio -->
+<div class="modal hidden" id="reward-modal">
+  <div class="modal-panel">
+    <button class="modal-close" id="close-reward-modal">×</button>
+    <h3 id="reward-modal-title">Nuevo premio</h3>
+    <form id="reward-form" style="margin-top:18px;">
+      <input type="hidden" name="id">
+      <div class="form-row">
+        <label><span>Emoji</span><input type="text" name="emoji" maxlength="2" value="🎁" style="text-align:center;font-size:28px;" required></label>
+        <label><span>Coste 🪙</span><input type="number" name="cost" min="1" value="50" required></label>
+      </div>
+      <label><span>Nombre</span><input type="text" name="name" required placeholder="Película de los viernes…"></label>
+      <label><span>Descripción <small class="muted">(opcional)</small></span><textarea name="description" rows="2" placeholder="Detalles del premio"></textarea></label>
+      <div class="form-row">
+        <label><span>Stock <small class="muted">(vacío = ∞)</small></span><input type="number" name="stock" min="0" placeholder="∞"></label>
+        <label><span>Visible en la tienda</span>
+          <select name="active">
+            <option value="true">Sí, mostrar</option>
+            <option value="false">No, ocultar</option>
+          </select>
+        </label>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn danger hidden" id="del-reward-btn">Eliminar</button>
+        <button type="button" class="btn ghost" id="cancel-reward">Cancelar</button>
+        <button type="submit" class="btn accent">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Confirmación borrado premio -->
+<div class="modal hidden" id="reward-confirm-modal">
+  <div class="modal-panel" style="max-width:380px;">
+    <h3>¿Eliminar premio?</h3>
+    <p class="muted" id="reward-confirm-text" style="margin:10px 0 18px;"></p>
+    <div class="form-actions">
+      <button class="btn ghost" id="cancel-reward-del">Cancelar</button>
+      <button class="btn danger" id="confirm-reward-del">Eliminar</button>
+    </div>
+  </div>
+</div>
 
 <!-- Modal usuario -->
 <div class="modal hidden" id="user-modal">
