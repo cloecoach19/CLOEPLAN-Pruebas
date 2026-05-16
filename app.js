@@ -1022,6 +1022,7 @@ function renderTrophies() {
   summary.textContent = `${nowUnlocked.size}/${TROPHIES.length} desbloqueados`;
   grid.innerHTML = evaluated.map(tr => {
     const rarity = TROPHY_RARITY[tr.rarity] || TROPHY_RARITY.common;
+    const coins = tr.coins || 0;
     return `
       <div class="trophy ${tr.unlocked ? 'unlocked' : 'locked'} rarity-${rarity.class}">
         <div class="trophy-emoji">${tr.emoji}</div>
@@ -1032,6 +1033,7 @@ function renderTrophies() {
           <span class="trophy-rarity">${rarity.label}</span>
           <span class="trophy-progress">${Math.min(tr.current, tr.target)}/${tr.target}</span>
         </div>
+        <div class="trophy-coins">🪙 ${coins}</div>
       </div>
     `;
   }).join('');
