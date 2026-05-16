@@ -65,6 +65,12 @@ create table if not exists events (
   created_at timestamptz default now()
 );
 
+-- Enlace 1:1 con Google Calendar
+alter table events add column if not exists gcal_event_id    text;
+alter table events add column if not exists gcal_calendar_id text;
+alter table events add column if not exists gcal_synced_at   timestamptz;
+alter table users  add column if not exists gcal_calendar_id text default 'primary';
+
 -- ── Cloe: Paseos ──────────────────────────────────────────
 create table if not exists cloe_walks (
   id         uuid primary key default gen_random_uuid(),

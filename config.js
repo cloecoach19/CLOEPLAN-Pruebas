@@ -18,3 +18,7 @@
 
 const SUPABASE_URL      = 'https://rjrjgrwdkcdplmidaggi.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_rJYhhSnQqLhCtr_dpUK1Ow_nW6dNch5';
+
+// ── Google Calendar (sync bidireccional) ─────────────────
+// Si está vacío, la integración queda oculta.
+const GOOGLE_CLIENT_ID = '591118741225-59se5k0dj941aqh4gabau3sdqghlas1c.apps.googleusercontent.com';
