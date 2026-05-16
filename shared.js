@@ -1569,6 +1569,8 @@ function applyCoinRules(rules) {
 
 function coinsForTask(t) {
   if (!t || !t.done) return 0;
+  // La tarea de lectura no da monedas
+  if (t.subcategory === 'lectura') return 0;
   let c = COINS.TASK_BASE;
   if (t.room && t.room.startsWith('habitat-')) c = COINS.TASK_KIDROOM;
   else if (t.room === 'cocina') c = COINS.TASK_KITCHEN;
