@@ -1693,6 +1693,73 @@ textarea { resize: vertical; min-height: 60px; }
   .coin-rule-desc { font-size: 11px; }
 }
 
+/* ── 🪙 Tabla de reglas de monedas por tarea ───────────── */
+.coin-rules-table {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.coin-rule-group {
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+}
+.coin-rule-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #FFE066, #FFB347);
+  color: #4A2A00;
+}
+.coin-rule-header .coin-value {
+  font-family: var(--font-mono);
+  font-weight: 900;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+.coin-rule-header .muted {
+  font-size: 12px;
+  opacity: 0.8;
+  font-weight: 600;
+}
+.coin-rule-tasks {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+}
+.coin-rule-task {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  transition: background 0.15s ease;
+}
+.coin-rule-task:hover {
+  background: var(--surface-2);
+}
+.coin-rule-task .task-emoji {
+  font-size: 18px;
+  width: 32px;
+  text-align: center;
+}
+.coin-rule-task .task-label {
+  font-size: 13px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+[data-theme="dark"] .coin-rule-header {
+  background: linear-gradient(135deg, #FFB347, #FF6A00);
+  color: #FFF;
+}
+@media (max-width: 760px) {
+  .coin-rule-header { padding: 10px 14px; }
+  .coin-rule-header .coin-value { font-size: 16px; }
+  .coin-rule-task { padding: 6px 14px; }
+  .coin-rule-task .task-label { font-size: 12px; }
+}
+
 /* ── 🛍️ Tienda de premios ──────────────────────────────── */
 .shop-hero {
   display: flex;
