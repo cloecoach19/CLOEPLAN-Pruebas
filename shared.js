@@ -1293,6 +1293,7 @@ const TASK_SUBCATEGORIES = {
     { id: 'desayuno', emoji: '🥐', label: 'Desayuno' },
     { id: 'comida', emoji: '🍝', label: 'Comida' },
     { id: 'cena', emoji: '🌙', label: 'Cena' },
+    { id: 'meal-prep', emoji: '🥗', label: 'Meal prep' },
     { id: 'limpieza', emoji: '🧽', label: 'Limpieza' },
     { id: 'limpieza-profunda', emoji: '✨', label: 'Limpieza profunda' },
     { id: 'ventanas', emoji: '🪟', label: 'Ventanas' },
@@ -1310,6 +1311,7 @@ const TASK_SUBCATEGORIES = {
     { id: 'limpieza-total', emoji: '✨', label: 'Limpieza Total' },
     { id: 'polvo', emoji: '✨', label: 'Polvo' },
     { id: 'ventanas', emoji: '🪟', label: 'Ventanas' },
+    { id: 'unas', emoji: '💅', label: 'Cortarse las uñas' },
   ],
   'cloe': [
     { id: 'pasear', emoji: '🚶', label: 'Pasear a Cloe' },
@@ -1536,6 +1538,28 @@ const TROPHIES = [
   { id: 'window-cleaner', emoji: '🪟', name: 'Cazador de huellas', desc: '10 ventanas relucientes.', rarity: 'rare', coins: 30,
     eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && (t.done_by || t.assignee) === uid && t.subcategory === 'ventanas').length, target: 10 }) },
 
+  // ── Cuidado personal: uñas ────────────────────────────
+  { id: 'nails-first', emoji: '💅', name: 'Manicura inicial', desc: 'Cortarse las uñas por primera vez.', rarity: 'common', coins: 10,
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && (t.done_by || t.assignee) === uid && t.subcategory === 'unas').length, target: 1 }) },
+  { id: 'nails-10', emoji: '✋', name: 'Manos cuidadas', desc: '10 cortes de uñas.', rarity: 'common', coins: 25,
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && (t.done_by || t.assignee) === uid && t.subcategory === 'unas').length, target: 10 }) },
+  { id: 'nails-30', emoji: '💎', name: 'Garras impecables', desc: '30 cortes de uñas.', rarity: 'rare', coins: 70,
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && (t.done_by || t.assignee) === uid && t.subcategory === 'unas').length, target: 30 }) },
+
+  // ── Baño: niveles extra ───────────────────────────────
+  { id: 'bath-50', emoji: '🛁', name: 'Rey/Reina del baño', desc: '50 misiones del baño.', rarity: 'epic', coins: 120,
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && (t.done_by || t.assignee) === uid && t.room === 'bano').length, target: 50 }) },
+  { id: 'bath-clean-25', emoji: '🧴', name: 'Baño de revista', desc: '25 limpiezas del baño.', rarity: 'rare', coins: 60,
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && (t.done_by || t.assignee) === uid && t.room === 'bano' && (t.subcategory === 'limpieza' || t.subcategory === 'limpieza-total')).length, target: 25 }) },
+
+  // ── Meal prep ────────────────────────────────────────
+  { id: 'meal-prep-first', emoji: '🥗', name: 'Tupper inaugural', desc: 'Tu primera sesión de meal prep.', rarity: 'common', coins: 15,
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && (t.done_by || t.assignee) === uid && t.subcategory === 'meal-prep').length, target: 1 }) },
+  { id: 'meal-prep-10', emoji: '🍱', name: 'Chef preparado', desc: '10 sesiones de meal prep.', rarity: 'rare', coins: 60,
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && (t.done_by || t.assignee) === uid && t.subcategory === 'meal-prep').length, target: 10 }) },
+  { id: 'meal-prep-30', emoji: '🥘', name: 'Estratega de la cocina', desc: '30 sesiones de meal prep.', rarity: 'epic', coins: 150,
+    eval: (s, uid) => ({ current: s.tasks.filter(t => t.done && (t.done_by || t.assignee) === uid && t.subcategory === 'meal-prep').length, target: 30 }) },
+
   // ── Cloe ──────────────────────────────────────────────
   { id: 'cloe-first', emoji: '🐶', name: 'Bienvenida al club', desc: 'Tu primer paseo con Cloe.', rarity: 'common', coins: 10,
     eval: (s, uid) => ({ current: (s.cloeWalks || []).filter(w => w.assignee === uid).length, target: 1 }) },
@@ -1543,16 +1567,6 @@ const TROPHIES = [
     eval: (s, uid) => ({ current: (s.cloeWalks || []).filter(w => w.assignee === uid).length, target: 20 }) },
   { id: 'cloe-100', emoji: '🐕‍🦺', name: 'Cloe te adora', desc: '100 paseos con Cloe.', rarity: 'epic', coins: 150,
     eval: (s, uid) => ({ current: (s.cloeWalks || []).filter(w => w.assignee === uid).length, target: 100 }) },
-  { id: 'cloe-walk-10k', emoji: '⏱️', name: 'Tobillo de hierro', desc: '500 minutos paseando.', rarity: 'epic', coins: 150,
-    eval: (s, uid) => ({
-      current: (s.cloeWalks || []).filter(w => w.assignee === uid).reduce((acc, w) => acc + (w.duration || 30), 0),
-      target: 500
-    }) },
-  { id: 'poop-scout', emoji: '💩', name: 'Recoge-cacas pro', desc: '50 caquitas registradas.', rarity: 'rare', coins: 50,
-    eval: (s, uid) => ({
-      current: (s.cloeDowns || []).filter(d => d.assignee === uid && d.reason === 'caca').length,
-      target: 50
-    }) },
 
   // ── Compra ────────────────────────────────────────────
   { id: 'shop-first', emoji: '🛒', name: 'A tu carro', desc: 'Añade tu primer producto.', rarity: 'common', coins: 10,

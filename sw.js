@@ -4,7 +4,7 @@
 // Auto-actualización: cuando se instala una versión nueva, salta directo
 // a active y avisa a todas las pestañas/clientes para que recarguen.
 
-const CACHE = 'cloe-v11';
+const CACHE = 'cloe-v12';
 const SHELL = [
   '/', '/index.html', '/app.html', '/admin.html',
   '/styles.css', '/shared.js', '/app.js', '/admin.js', '/config.js',
