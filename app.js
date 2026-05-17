@@ -1493,83 +1493,112 @@ function openTaskModal() {
   }
 
   modalBody.innerHTML = `
-    <h3>📋 Nueva misión doméstica</h3>
-    <p class="muted" style="margin-bottom:20px;">Elige zona, marca objetivos y suma puntos de gloria familiar.</p>
-    
-    <!-- Paso 1: Habitaciones -->
-    <div id="task-room-grid" class="task-room-grid">
-      ${TASK_ROOMS.map(r => `
-        <button class="task-room-btn card-sm" data-room="${esc(r.id)}">
-          <div class="task-room-emoji">${r.emoji}</div>
-          <div class="task-room-label">${esc(r.label)}</div>
-        </button>
-      `).join('')}
+    <!-- VISTA 1: selector de habitaciones (compacta) -->
+    <div id="task-view-rooms">
+      <h3>📋 Nueva misión doméstica</h3>
+      <p class="muted" style="margin-bottom:20px;">Elige primero la zona del dojo.</p>
+      <div id="task-room-grid" class="task-room-grid">
+        ${TASK_ROOMS.map(r => `
+          <button class="task-room-btn card-sm" data-room="${esc(r.id)}">
+            <div class="task-room-emoji">${r.emoji}</div>
+            <div class="task-room-label">${esc(r.label)}</div>
+          </button>
+        `).join('')}
+      </div>
     </div>
 
-    <!-- Paso 2: Subcategorías -->
-    <div id="task-subcat-section" class="hidden task-subcat-section">
-      <p class="eyebrow" style="margin-bottom:12px;">Elige el reto:</p>
-      <div id="task-subcat-grid" class="task-subcat-grid"></div>
-    </div>
-    
-    <!-- Paso 3: Fecha y asignación -->
-    <div id="task-details-section" class="hidden" style="border-top:1px solid var(--line);padding-top:20px;">
-      <p class="eyebrow" style="margin-bottom:12px;">Plan de ataque:</p>
-      
-      ${isWeekScope ? `
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;" id="task-week-days">
-          ${weekDays.map(d => `
-            <button class="chip day-chip" data-date="${d.date}" style="cursor:pointer;">
-              ${d.shortDay} ${d.date.slice(5)}
-            </button>
-          `).join('')}
+    <!-- VISTA 2: ventana grande con tareas + fecha + asignación -->
+    <div id="task-view-details" class="hidden">
+      <div class="task-view-head">
+        <button type="button" class="icon-btn" id="back-to-rooms" aria-label="Volver" title="Volver a habitaciones">←</button>
+        <div>
+          <h3 id="task-view-title" style="margin:0;">Habitación</h3>
+          <p class="muted" style="margin:2px 0 0;font-size:13px;">Selecciona uno o varios retos y completa el plan.</p>
         </div>
-      ` : `
-        <label style="margin-bottom:16px;">
-          <span>Fecha</span>
-          <input type="date" id="task-date-input" value="${today}" style="width:100%;">
-        </label>
-      `}
-      
-      <label style="margin-bottom:16px;">
-        <span>Héroe asignado</span>
-        <select id="task-assignee-select" style="width:100%;">
-          ${STATE.users.map(u => `<option value="${u.id}" ${u.id === me.id ? 'selected' : ''}>${esc(u.name)}</option>`).join('')}
-        </select>
-      </label>
-      
-      <div class="form-actions">
-        <button type="button" class="btn ghost" id="cancel-task-modal">Me lo pienso</button>
+      </div>
+
+      <div class="task-view-body">
+        <section class="task-view-section">
+          <p class="eyebrow" style="margin:0 0 10px;">// elige el reto</p>
+          <div id="task-subcat-grid" class="task-subcat-grid"></div>
+        </section>
+
+        <section class="task-view-section">
+          <p class="eyebrow" style="margin:0 0 10px;">// plan de ataque</p>
+          ${isWeekScope ? `
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;" id="task-week-days">
+              ${weekDays.map(d => `
+                <button class="chip day-chip" data-date="${d.date}" style="cursor:pointer;">
+                  ${d.shortDay} ${d.date.slice(5)}
+                </button>
+              `).join('')}
+            </div>
+          ` : `
+            <label style="margin-bottom:14px;display:block;">
+              <span>Fecha</span>
+              <input type="date" id="task-date-input" value="${today}" style="width:100%;">
+            </label>
+          `}
+
+          <label style="margin-bottom:4px;display:block;">
+            <span>Héroe asignado</span>
+            <select id="task-assignee-select" style="width:100%;">
+              ${STATE.users.map(u => `<option value="${u.id}" ${u.id === me.id ? 'selected' : ''}>${esc(u.name)}</option>`).join('')}
+            </select>
+          </label>
+        </section>
+      </div>
+
+      <div class="form-actions" style="margin-top:18px;">
+        <button type="button" class="btn ghost" id="cancel-task-modal">Cancelar</button>
         <button type="button" class="btn accent" id="save-task-btn">✓ Lanzar misión</button>
       </div>
     </div>
   `;
-  
+
+  // El modal-card cambia de tamaño según la vista
+  const modalCard = modal.querySelector('.modal-card, .modal-panel');
+  modalCard?.classList.add('task-modal-card');
+  modalCard?.classList.remove('task-modal-wide');
+
   modal.classList.remove('hidden');
   taskModalState = { room: null, subcategory: null, subcategories: [], date: isWeekScope ? weekDays[0].date : today, assignee: me.id };
   const selectedSubcats = new Set();
 
-  // Event listeners para habitaciones
-  $$('.task-room-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      $$('.task-room-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      taskModalState.room = btn.dataset.room;
+  function showRoomsView() {
+    $('task-view-rooms')?.classList.remove('hidden');
+    $('task-view-details')?.classList.add('hidden');
+    modalCard?.classList.remove('task-modal-wide');
+    taskModalState.room = null;
+    taskModalState.subcategories = [];
+    selectedSubcats.clear();
+  }
 
-      const subcats = subcatsOf(taskModalState.room);
-      $('task-subcat-grid').innerHTML = subcats.map(s => `
-        <button class="task-subcat-btn card-sm" data-subcat="${esc(s.id)}" data-emoji="${esc(s.emoji)}">
-          <div class="task-subcat-emoji">${s.emoji}</div>
-          <div class="task-subcat-label">${esc(s.label)}</div>
-        </button>
-      `).join('');
-      $('task-subcat-section').classList.remove('hidden');
-      taskModalState.subcategory = null;
-      taskModalState.subcategories = [];
-      selectedSubcats.clear();
-      $('task-details-section').classList.add('hidden');
-    });
+  function showDetailsView(roomId) {
+    const room = TASK_ROOMS.find(r => r.id === roomId);
+    taskModalState.room = roomId;
+    const subcats = subcatsOf(roomId);
+    $('task-subcat-grid').innerHTML = subcats.map(s => `
+      <button class="task-subcat-btn card-sm" data-subcat="${esc(s.id)}" data-emoji="${esc(s.emoji)}">
+        <div class="task-subcat-emoji">${s.emoji}</div>
+        <div class="task-subcat-label">${esc(s.label)}</div>
+      </button>
+    `).join('');
+    $('task-view-title').textContent = `${room?.emoji || ''} ${room?.label || ''}`.trim();
+    $('task-view-rooms')?.classList.add('hidden');
+    $('task-view-details')?.classList.remove('hidden');
+    modalCard?.classList.add('task-modal-wide');
+    selectedSubcats.clear();
+    taskModalState.subcategories = [];
+  }
+
+  // Click en una habitación → abrir vista de detalles (ventana grande)
+  $$('.task-room-btn').forEach(btn => {
+    btn.addEventListener('click', () => showDetailsView(btn.dataset.room));
   });
+
+  // Botón volver a habitaciones
+  $('back-to-rooms')?.addEventListener('click', showRoomsView);
 
   // Event listeners para subcategorías
   $('task-subcat-grid').addEventListener('click', (e) => {
@@ -1589,7 +1618,6 @@ function openTaskModal() {
       btn.classList.add('selected');
     }
     taskModalState.subcategories = Array.from(selectedSubcats);
-    $('task-details-section').classList.toggle('hidden', selectedSubcats.size === 0);
   });
   
   // Selección de día en modo semanal
