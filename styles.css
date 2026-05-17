@@ -2217,6 +2217,176 @@ textarea { resize: vertical; min-height: 60px; }
   box-shadow: var(--shadow-sm);
 }
 
+/* ════════════════════════════════════════════════
+   🍽️ MENÚ SEMANAL
+   Grid 7 días × 5 comidas con paleta pastel suave.
+   Variables locales para integrarse fácil con el tema.
+   ════════════════════════════════════════════════ */
+:root {
+  --menu-bg-desayuno: #FFF6E5;
+  --menu-bg-almuerzo: #FBEFE3;
+  --menu-bg-comida:   #EAF4E4;
+  --menu-bg-merienda: #FBE7EF;
+  --menu-bg-cena:     #E5EEF9;
+
+  --menu-accent-desayuno: #F2A93B;
+  --menu-accent-almuerzo: #C58A52;
+  --menu-accent-comida:   #4FA45B;
+  --menu-accent-merienda: #D74F8C;
+  --menu-accent-cena:     #4F75C5;
+
+  --menu-day-bg: #F4F0E8;
+  --menu-day-fg: #4A4641;
+  --menu-weekend-bg: #EFE7D9;
+}
+[data-theme="dark"] {
+  --menu-bg-desayuno: #3a2d1a;
+  --menu-bg-almuerzo: #3a2e23;
+  --menu-bg-comida:   #243524;
+  --menu-bg-merienda: #38222d;
+  --menu-bg-cena:     #1f2a3d;
+  --menu-day-bg: #2c2722;
+  --menu-day-fg: #ece6d8;
+  --menu-weekend-bg: #3a322a;
+}
+
+.menu-card { overflow: hidden; }
+
+.menu-grid-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 6px;
+}
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: 130px repeat(7, minmax(170px, 1fr));
+  gap: 8px;
+  min-width: 1180px;
+  font-family: 'Inter', 'Poppins', system-ui, -apple-system, sans-serif;
+}
+
+.menu-corner {
+  background: transparent;
+}
+
+.menu-day {
+  background: var(--menu-day-bg);
+  color: var(--menu-day-fg);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  font-size: 13px;
+  border-radius: 12px;
+  padding: 12px 8px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+.menu-day.weekend {
+  background: var(--menu-weekend-bg);
+  color: var(--menu-day-fg);
+}
+
+.menu-meal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 12px 14px;
+  border-radius: 12px;
+  color: #2b2622;
+  box-shadow: var(--shadow-sm);
+}
+.menu-meal .meal-emoji { font-size: 18px; }
+.menu-meal.meal-desayuno { background: var(--menu-bg-desayuno); border-left: 4px solid var(--menu-accent-desayuno); }
+.menu-meal.meal-almuerzo { background: var(--menu-bg-almuerzo); border-left: 4px solid var(--menu-accent-almuerzo); }
+.menu-meal.meal-comida   { background: var(--menu-bg-comida);   border-left: 4px solid var(--menu-accent-comida); }
+.menu-meal.meal-merienda { background: var(--menu-bg-merienda); border-left: 4px solid var(--menu-accent-merienda); }
+.menu-meal.meal-cena     { background: var(--menu-bg-cena);     border-left: 4px solid var(--menu-accent-cena); color: #1f2a3d; }
+[data-theme="dark"] .menu-meal { color: #f3eee2; }
+
+.menu-cell {
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #2b2622;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+  display: flex;
+  align-items: flex-start;
+}
+[data-theme="dark"] .menu-cell { color: #f3eee2; }
+
+.menu-cell strong {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 4px;
+  letter-spacing: 0.01em;
+}
+.menu-cell:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+  filter: brightness(1.02);
+}
+.menu-cell.empty {
+  color: var(--ink-3);
+  font-style: italic;
+  opacity: 0.55;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu-cell.row-desayuno { background: var(--menu-bg-desayuno); }
+.menu-cell.row-almuerzo { background: var(--menu-bg-almuerzo); }
+.menu-cell.row-comida   { background: var(--menu-bg-comida); }
+.menu-cell.row-merienda { background: var(--menu-bg-merienda); }
+.menu-cell.row-cena     { background: var(--menu-bg-cena); }
+
+.menu-cell.span-5 { grid-column: span 5; }
+.menu-cell.span-7 { grid-column: span 7; }
+
+/* ── Responsive: layout apilado por día en móvil ── */
+@media (max-width: 860px) {
+  .menu-grid-wrap { overflow-x: visible; }
+  .menu-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-width: 0;
+    gap: 14px;
+  }
+  /* Ocultamos la cabecera de días desktop y la columna de etiqueta */
+  .menu-corner, .menu-day, .menu-meal { display: none; }
+
+  /* Convertimos cada celda en una tarjeta etiquetada por día y comida */
+  .menu-cell {
+    position: relative;
+    padding: 36px 14px 14px;
+    border-radius: 14px;
+    font-size: 14px;
+  }
+  .menu-cell.span-5, .menu-cell.span-7 { grid-column: auto; }
+  .menu-cell::before {
+    content: attr(data-day);
+    position: absolute;
+    top: 10px; left: 14px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+    color: inherit;
+    opacity: 0.7;
+  }
+  .menu-cell.row-desayuno::before { content: '☀️  Desayuno · ' attr(data-day); }
+  .menu-cell.row-almuerzo::before { content: '☕  Almuerzo · ' attr(data-day); }
+  .menu-cell.row-comida::before   { content: '🍽️  Comida · '   attr(data-day); }
+  .menu-cell.row-merienda::before { content: '🍎  Merienda · ' attr(data-day); }
+  .menu-cell.row-cena::before     { content: '🌙  Cena · '     attr(data-day); }
+}
+
 .wk-cal-sub {
   margin: 0 4px;
   color: var(--ink-2);

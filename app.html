@@ -51,6 +51,7 @@
     <button class="tab" data-tab="calendario">📅 Calendario</button>
     <button class="tab" data-tab="tareas">✓ Tareas</button>
     <button class="tab" data-tab="compra">🛒 Compra</button>
+    <button class="tab" data-tab="menu">🍽️ Menú</button>
     <button class="tab" data-tab="tienda">🛍️ Tienda</button>
     <button class="tab" data-tab="stats">📊 Ranking</button>
   </div>
@@ -218,6 +219,73 @@
 
       <h4 class="eyebrow" style="margin: 20px 0 10px;">// botín conseguido</h4>
       <div class="row-list" id="shop-done"></div>
+    </div>
+  </section>
+
+  <!-- MENÚ SEMANAL -->
+  <section class="panel" id="panel-menu">
+    <div class="card menu-card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">// plan semanal</p>
+          <h1 class="display">Menú de la semana 🍽️</h1>
+          <p class="muted" style="margin:4px 0 0;font-size:14px;">Plan de comidas para toda la familia, de lunes a domingo.</p>
+        </div>
+      </div>
+
+      <div class="menu-grid-wrap" style="margin-top:18px;">
+        <div class="menu-grid">
+          <!-- Cabecera: días -->
+          <div class="menu-corner"></div>
+          <div class="menu-day">LUN</div>
+          <div class="menu-day">MAR</div>
+          <div class="menu-day">MIÉ</div>
+          <div class="menu-day">JUE</div>
+          <div class="menu-day">VIE</div>
+          <div class="menu-day weekend">SÁB</div>
+          <div class="menu-day weekend">DOM</div>
+
+          <!-- DESAYUNO -->
+          <div class="menu-meal meal-desayuno"><span class="meal-emoji">☀️</span> Desayuno</div>
+          <div class="menu-cell row-desayuno" data-day="lun"><strong>Queso fresco batido</strong> (150g) con frutos rojos y copos de avena (20g) o corn flakes (20g) + Café con leche de almendra</div>
+          <div class="menu-cell row-desayuno" data-day="mar"><strong>Pan de espelta</strong> (50g) con pavo (30g) y queso cottage (20g) + Café con leche de almendra</div>
+          <div class="menu-cell row-desayuno" data-day="mie"><strong>Queso fresco batido</strong> (150g) con frutos rojos y copos de avena (20g) o corn flakes (20g) + Café con leche de almendra</div>
+          <div class="menu-cell row-desayuno" data-day="jue"><strong>Pan de espelta</strong> (50g) con jamón serrano (30g), queso cottage (20g) y tomate + Café con leche de almendra</div>
+          <div class="menu-cell row-desayuno" data-day="vie"><strong>Queso fresco batido</strong> (150g) con frutos rojos y copos de avena (20g) o corn flakes (20g) + Café con leche de almendra</div>
+          <div class="menu-cell row-desayuno" data-day="sab"><strong>Queso fresco batido</strong> (150g) con frutos rojos y copos de avena (20g) o corn flakes (20g) + Café con leche de almendra</div>
+          <div class="menu-cell row-desayuno" data-day="dom"><strong>Tostadas francesas</strong>: pan brioche (1 unid) 100% integral, huevo, canela y leche desnatada. Topping: onza de chocolate negro (1 unid) y frutos rojos + Café con leche de almendra</div>
+
+          <!-- ALMUERZO -->
+          <div class="menu-meal meal-almuerzo"><span class="meal-emoji">☕</span> Almuerzo</div>
+          <div class="menu-cell row-almuerzo span-5" data-day="lun-vie"><strong>Café con leche</strong> + Mousse de proteínas (1 unidad) + frutos secos (15g)</div>
+          <div class="menu-cell row-almuerzo empty" data-day="sab">—</div>
+          <div class="menu-cell row-almuerzo empty" data-day="dom">—</div>
+
+          <!-- COMIDA -->
+          <div class="menu-meal meal-comida"><span class="meal-emoji">🍽️</span> Comida</div>
+          <div class="menu-cell row-comida" data-day="lun"><strong>Ensalada campera</strong>: canónigos, patata cocida (180g), zanahoria cocida, maíz, tomate, atún al natural (60g) y huevo cocido (1 unid). 1 cucharada de mayonesa (con huevo cocido)</div>
+          <div class="menu-cell row-comida" data-day="mar"><strong>Pisto de verduras</strong> con salsa de tomate + Contramuslo de pollo al horno (1 unid, sin piel)</div>
+          <div class="menu-cell row-comida" data-day="mie"><strong>Ensalada de garbanzos</strong>: vinagreta con tomate, pimiento rojo, verde, pepinillos, vinagre, sal y AOVE. Garbanzos cocidos y atún al natural. Queso fresco de cabra</div>
+          <div class="menu-cell row-comida" data-day="jue"><strong>Pisto de verduras</strong> con salsa de tomate + Contramuslo de pollo al horno (1 unid, sin piel)</div>
+          <div class="menu-cell row-comida" data-day="vie"><strong>Lasaña de calabacín</strong>: calabacín laminado, atún (1 lata), verduras salteadas, salsa de tomate, queso mozzarella (30g)</div>
+          <div class="menu-cell row-comida" data-day="sab"><strong>Boloñesa</strong>: macarrones integrales (50g) con carne picada de pollo (80g), salsa de tomate y verduras pochadas</div>
+          <div class="menu-cell row-comida" data-day="dom"><strong>Entrecot de ternera</strong> a la plancha (120g cocinado) + Ensalada verde (solo verduras)</div>
+
+          <!-- MERIENDA -->
+          <div class="menu-meal meal-merienda"><span class="meal-emoji">🍎</span> Merienda</div>
+          <div class="menu-cell row-merienda span-7" data-day="lun-dom"><strong>A elegir (toda la semana)</strong>: Queso fresco batido (100g) con arándanos · Tortitas de legumbre (2 unid) con pavo (3 unid) o con queso fresco de Burgos desnatado (1 lata) · Fruta (1 pieza) + gelatina sin azúcares · Tortitas de arroz con chocolate negro (1 unid) o bowl de fresas</div>
+
+          <!-- CENA -->
+          <div class="menu-meal meal-cena"><span class="meal-emoji">🌙</span> Cena</div>
+          <div class="menu-cell row-cena" data-day="lun"><strong>Ensalada de marisco fría</strong>: canónigos, rúcula, tomate, langostinos (10 unid), queso cottage (30g), fresas y mango (¼ unid)</div>
+          <div class="menu-cell row-cena" data-day="mar"><strong>Merluza a la plancha</strong> (130g cocinado) con calabacín y berenjena a la plancha (1 unid)</div>
+          <div class="menu-cell row-cena" data-day="mie"><strong>Ensalada de pera</strong>: frutos secos (10g), jamón serrano (20g) y queso mozzarella (5 bolitas). Aliño: miel, AOVE, sal y vinagre + Huevo a la plancha (1 unid)</div>
+          <div class="menu-cell row-cena" data-day="jue"><strong>Revuelto</strong> de 1 huevo con pavo y queso mozzarella rallado (20g) + Escarola aliñada</div>
+          <div class="menu-cell row-cena" data-day="vie"><strong>Huevos rotos</strong>: huevo a la plancha (sin air fryer, 150g) y jamón serrano (2 lonchas) + Ensalada (solo verduras)</div>
+          <div class="menu-cell row-cena" data-day="sab"><strong>Anillas de calamar</strong> a la plancha con perejil y limón (120g cocinado) + Parrillada de verduras a la plancha</div>
+          <div class="menu-cell row-cena" data-day="dom"><strong>Fajipizza</strong>: base de fajita integral (1 unid) con salsa de tomate, atún (½ lata), verduras y queso mozzarella (15g)</div>
+        </div>
+      </div>
     </div>
   </section>
 
