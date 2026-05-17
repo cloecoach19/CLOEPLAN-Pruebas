@@ -741,7 +741,215 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// Realtime: usuarios + tienda + reglas de monedas
+// ═══════════════════════════════════════════════════════
+// 📦 Exportar datos a JSON
+// ═══════════════════════════════════════════════════════
+// Estructura:
+//   {
+//     exported_at, exported_by,
+//     logs: [{ type, timestamp, user_id, user_name, details }, …],
+//     tasks_by_user: { <user_id>: { user_name, tasks_done: [...], total_tasks_done, total_coins_earned } }
+//   }
+async function exportAllDataAsJSON() {
+  const btn = $('export-json-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Recopilando…'; }
+
+  const [u, t, s, e, cw, cd, rd, rw, tu, tcr, cr] = await Promise.all([
+    db.from('users').select('id,name,email,role,member_id,color,status,created_at'),
+    db.from('tasks').select('*'),
+    db.from('shopping').select('*'),
+    db.from('events').select('*'),
+    db.from('cloe_walks').select('*'),
+    db.from('cloe_downs').select('*'),
+    db.from('redemptions').select('*'),
+    db.from('rewards').select('*'),
+    db.from('trophies_unlocked').select('*'),
+    db.from('task_coin_rules').select('*'),
+    db.from('coin_rules').select('*'),
+  ]);
+
+  const errors = [u,t,s,e,cw,cd,rd,rw,tu,tcr,cr].filter(r => r && r.error).map(r => r.error.message);
+  if (errors.length) {
+    showToast('Error exportando: ' + errors[0], 6000);
+    if (btn) { btn.disabled = false; btn.textContent = 'Descargar JSON'; }
+    return;
+  }
+
+  const users = u.data || [];
+  const tasks = t.data || [];
+  const shopping = s.data || [];
+  const events = e.data || [];
+  const cloeWalks = cw.data || [];
+  const cloeDowns = cd.data || [];
+  const redemptions = rd.data || [];
+  const rewards = rw.data || [];
+  const trophies = tu.data || [];
+  const taskCoinRules = tcr.data || [];
+
+  const userById = new Map(users.map(x => [x.id, x]));
+  const userName = id => userById.get(id)?.name || '—';
+
+  // STATE-like para que coinsForTask funcione con las reglas reales.
+  const fakeState = { taskCoinRules };
+  const coinsFor = (typeof coinsForTask === 'function')
+    ? (task) => coinsForTask(task, fakeState)
+    : () => 0;
+
+  // ── Logs cronológicos ───────────────────────────────────
+  const logs = [];
+
+  for (const task of tasks) {
+    const owner = task.done_by || task.assignee;
+    if (task.created_at) logs.push({
+      type: 'task_created',
+      timestamp: task.created_at,
+      user_id: task.assignee || null,
+      user_name: userName(task.assignee),
+      details: { task_id: task.id, title: task.title, room: task.room, subcategory: task.subcategory, due_date: task.due_date }
+    });
+    if (task.done && task.done_at) logs.push({
+      type: 'task_done',
+      timestamp: task.done_at,
+      user_id: owner || null,
+      user_name: userName(owner),
+      details: { task_id: task.id, title: task.title, room: task.room, subcategory: task.subcategory, coins_earned: coinsFor(task) }
+    });
+  }
+  for (const sh of shopping) {
+    if (sh.created_at) logs.push({
+      type: 'shopping_added',
+      timestamp: sh.created_at,
+      user_id: sh.added_by || null,
+      user_name: userName(sh.added_by),
+      details: { shopping_id: sh.id, name: sh.name, quantity: sh.quantity, category: sh.category }
+    });
+    if (sh.done && sh.done_at) logs.push({
+      type: 'shopping_done',
+      timestamp: sh.done_at,
+      user_id: sh.added_by || null,
+      user_name: userName(sh.added_by),
+      details: { shopping_id: sh.id, name: sh.name }
+    });
+  }
+  for (const ev of events) {
+    if (ev.created_at) logs.push({
+      type: 'event_created',
+      timestamp: ev.created_at,
+      user_id: ev.assignee || null,
+      user_name: userName(ev.assignee),
+      details: { event_id: ev.id, title: ev.title, date: ev.date, time: ev.time, category: ev.category }
+    });
+  }
+  for (const w of cloeWalks) {
+    logs.push({
+      type: 'cloe_walk',
+      timestamp: w.datetime || w.created_at,
+      user_id: w.assignee || null,
+      user_name: userName(w.assignee),
+      details: { walk_id: w.id, duration_min: w.duration, notes: w.notes }
+    });
+  }
+  for (const d of cloeDowns) {
+    logs.push({
+      type: 'cloe_down',
+      timestamp: d.datetime || d.created_at,
+      user_id: d.assignee || null,
+      user_name: userName(d.assignee),
+      details: { down_id: d.id, reason: d.reason, notes: d.notes }
+    });
+  }
+  for (const r of redemptions) {
+    logs.push({
+      type: 'redemption_' + (r.status || 'pending'),
+      timestamp: r.resolved_at || r.created_at,
+      user_id: r.user_id || null,
+      user_name: userName(r.user_id),
+      details: { redemption_id: r.id, reward_name: r.reward_name, cost_paid: r.cost_paid, status: r.status }
+    });
+  }
+  for (const tr of trophies) {
+    logs.push({
+      type: 'trophy_unlocked',
+      timestamp: tr.unlocked_at,
+      user_id: tr.user_id || null,
+      user_name: userName(tr.user_id),
+      details: { trophy_id: tr.trophy_id, coins: tr.coins }
+    });
+  }
+
+  // Orden cronológico descendente (lo más reciente primero).
+  logs.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+
+  // ── Agregado por usuario ────────────────────────────────
+  const tasksByUser = {};
+  for (const usr of users) {
+    tasksByUser[usr.id] = {
+      user_name: usr.name,
+      member_id: usr.member_id,
+      email: usr.email,
+      tasks_done: [],
+      total_tasks_done: 0,
+      total_coins_earned: 0,
+    };
+  }
+  for (const task of tasks) {
+    if (!task.done || !task.done_at) continue;
+    const owner = task.done_by || task.assignee;
+    if (!owner || !tasksByUser[owner]) continue;
+    const coins = coinsFor(task);
+    tasksByUser[owner].tasks_done.push({
+      task_id: task.id,
+      title: task.title,
+      room: task.room,
+      subcategory: task.subcategory,
+      done_at: task.done_at,
+      done_by_self: task.done_by === task.assignee || !task.done_by,
+      coins_earned: coins,
+    });
+    tasksByUser[owner].total_tasks_done++;
+    tasksByUser[owner].total_coins_earned += coins;
+  }
+  // Ordenar tareas dentro de cada usuario por fecha desc.
+  for (const k of Object.keys(tasksByUser)) {
+    tasksByUser[k].tasks_done.sort((a, b) => (b.done_at || '').localeCompare(a.done_at || ''));
+  }
+
+  const payload = {
+    exported_at: new Date().toISOString(),
+    exported_by: me?.email || me?.name || 'admin',
+    version: 1,
+    counts: {
+      users: users.length,
+      tasks: tasks.length,
+      tasks_done: tasks.filter(x => x.done).length,
+      shopping: shopping.length,
+      events: events.length,
+      cloe_walks: cloeWalks.length,
+      cloe_downs: cloeDowns.length,
+      redemptions: redemptions.length,
+      trophies_unlocked: trophies.length,
+    },
+    logs,
+    tasks_by_user: tasksByUser,
+  };
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+  a.href = url;
+  a.download = `cloe-export-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+  if (btn) { btn.disabled = false; btn.textContent = 'Descargar JSON'; }
+  showToast(`✓ Exportado: ${logs.length} eventos, ${tasks.filter(x => x.done).length} tareas hechas`, 4500);
+}
+
+$('export-json-btn')?.addEventListener('click', exportAllDataAsJSON);
+
 // ═══════════════════════════════════════════════════════
 // ⚠️ Reset de la app
 // ═══════════════════════════════════════════════════════

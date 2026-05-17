@@ -60,6 +60,19 @@ const calDate = new Date(); calDate.setDate(1);
 const $ = (id) => document.getElementById(id);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
+// ── Visibilidad de tareas: ─────────────────────────────
+// El admin ve todas las tareas; un miembro normal solo ve las suyas
+// (asignadas a él, completadas por él o que está a punto de completar).
+function visibleTasks(extra) {
+  const list = (STATE && STATE.tasks) || [];
+  if (me && me.role === 'Admin') return extra ? list.filter(extra) : list;
+  return list.filter(t => {
+    if (t.assignee === me.id) return true;
+    if (t.done_by === me.id) return true;
+    return false;
+  }).filter(extra || (() => true));
+}
+
 // ── Catálogo de tareas (hardcoded + custom del admin) ────
 // Devuelve subcategorías de una habitación, mergeando las personalizadas
 // que el admin haya creado en `task_coin_rules`.
@@ -1259,10 +1272,11 @@ function fillSelects() {
 // ── Stats hero ───────────────────────────────────────────
 function renderStats() {
   const today = todayISO();
-  const todayTasks = STATE.tasks.filter(t => t.scope === 'today' && t.due_date === today);
+  const mine = visibleTasks();
+  const todayTasks = mine.filter(t => t.scope === 'today' && t.due_date === today);
   const todayDone = todayTasks.filter(t => t.done).length;
   $('stat-tasks-today').textContent = `${todayDone}/${todayTasks.length}`;
-  $('stat-tasks-pending').textContent = STATE.tasks.filter(t => !t.done).length;
+  $('stat-tasks-pending').textContent = mine.filter(t => !t.done).length;
   $('stat-shop').textContent = STATE.shopping.filter(s => !s.done).length;
   $('stat-events').textContent = STATE.events.filter(e => e.date === today).length;
 }
@@ -1337,7 +1351,7 @@ function renderTasks() {
     //  - su due_date coincide con el iso del día, o
     //  - es semanal sin due_date pero con weekday == shortName, o
     //  - no tiene due_date pero se marcó hecha ese día
-    const dayTasks = STATE.tasks.filter(t => {
+    const dayTasks = visibleTasks(t => {
       if (t.due_date) return t.due_date === iso;
       if (t.scope === 'week' && t.weekday) return t.weekday === shortName;
       if (t.done && t.done_at) return t.done_at.slice(0, 10) === iso;
