@@ -2449,6 +2449,24 @@ textarea { resize: vertical; min-height: 60px; }
 
 .task-view-section .eyebrow { color: var(--ink-2); }
 
+/* ── Aviso visual: tarea sin valor de monedas configurado ── */
+.coin-rule.coin-rule-warn {
+  border-left: 3px solid #F59E0B;
+  background: rgba(245, 158, 11, 0.06);
+}
+.warn-chip {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.15);
+  color: #B45309;
+  margin-left: 6px;
+  white-space: nowrap;
+}
+[data-theme="dark"] .warn-chip { color: #FDE68A; background: rgba(245, 158, 11, 0.25); }
+
 .wk-cal-sub {
   margin: 0 4px;
   color: var(--ink-2);

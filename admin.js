@@ -479,14 +479,18 @@ function renderTaskCoinRules() {
     const rowsHTML = rs.map(r => {
       const placeholder = r.value === null ? '0' : '';
       const value = r.value === null ? '' : r.value;
+      const isUnset = r.value === null || r.value === 0;
+      const warnBadge = isUnset
+        ? ' <span class="warn-chip" title="Esta tarea da 0 monedas">⚠️ sin configurar</span>'
+        : '';
       const delBtn = r.custom
         ? `<button type="button" class="icon-btn danger" data-del-task-rule data-room="${esc(r.room)}" data-sub="${esc(r.subcategory)}" title="Eliminar tarea">🗑</button>`
         : '';
       return `
-        <div class="coin-rule">
+        <div class="coin-rule${isUnset ? ' coin-rule-warn' : ''}">
           <span class="coin-rule-emoji">${esc(r.emoji)}</span>
           <div class="coin-rule-text">
-            <div class="coin-rule-label">${esc(r.label)}${r.custom ? ' <small class="muted">(personalizada)</small>' : ''}</div>
+            <div class="coin-rule-label">${esc(r.label)}${r.custom ? ' <small class="muted">(personalizada)</small>' : ''}${warnBadge}</div>
           </div>
           <div class="coin-rule-input">
             <input type="number" min="0" max="9999" placeholder="${placeholder}" value="${value}"

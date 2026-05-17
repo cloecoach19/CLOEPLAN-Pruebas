@@ -3,10 +3,7 @@
 const me = requireUser();
 if (!me) throw new Error('no user');
 
-// PWA service worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
-}
+// (El registro y auto-actualización del Service Worker está en shared.js)
 
 // Debounce util
 function debounce(fn, ms = 300) {
@@ -769,8 +766,9 @@ function renderStatsPanel() {
   const byUser = new Map();
   STATE.users.forEach(u => byUser.set(u.id, 0));
   STATE.tasks.forEach(t => {
-    if (t.done && inWindow(t.done_at) && t.assignee && byUser.has(t.assignee)) {
-      byUser.set(t.assignee, byUser.get(t.assignee) + 1);
+    const owner = t.done_by || t.assignee;
+    if (t.done && inWindow(t.done_at) && owner && byUser.has(owner)) {
+      byUser.set(owner, byUser.get(owner) + 1);
     }
   });
 
@@ -923,9 +921,10 @@ function renderTypeChart() {
     if (!t.done || !t.done_at) return;
     const doneDate = t.done_at.slice(0, 10);
     if (doneDate < fromStr || doneDate > toStr) return;
-    if (!t.assignee || !dataByUser.has(t.assignee)) return;
-    
-    const userData = dataByUser.get(t.assignee);
+    const owner = t.done_by || t.assignee;
+    if (!owner || !dataByUser.has(owner)) return;
+
+    const userData = dataByUser.get(owner);
     // Use subcategory as type, fallback to room if no subcategory
     const typeKey = t.subcategory && t.room 
       ? `${t.room}:${t.subcategory}`
@@ -1433,7 +1432,12 @@ function wireTaskRows(root) {
     const id = b.dataset.toggleTask;
     const t = STATE.tasks.find(x => x.id === id);
     if (!t) return;
-    const patch = { done: !t.done, done_at: !t.done ? new Date().toISOString() : null };
+    const willBeDone = !t.done;
+    const patch = {
+      done: willBeDone,
+      done_at: willBeDone ? new Date().toISOString() : null,
+      done_by: willBeDone ? me.id : null,
+    };
     patchState('tasks', id, patch);
     renderAll();
     const { error } = await db.from('tasks').update(patch).eq('id', id);
@@ -2155,6 +2159,7 @@ $('qa-cloe-walk').addEventListener('submit', e => {
       scope: 'today',
       done: true,
       done_at: new Date().toISOString(),
+      done_by: assignee,
       due_date: dateOnly,
       due_time: timeOnly,
       weekday: WEEKDAYS[dow],
@@ -2206,6 +2211,7 @@ $('qa-cloe-down').addEventListener('submit', e => {
       scope: 'today',
       done: true,
       done_at: new Date().toISOString(),
+      done_by: assignee,
       due_date: dateOnly,
       due_time: timeOnly,
       weekday: WEEKDAYS[dow],

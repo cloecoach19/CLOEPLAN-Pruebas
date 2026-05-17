@@ -39,6 +39,9 @@ create table if not exists tasks (
 
 alter table tasks add column if not exists room text;
 alter table tasks add column if not exists subcategory text;
+-- Quién marcó la tarea como hecha (las monedas/trofeos van al ejecutor real,
+-- no al asignado; si está vacío en filas históricas, cae a `assignee`).
+alter table tasks add column if not exists done_by uuid references users(id) on delete set null;
 
 -- ── Lista de la compra ────────────────────────────────────
 create table if not exists shopping (
