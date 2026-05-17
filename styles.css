@@ -2219,126 +2219,100 @@ textarea { resize: vertical; min-height: 60px; }
 
 /* ════════════════════════════════════════════════
    🍽️ MENÚ SEMANAL
-   Grid 7 días × 5 comidas con paleta pastel suave.
-   Variables locales para integrarse fácil con el tema.
+   Paleta por DÍA (cada columna su color pastel).
    ════════════════════════════════════════════════ */
 :root {
-  --menu-bg-desayuno: #FFF6E5;
-  --menu-bg-almuerzo: #FBEFE3;
-  --menu-bg-comida:   #EAF4E4;
-  --menu-bg-merienda: #FBE7EF;
-  --menu-bg-cena:     #E5EEF9;
+  --menu-day-lun: #FFF6E5;  --menu-acc-lun: #F2A93B;
+  --menu-day-mar: #FBEFE3;  --menu-acc-mar: #C58A52;
+  --menu-day-mie: #EAF4E4;  --menu-acc-mie: #4FA45B;
+  --menu-day-jue: #FBE7EF;  --menu-acc-jue: #D74F8C;
+  --menu-day-vie: #E5EEF9;  --menu-acc-vie: #4F75C5;
+  --menu-day-sab: #EFE6F7;  --menu-acc-sab: #8B5CF6;
+  --menu-day-dom: #E5F4EC;  --menu-acc-dom: #2EAE7C;
 
-  --menu-accent-desayuno: #F2A93B;
-  --menu-accent-almuerzo: #C58A52;
-  --menu-accent-comida:   #4FA45B;
-  --menu-accent-merienda: #D74F8C;
-  --menu-accent-cena:     #4F75C5;
-
-  --menu-day-bg: #F4F0E8;
-  --menu-day-fg: #4A4641;
-  --menu-weekend-bg: #EFE7D9;
+  --menu-meal-bg: #FAF7F1;
+  --menu-meal-fg: #4A4641;
 }
 [data-theme="dark"] {
-  --menu-bg-desayuno: #3a2d1a;
-  --menu-bg-almuerzo: #3a2e23;
-  --menu-bg-comida:   #243524;
-  --menu-bg-merienda: #38222d;
-  --menu-bg-cena:     #1f2a3d;
-  --menu-day-bg: #2c2722;
-  --menu-day-fg: #ece6d8;
-  --menu-weekend-bg: #3a322a;
+  --menu-day-lun: #3a2d1a;  --menu-acc-lun: #F2A93B;
+  --menu-day-mar: #3a2e23;  --menu-acc-mar: #C58A52;
+  --menu-day-mie: #243524;  --menu-acc-mie: #4FA45B;
+  --menu-day-jue: #38222d;  --menu-acc-jue: #D74F8C;
+  --menu-day-vie: #1f2a3d;  --menu-acc-vie: #4F75C5;
+  --menu-day-sab: #2a2240;  --menu-acc-sab: #8B5CF6;
+  --menu-day-dom: #1f3a2c;  --menu-acc-dom: #2EAE7C;
+  --menu-meal-bg: #2c2722;
+  --menu-meal-fg: #ece6d8;
 }
 
 .menu-card { overflow: hidden; }
 
 .menu-grid-wrap {
-  /* Ya no hace falta scroll: el grid se ajusta al ancho disponible */
   width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   padding-bottom: 6px;
 }
 
 .menu-grid {
   display: grid;
-  grid-template-columns: clamp(72px, 10vw, 120px) repeat(7, minmax(0, 1fr));
+  grid-template-columns: 110px repeat(7, minmax(140px, 1fr));
   gap: 6px;
-  width: 100%;
+  min-width: 1080px;
   font-family: 'Inter', 'Poppins', system-ui, -apple-system, sans-serif;
 }
 
-.menu-corner {
-  background: transparent;
-}
+.menu-corner { background: transparent; }
 
 .menu-day {
-  background: var(--menu-day-bg);
-  color: var(--menu-day-fg);
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.06em;
   font-size: 12px;
   border-radius: 12px;
   padding: 10px 4px;
   text-align: center;
   box-shadow: var(--shadow-sm);
+  color: #fff;
 }
-.menu-day.weekend {
-  background: var(--menu-weekend-bg);
-  color: var(--menu-day-fg);
-}
+.menu-day[data-day="lun"], .menu-grid > .menu-day:nth-child(2) { background: var(--menu-acc-lun); }
+.menu-grid > .menu-day:nth-child(3) { background: var(--menu-acc-mar); }
+.menu-grid > .menu-day:nth-child(4) { background: var(--menu-acc-mie); }
+.menu-grid > .menu-day:nth-child(5) { background: var(--menu-acc-jue); }
+.menu-grid > .menu-day:nth-child(6) { background: var(--menu-acc-vie); }
+.menu-grid > .menu-day:nth-child(7) { background: var(--menu-acc-sab); }
+.menu-grid > .menu-day:nth-child(8) { background: var(--menu-acc-dom); }
 
 .menu-meal {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  gap: 8px;
   font-weight: 600;
-  font-size: 11px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  padding: 10px 6px;
+  padding: 12px 10px;
   border-radius: 12px;
-  color: #2b2622;
+  background: var(--menu-meal-bg);
+  color: var(--menu-meal-fg);
   box-shadow: var(--shadow-sm);
-  text-align: center;
-  line-height: 1.15;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
+  text-align: left;
+  line-height: 1.2;
 }
 .menu-meal .meal-emoji { font-size: 16px; }
-@media (min-width: 1100px) {
-  .menu-meal {
-    writing-mode: horizontal-tb;
-    transform: none;
-    font-size: 12px;
-    padding: 12px 10px;
-    justify-content: flex-start;
-  }
-}
-.menu-meal.meal-desayuno { background: var(--menu-bg-desayuno); border-left: 4px solid var(--menu-accent-desayuno); }
-.menu-meal.meal-almuerzo { background: var(--menu-bg-almuerzo); border-left: 4px solid var(--menu-accent-almuerzo); }
-.menu-meal.meal-comida   { background: var(--menu-bg-comida);   border-left: 4px solid var(--menu-accent-comida); }
-.menu-meal.meal-merienda { background: var(--menu-bg-merienda); border-left: 4px solid var(--menu-accent-merienda); }
-.menu-meal.meal-cena     { background: var(--menu-bg-cena);     border-left: 4px solid var(--menu-accent-cena); color: #1f2a3d; }
-[data-theme="dark"] .menu-meal { color: #f3eee2; }
 
 .menu-cell {
-  padding: 10px 10px;
+  padding: 12px 14px;
   border-radius: 12px;
-  font-size: 11.5px;
-  line-height: 1.35;
+  font-size: 12.5px;
+  line-height: 1.45;
   color: #2b2622;
   box-shadow: var(--shadow-sm);
   transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
-  display: flex;
-  align-items: flex-start;
+  display: block;          /* horizontal natural */
   min-width: 0;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  overflow-wrap: break-word;
   hyphens: auto;
-}
-@media (min-width: 1100px) {
-  .menu-cell { font-size: 12.5px; padding: 12px 14px; }
 }
 [data-theme="dark"] .menu-cell { color: #f3eee2; }
 
@@ -2351,21 +2325,30 @@ textarea { resize: vertical; min-height: 60px; }
 .menu-cell:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 14px rgba(0,0,0,0.08);
-  filter: brightness(1.02);
+  filter: brightness(1.03);
 }
 .menu-cell.empty {
   color: var(--ink-3);
   font-style: italic;
   opacity: 0.55;
-  justify-content: center;
-  align-items: center;
+  text-align: center;
 }
 
-.menu-cell.row-desayuno { background: var(--menu-bg-desayuno); }
-.menu-cell.row-almuerzo { background: var(--menu-bg-almuerzo); }
-.menu-cell.row-comida   { background: var(--menu-bg-comida); }
-.menu-cell.row-merienda { background: var(--menu-bg-merienda); }
-.menu-cell.row-cena     { background: var(--menu-bg-cena); }
+/* Fondo de cada celda según el día (data-day). */
+.menu-cell[data-day="lun"]      { background: var(--menu-day-lun); border-left: 4px solid var(--menu-acc-lun); }
+.menu-cell[data-day="mar"]      { background: var(--menu-day-mar); border-left: 4px solid var(--menu-acc-mar); }
+.menu-cell[data-day="mie"]      { background: var(--menu-day-mie); border-left: 4px solid var(--menu-acc-mie); }
+.menu-cell[data-day="jue"]      { background: var(--menu-day-jue); border-left: 4px solid var(--menu-acc-jue); }
+.menu-cell[data-day="vie"]      { background: var(--menu-day-vie); border-left: 4px solid var(--menu-acc-vie); }
+.menu-cell[data-day="sab"]      { background: var(--menu-day-sab); border-left: 4px solid var(--menu-acc-sab); }
+.menu-cell[data-day="dom"]      { background: var(--menu-day-dom); border-left: 4px solid var(--menu-acc-dom); }
+/* Celdas que ocupan varios días: degradado horizontal entre todos los días que cubren */
+.menu-cell[data-day="lun-vie"]  {
+  background: linear-gradient(90deg, var(--menu-day-lun), var(--menu-day-mar), var(--menu-day-mie), var(--menu-day-jue), var(--menu-day-vie));
+}
+.menu-cell[data-day="lun-dom"]  {
+  background: linear-gradient(90deg, var(--menu-day-lun), var(--menu-day-mar), var(--menu-day-mie), var(--menu-day-jue), var(--menu-day-vie), var(--menu-day-sab), var(--menu-day-dom));
+}
 
 .menu-cell.span-5 { grid-column: span 5; }
 .menu-cell.span-7 { grid-column: span 7; }
