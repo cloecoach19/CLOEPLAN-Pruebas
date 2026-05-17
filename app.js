@@ -1012,6 +1012,7 @@ function getRoomColor(room) {
     'habitat-jorge': '#4ECDC4',
     'habitat-lucas': '#A8D5BA',
     'cocina': '#FFB84D',
+    'colada': '#9DC8E6',
     'bano': '#7C5CFF',
     'cloe': '#2EE6A6',
     'otros': '#9CA3AF'

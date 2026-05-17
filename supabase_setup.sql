@@ -126,6 +126,20 @@ alter table task_coin_rules add column if not exists label text;
 alter table task_coin_rules add column if not exists emoji text;
 alter table task_coin_rules add column if not exists sort_order int not null default 100;
 
+-- Mover lavadora/secadora de cocina → colada (tareas históricas y reglas).
+update tasks set room = 'colada'
+  where room = 'cocina' and subcategory in ('lavadora','secadora');
+
+-- En task_coin_rules: si ya existe la fila en colada se ignora; si no, se mueve.
+insert into task_coin_rules (room, subcategory, value, label, emoji, sort_order)
+  select 'colada', subcategory, value, label, emoji, sort_order
+  from task_coin_rules
+  where room = 'cocina' and subcategory in ('lavadora','secadora')
+on conflict (room, subcategory) do nothing;
+
+delete from task_coin_rules
+  where room = 'cocina' and subcategory in ('lavadora','secadora');
+
 -- ── Trofeos desbloqueados por usuario ─────────────────────
 -- Persistencia cross-device: cada vez que un usuario desbloquea un trofeo
 -- se inserta una fila. Único por (user_id, trophy_id) para que no se duplique.

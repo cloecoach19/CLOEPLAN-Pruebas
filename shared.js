@@ -1208,6 +1208,7 @@ const TASK_ROOMS = [
   { id: 'habitat-lucas', emoji: '👶', label: 'Habitación Lucas' },
   { id: 'salon', emoji: '🛋️', label: 'Salón' },
   { id: 'cocina', emoji: '🍳', label: 'Cocina' },
+  { id: 'colada', emoji: '🧺', label: 'Colada' },
   { id: 'bano', emoji: '🚿', label: 'Baño' },
   { id: 'cloe', emoji: '🐶', label: 'Cloe' },
 ];
@@ -1254,8 +1255,11 @@ const TASK_SUBCATEGORIES = {
     { id: 'basura', emoji: '🗑️', label: 'Bajar basura' },
     { id: 'compra', emoji: '🛒', label: 'Compra' },
     { id: 'lavavajillas', emoji: '🍽️', label: 'Lavavajillas' },
+  ],
+  'colada': [
     { id: 'lavadora', emoji: '👕', label: 'Poner/Quitar lavadora' },
     { id: 'secadora', emoji: '👖', label: 'Poner/Quitar secadora' },
+    { id: 'doblar', emoji: '🧺', label: 'Doblar y guardar la ropa' },
   ],
   'bano': [
     { id: 'limpieza', emoji: '🧽', label: 'Limpieza' },
